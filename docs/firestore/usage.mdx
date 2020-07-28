@@ -11,7 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 Before using Firestore, you must first have ensured you have [initialized FlutterFire](overview#initializing-flutterfire).
 
-To create a new Firestore instance, call the [`instance`](!cloud_firestore.Firestore.instance) getter on [`Firestore`](!cloud_firestore.Firestore):
+To create a new Firestore instance, call the [`instance`](!cloud_firestore.Firestore.instance) getter on [`FirebaseFirestore`](!cloud_firestore.FirebaseFirestore):
 
 ```dart
 Firestore firestore = FirebaseFirestore.instance;
@@ -21,7 +21,7 @@ By default, this allows you to interact with Firestore using the default Firebas
 platform. If however you'd like to use Firestore with a secondary Firebase App, use the [`instanceFor`](!cloud_firestore.Firestore.instanceFor) method:
 
 ```dart
-FirebaseApp secondaryApp = Firebase.app('SecondayApp');
+FirebaseApp secondaryApp = Firebase.app('SecondaryApp');
 Firestore firestore = FirebaseFirestore.instanceFor(app: secondaryApp);
 ```
 
@@ -683,16 +683,15 @@ await FirebaseFirestore.instance.enableNetwork()
 ## Emulator Usage
 
 If you are using the local [Firestore emulators](https://firebase.google.com/docs/rules/emulator-setup), then it is possible to
-connect to these by passing a [`host`]((!cloud_firestore.Settings.host) parameter to the [`settings`](!cloud_firestore.Firestore.settings) method,
+connect to these by passing a [`host`](!cloud_firestore.Settings.host) parameter to the [`settings`](!cloud_firestore.Firestore.settings) method,
 immediately after initializing Firebase. Ensure you pass the correct port on which the Firebase emulator is running on.
 
 > On Android, to reference `localhost`, use the `10.0.2.2` IP address instead.
 
 ```dart
 // Initialize first
-await FirebaseCore.instance.initializeApp();
+await Firebase.initializeApp();
 
 // Set the host as soon as possible
-await FirebaseFirestore.instance
-  .settings(Settings(host: "localhost:8080", sslEnabled: false));
+await FirebaseFirestore.instance.settings = Settings(host: "10.0.2.2", sslEnabled: false);
 ```
