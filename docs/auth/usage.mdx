@@ -32,7 +32,7 @@ Flutter application. In many cases, you will need to know about the authenticati
 logged in or logged out.
 
 Firebase Auth enables you to subscribe in realtime to this state via a [`Stream`](https://api.flutter.dev/flutter/dart-async/Stream-class.html).
-Once called, the stream provides an immidiate event of the users current authentication state, and then provides subsequent events whenever
+Once called, the stream provides an immediate event of the users current authentication state, and then provides subsequent events whenever
 the authentication state changes.
 
 To subscribe to these changes, call the `authStateChanges()` method on your [`FirebaseAuth`](!firebase_auth.FirebaseAuth) instance:
@@ -53,7 +53,7 @@ The stream returns a [`User`](!firebase_auth.User) class if the user is signed i
 about managing your users below.
 
 If you also need authentication state change events along with any user token refresh events, you can subscribe via the
-`idTokenChanges()` method instead.
+`idTokenChanges()` method instead. If you want to listen for any user changes, you can subscribe to the `userChanges()` method.
 
 ## Persisting authentication state
 
@@ -83,12 +83,12 @@ on the Firebase console.
 
 ## Anonymous sign-in
 
-Even though many applications do not require the user to explicially sign into an application, it is important that you are able
+Even though many applications do not require the user to explicitly sign into an application, it is important that you are able
 to uniquely identify your users (for both analytical and security reasons). Anonymous sign-in provides an extra layer of security if
-using Firebases Firestore, Realtime Database or even an external API, since you're able to detect whether a request comes from an authenticated user.
+using Firebase Firestore, Realtime Database or even an external API, since you're able to detect whether a request comes from an authenticated user.
 
-If no previous anonymous account on the platform (for your specific application) has been created, when signing in anonymously Firebase
-will create a new unqiue user which will be persisted across app restarts/page reloads. If the user signs-out and reauthenticates
+If no previous anonymous account on the platform (for your specific application) has been created, when signing in anonymously, Firebase
+will create a new unique user which will be persisted across app restarts/page reloads. If the user signs-out and re-authenticates
 anonymously again, they will be signed-in with the previously created account. It is however important to remember the anonymous account created
 will not be persisted if the user uninstalls the application, clears their browser storage or uses a private browsing method (e.g.
 incognito mode on Google Chrome).
@@ -96,13 +96,14 @@ incognito mode on Google Chrome).
 To get started, call the `signInAnonymously()` method on the [`FirebaseAuth`](!firebase_auth.FirebaseAuth) instance:
 
 ```dart
-UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
+UserCredential userCredential =
+ await FirebaseAuth.instance.signInAnonymously();
 ```
 
 Once successfully resolved, the user will be granted an anonymous account. If you are listening to changes in
 [authentication state](#authentication-state), a new event will be sent to your listeners.
 
-To learn more about how you can handle any errors which are thrown from the method, view the [Error Handling](auth/error-handling)
+To learn more about how you can handle any errors which are thrown from the method, view the [Error Handling](error-handling)
 documentation.
 
 ## Email/Password Registration & Sign-in
@@ -137,7 +138,7 @@ The method is a two-step operation; it will first create the new account (if it 
 then automatically sign in the user in to that account. If you are listening to changes in [authentication state](#authentication-state),
 a new event will be sent to your listeners.
 
-To learn more about how you can handle any errors which are thrown from the method, view the [Error Handling](auth/error-handling)
+To learn more about how you can handle any errors which are thrown from the method, view the [Error Handling](error-handling)
 documentation.
 
 ### Sign-in
@@ -203,7 +204,7 @@ try {
 }
 ```
 
-To learn more about how you can handle any errors which are thrown from the method, view the [Error Handling](auth/error-handling)
+To learn more about how you can handle any errors which are thrown from the method, view the [Error Handling](error-handling)
 documentation.
 
 ## Signing Out
@@ -219,12 +220,13 @@ listeners.
 
 ## Other sign-in methods
 
-Firebase also supports authenticating with external provides. To learn more, view the documentation for your authentication method:
+Firebase also supports authenticating with external providers. To learn more, view the documentation for your authentication method:
 
 - [Apple Sign-In.](social#apple)
 - [Facebook Sign-In.](social#facebook)
 - [Twitter Sign-In.](social#twitter)
 - [Google Sign-In.](social#google)
+- [GitHub Sign-In.](social#github)
 - [Phone Number Sign-In.](phone)
 
 ## User management
@@ -259,7 +261,8 @@ if (auth.currentUser != null) {
 <TabItem value="methods">
 
 ```dart
-UserCredential userCredential = await Firebase.auth.signInAnonymously();
+UserCredential userCredential =
+  await Firebase.auth.signInAnonymously();
 
 print(userCredential.user.uid);
 ```
@@ -299,7 +302,7 @@ try {
 
 ### Reauthenticating a user
 
-As mentioned above, some operations such as deleting the user, updating their email address or provide require the user to have recently
+As mentioned above, some operations such as deleting the user or updating their email address require the user to have recently
 signed in. Rather than signing the user out and back in again, the `reauthenticateWithCredential()` method can be called. If a recent login
 is required, create a new [`AuthCredential`](!firebase_auth_platform_interface.AuthCredential) and pass it to the method. For example,
 to reauthenticate with email & password, create a new [`EmailAuthCredential`](!firebase_auth_platform_interface.EmailAuthCredential):
