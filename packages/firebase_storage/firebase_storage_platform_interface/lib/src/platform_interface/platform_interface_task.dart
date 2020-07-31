@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 
+import '../../firebase_storage_platform_interface.dart';
+
 abstract class TaskPlatform extends PlatformInterface {
   TaskPlatform() : super(token: _token);
 
@@ -46,11 +48,11 @@ abstract class TaskPlatform extends PlatformInterface {
     throw UnimplementedError('isSuccessful is not implemented');
   }
 
-  dynamic get lastSnapshot {
-    throw UnimplementedError('lastSnapshot is not implemented');
+  TaskSnapshotPlatform get snapshot {
+    throw UnimplementedError('snapshot is not implemented');
   }
 
-  Future<dynamic> get onComplete {
+  Future<void> get onComplete {
     throw UnimplementedError('onComplete is not implemented');
   }
 

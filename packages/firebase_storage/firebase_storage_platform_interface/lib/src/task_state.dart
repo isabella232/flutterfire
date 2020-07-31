@@ -7,5 +7,5 @@ enum TaskState {
   error,
   paused,
   running,
-  success,
+  complete,
 }

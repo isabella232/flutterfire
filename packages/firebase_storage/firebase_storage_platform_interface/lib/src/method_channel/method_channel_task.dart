@@ -7,33 +7,31 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
 import 'method_channel_firebase_storage.dart';
+import './utils/exception.dart';
 
 class MethodChannelTask extends TaskPlatform {
   MethodChannelTask(
     this.handle,
     this.storage,
     this.task,
-  ) : super();
+  ) : super() {
+    _stream = MethodChannelFirebaseStorage.taskObservers[handle].stream;
+
+    _stream.listen((TaskSnapshotPlatform snapshot) {
+      _lastSnapshot = snapshot;
+    });
+  }
+
+  Stream<TaskSnapshotPlatform> _stream;
 
   final int handle;
 
   final FirebaseStoragePlatform storage;
 
-  Future<dynamic> task;
+  Future<void> task;
 
-  bool _isCanceled = false;
-  bool _isComplete = false;
-  bool _isInProgress = true;
-  bool _isPaused = false;
-  bool _isSuccessful = false;
-  dynamic _lastSnapshot;
+  TaskSnapshotPlatform _lastSnapshot;
 
   @override
   Stream<TaskSnapshotPlatform> get snapshotEvents {
@@ -41,26 +39,28 @@ class MethodChannelTask extends TaskPlatform {
   }
 
   @override
-  bool get isCanceled => _isCanceled;
+  bool get isCanceled => snapshot?.state == TaskState.canceled ?? false;
 
   @override
-  bool get isComplete => _isComplete;
+  bool get isComplete => snapshot?.state == TaskState.complete ?? false;
 
   @override
-  bool get isInProgress => _isInProgress;
+  bool get isInProgress => snapshot?.state == TaskState.running ?? true;
 
   @override
-  bool get isPaused => _isPaused;
+  bool get isPaused => snapshot?.state == TaskState.paused ?? false;
 
   @override
-  bool get isSuccessful => _isSuccessful;
+  bool get isSuccessful {
+    // TODO HOW?
+  }
 
   @override
-  dynamic get lastSnapshot => _lastSnapshot;
+  TaskSnapshotPlatform get snapshot => _lastSnapshot;
 
   @override
-  Future get onComplete {
-    return task;
+  Future<TaskSnapshotPlatform> get onComplete {
+    return task.then(($) => snapshot).catchError(catchPlatformException);
   }
 
   @override
@@ -68,10 +68,7 @@ class MethodChannelTask extends TaskPlatform {
     await MethodChannelFirebaseStorage.channel
         .invokeMethod<void>('Task#pause', <String, dynamic>{
       'handle': handle,
-    });
-
-    _isPaused = true;
-    _isInProgress = false;
+    }).catchError(catchPlatformException);
   }
 
   @override
@@ -79,10 +76,7 @@ class MethodChannelTask extends TaskPlatform {
     await MethodChannelFirebaseStorage.channel
         .invokeMethod<void>('Task#resume', <String, dynamic>{
       'handle': handle,
-    });
-
-    _isPaused = false;
-    _isInProgress = true;
+    }).catchError(catchPlatformException);
   }
 
   @override
@@ -90,9 +84,7 @@ class MethodChannelTask extends TaskPlatform {
     await MethodChannelFirebaseStorage.channel
         .invokeMethod<void>('Task#cancel', <String, dynamic>{
       'handle': handle,
-    });
-
-    _isCanceled = true;
+    }).catchError(catchPlatformException);
   }
 }
 
@@ -101,7 +93,7 @@ class MethodChannelPutFileTask extends MethodChannelTask {
       String path, File file, SettableMetadata metadata)
       : super(handle, storage, _getTask(handle, storage, path, file, metadata));
 
-  static Future<dynamic> _getTask(int handle, FirebaseStoragePlatform storage,
+  static Future<void> _getTask(int handle, FirebaseStoragePlatform storage,
       String path, File file, SettableMetadata metadata) async {
     await MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#startPutFile', <String, dynamic>{
@@ -112,8 +104,6 @@ class MethodChannelPutFileTask extends MethodChannelTask {
       'filePath': file.path,
       'metadata': metadata?.asMap(),
     });
-
-    return null;
   }
 }
 
@@ -128,7 +118,7 @@ class MethodChannelPutStringTask extends MethodChannelTask {
       : super(handle, storage,
             _getTask(handle, storage, path, data, format, metadata));
 
-  static Future<dynamic> _getTask(
+  static Future<void> _getTask(
       int handle,
       FirebaseStoragePlatform storage,
       String path,
@@ -145,8 +135,6 @@ class MethodChannelPutStringTask extends MethodChannelTask {
       'format': format.toString(),
       'metadata': metadata?.asMap(),
     });
-
-    return null;
   }
 }
 
@@ -156,7 +144,7 @@ class MethodChannelPutTask extends MethodChannelTask {
       : super(
             handle, storage, _getTask(handle, storage, path, buffer, metadata));
 
-  static Future<dynamic> _getTask(int handle, FirebaseStoragePlatform storage,
+  static Future<void> _getTask(int handle, FirebaseStoragePlatform storage,
       String path, ByteBuffer buffer, SettableMetadata metadata) async {
     await MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#startPut', <String, dynamic>{
@@ -167,7 +155,5 @@ class MethodChannelPutTask extends MethodChannelTask {
       'data': buffer.asUint8List(),
       'metadata': metadata?.asMap(),
     });
-
-    return null;
   }
 }

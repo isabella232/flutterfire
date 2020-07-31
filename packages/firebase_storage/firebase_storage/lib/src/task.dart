@@ -33,7 +33,10 @@ class Task {
 
   bool get isSuccessful => _delegate.isSuccessful;
 
-  dynamic get lastSnapshot => _delegate.lastSnapshot;
+  @Deprecated("Deprecated in favor of [snapshot]")
+  TaskSnapshot get lastSnapshot => snapshot;
+
+  TaskSnapshot get snapshot => TaskSnapshot._(storage, _delegate.snapshot);
 
   Future<dynamic> get onComplete => _delegate.onComplete;
 
