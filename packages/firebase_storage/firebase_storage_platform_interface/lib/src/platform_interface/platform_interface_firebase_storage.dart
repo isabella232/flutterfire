@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import '../../firebase_storage_platform_interface.dart';
 import '../method_channel/method_channel_firebase_storage.dart';
 
 /// The Firebase Storage platform interface.
@@ -18,10 +19,19 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
   @protected
   final FirebaseApp appInstance;
 
+  final String storageBucket;
+
   /// Create an instance using [app]
-  FirebaseStoragePlatform({this.appInstance}) : super(token: _token);
+  FirebaseStoragePlatform({this.appInstance, this.storageBucket})
+      : super(token: _token);
 
   static final Object _token = Object();
+
+  factory FirebaseStoragePlatform.instanceFor(
+      {FirebaseApp app, String storageBucket}) {
+    return FirebaseStoragePlatform.instance
+        .delegateFor(app: app, storageBucket: storageBucket);
+  }
 
   /// Returns the [FirebaseApp] for the current instance.
   FirebaseApp get app {
@@ -40,7 +50,7 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
   /// if no other implementation was provided.
   static FirebaseStoragePlatform get instance {
     if (_instance == null) {
-      _instance = MethodChannelFirebaseStorage(app: Firebase.app());
+      _instance = MethodChannelFirebaseStorage.instance;
     }
     return _instance;
   }
@@ -54,7 +64,32 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
   /// Enables delegates to create new instances of themselves if a none default
   /// [FirebaseApp] instance is required by the user.
   @protected
-  FirebaseStoragePlatform delegateFor({FirebaseApp app}) {
+  FirebaseStoragePlatform delegateFor({FirebaseApp app, String storageBucket}) {
     throw UnimplementedError('delegateFor() is not implemented');
+  }
+
+  // todo get maxOperationRetryTime
+  // todo get maxUploadRetryTime
+
+  /// Returns a reference for the given path in the default bucket.
+  ///
+  /// [path] A relative path to initialize the reference with, for example
+  ///   `path/to/image.jpg`. If not passed, the returned reference points to
+  ///   the bucket root.
+  ReferencePlatform ref(String path) {
+    throw UnimplementedError('ref() is not implemented');
+  }
+
+  /// Returns a reference for the given absolute URL.
+  ReferencePlatform refFromURL(String url) {
+    throw UnimplementedError('refFromURL() is not implemented');
+  }
+
+  Future<void> setMaxOperationRetryTime(int time) {
+    throw UnimplementedError('setMaxOperationRetryTime() is not implemented');
+  }
+
+  Future<void> setMaxUploadRetryTime(int time) {
+    throw UnimplementedError('setMaxUploadRetryTime() is not implemented');
   }
 }

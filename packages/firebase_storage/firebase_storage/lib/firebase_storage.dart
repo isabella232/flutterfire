@@ -5,15 +5,22 @@
 library firebase_storage;
 
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
+import 'dart:typed_data' show ByteBuffer;
+import 'dart:io' show File;
 
+import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/services.dart';
+import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
+    show FirebasePluginPlatform;
 
-part 'src/error.dart';
-part 'src/event.dart';
-part 'src/firebase_storage.dart';
-part 'src/storage_metadata.dart';
-part 'src/storage_reference.dart';
-part 'src/upload_task.dart';
+export 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart'
+    show ListOptions, FullMetadata, SettableMetadata;
+
+export 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
+    show FirebaseException;
+
+part 'src/storage.dart';
+part 'src/reference.dart';
+part 'src/list_result.dart';
+part 'src/task.dart';
+part 'src/task_snapshot.dart';
