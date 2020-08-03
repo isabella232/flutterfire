@@ -125,4 +125,6 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
       'time': time,
     }).catchError(catchPlatformException);
   }
+
+  // todo max operation retry time
 }

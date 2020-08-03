@@ -62,7 +62,7 @@ class MethodChannelReference extends ReferencePlatform {
       'storageBucket': storage.storageBucket,
       'path': fullPath,
       'options': <String, dynamic>{
-        'maxResults': options?.maxResults,
+        'maxResults': options?.maxResults ?? 1000,
         'pageToken': options?.pageToken,
       },
     }).catchError(catchPlatformException);

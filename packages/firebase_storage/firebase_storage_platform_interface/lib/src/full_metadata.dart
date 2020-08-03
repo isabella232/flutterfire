@@ -83,13 +83,15 @@ class FullMetadata {
 
   /// A DateTime representing when this object was created.
   DateTime get timeCreated {
-    // TODO DateTime
-    return _metadata['timeCreated'];
+    return _metadata['creationTimeMillis'] == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(_metadata['creationTimeMillis']);
   }
 
   /// A DateTime representing when this object was updated.
   DateTime get updated {
-    // TODO DateTime
-    return _metadata['updated'];
+    return _metadata['updatedTimeMillis'] == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(_metadata['updatedTimeMillis']);
   }
 }

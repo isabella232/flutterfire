@@ -8,20 +8,32 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.SparseArray;
 import android.webkit.MimeTypeMap;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.OnPausedListener;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageException;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
@@ -29,24 +41,32 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 
 // TODO(kroikie): Better handle empty paths.
 //                https://github.com/FirebaseExtended/flutterfire/issues/1505
 /** FirebaseStoragePlugin */
-// TODO(Salakar): Should also implement io.flutter.plugins.firebase.core.FlutterFirebasePlugin when reworked.
-public class FirebaseStoragePlugin implements MethodCallHandler, FlutterPlugin {
+// TODO(Salakar): Should also implement io.flutter.plugins.firebase.core.FlutterFirebasePlugin when
+// reworked.
+public class FirebaseStoragePlugin
+    implements FlutterFirebasePlugin, MethodCallHandler, FlutterPlugin {
+  private final SparseArray<UploadTask> uploadTasks = new SparseArray<>();
   private FirebaseStorage firebaseStorage;
   private MethodChannel methodChannel;
-
   private int nextUploadHandle = 0;
-  private final SparseArray<UploadTask> uploadTasks = new SparseArray<>();
 
   public static void registerWith(PluginRegistry.Registrar registrar) {
     FirebaseStoragePlugin instance = new FirebaseStoragePlugin();
     instance.onAttachedToEngine(registrar.context(), registrar.messenger());
+  }
+
+  private static String getMimeType(Uri file) {
+    String type = null;
+    String extension = MimeTypeMap.getFileExtensionFromUrl(file.toString());
+    if (extension != null) {
+      type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+    }
+    return type;
   }
 
   private void onAttachedToEngine(Context applicationContext, BinaryMessenger binaryMessenger) {
@@ -65,88 +85,282 @@ public class FirebaseStoragePlugin implements MethodCallHandler, FlutterPlugin {
     methodChannel = null;
   }
 
-  @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull final Result result) {
-    String app = call.argument("app");
-    String storageBucket = call.argument("bucket");
-    if (app == null && storageBucket == null) {
-      firebaseStorage = FirebaseStorage.getInstance();
-    } else if (storageBucket == null) {
-      firebaseStorage = FirebaseStorage.getInstance(FirebaseApp.getInstance(app));
-    } else if (app == null) {
-      firebaseStorage = FirebaseStorage.getInstance(storageBucket);
-    } else {
-      firebaseStorage = FirebaseStorage.getInstance(FirebaseApp.getInstance(app), storageBucket);
+  private FirebaseStorage getStorage(Map<String, Object> arguments) {
+    String appName = (String) Objects.requireNonNull(arguments.get("appName"));
+    FirebaseApp app = FirebaseApp.getInstance(appName);
+    String storageBucket = (String) arguments.get("storageBucket");
+
+    if (storageBucket == null) {
+      return FirebaseStorage.getInstance(app);
     }
 
+    return FirebaseStorage.getInstance(app, storageBucket);
+  }
+
+  private StorageReference getReference(Map<String, Object> arguments) {
+    String path = (String) Objects.requireNonNull(arguments.get("path"));
+    return getStorage(arguments).getReference(path);
+  }
+
+  private Map<String, Object> parseMetadata(StorageMetadata storageMetadata) {
+    Map<String, Object> out = new HashMap<>();
+    out.put("name", storageMetadata.getName());
+    out.put("bucket", storageMetadata.getBucket());
+    out.put("generation", storageMetadata.getGeneration());
+    out.put("metageneration", storageMetadata.getMetadataGeneration());
+    out.put("fullPath", storageMetadata.getPath());
+    out.put("size", storageMetadata.getSizeBytes());
+    out.put("creationTimeMillis", storageMetadata.getCreationTimeMillis());
+    out.put("updatedTimeMillis", storageMetadata.getUpdatedTimeMillis());
+    out.put("md5Hash", storageMetadata.getMd5Hash());
+    out.put("cacheControl", storageMetadata.getCacheControl());
+    out.put("contentDisposition", storageMetadata.getContentDisposition());
+    out.put("contentEncoding", storageMetadata.getContentEncoding());
+    out.put("contentLanguage", storageMetadata.getContentLanguage());
+    out.put("contentType", storageMetadata.getContentType());
+
+    Map<String, String> customMetadata = new HashMap<>();
+    for (String key : storageMetadata.getCustomMetadataKeys()) {
+      customMetadata.put(key, Objects.requireNonNull(storageMetadata.getCustomMetadata(key)));
+    }
+    out.put("customMetadata", customMetadata);
+    return out;
+  }
+
+  private Map<String, Object> parseListResult(ListResult listResult) {
+    Map<String, Object> out = new HashMap<>();
+    out.put("nextPageToken", listResult.getPageToken());
+
+    List<String> items = new ArrayList<>();
+    List<String> prefixes = new ArrayList<>();
+
+    for (StorageReference reference : listResult.getItems()) {
+      items.add(reference.getPath());
+    }
+
+    for (StorageReference reference : listResult.getPrefixes()) {
+      prefixes.add(reference.getPath());
+    }
+
+    out.put("items", items);
+    out.put("prefixes", prefixes);
+    return out;
+  }
+
+  private Task<Void> setMaxOperationRetryTime(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          FirebaseStorage storage = getStorage(arguments);
+          Long time = (Long) Objects.requireNonNull(arguments.get("time"));
+          storage.setMaxOperationRetryTimeMillis(time);
+          return null;
+        });
+  }
+
+  private Task<Void> setMaxUploadRetryTime(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          FirebaseStorage storage = getStorage(arguments);
+          Long time = (Long) Objects.requireNonNull(arguments.get("time"));
+          storage.setMaxUploadRetryTimeMillis(time);
+          return null;
+        });
+  }
+
+  private Task<Void> referenceDelete(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          StorageReference reference = getReference(arguments);
+          return Tasks.await(reference.delete());
+        });
+  }
+
+  private Task<Map<String, Object>> referenceGetDownloadURL(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          StorageReference reference = getReference(arguments);
+          Uri downloadURL = Tasks.await(reference.getDownloadUrl());
+
+          Map<String, Object> out = new HashMap<>();
+          out.put("downloadURL", downloadURL.toString());
+          return out;
+        });
+  }
+
+  private Task<Map<String, Object>> referenceGetMetadata(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          StorageReference reference = getReference(arguments);
+          StorageMetadata metadata = Tasks.await(reference.getMetadata());
+          return parseMetadata(metadata);
+        });
+  }
+
+  private Task<Map<String, Object>> referenceList(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          StorageReference reference = getReference(arguments);
+          Task<ListResult> task;
+
+          @SuppressWarnings("unchecked")
+          Map<String, Object> listOptions =
+              (Map<String, Object>) Objects.requireNonNull(arguments.get("options"));
+
+          int maxResults = (Integer) Objects.requireNonNull(listOptions.get("maxResults"));
+
+          if (listOptions.containsKey("pageToken")) {
+            task =
+                reference.list(
+                    maxResults, (String) Objects.requireNonNull(listOptions.get("pageToken")));
+          } else {
+            task = reference.list(maxResults);
+          }
+
+          ListResult listResult = Tasks.await(task);
+          return parseListResult(listResult);
+        });
+  }
+
+  private Task<Map<String, Object>> referenceListAll(Map<String, Object> arguments) {
+    return Tasks.call(
+      cachedThreadPool,
+      () -> {
+        StorageReference reference = getReference(arguments);
+        ListResult listResult = Tasks.await(reference.listAll());
+        return parseListResult(listResult);
+      });
+  }
+
+  @Override
+  public void onMethodCall(@NonNull MethodCall call, @NonNull final Result result) {
+    Task<?> methodCallTask;
+
     switch (call.method) {
-      case "FirebaseStorage#getMaxDownloadRetryTime":
-        result.success(firebaseStorage.getMaxDownloadRetryTimeMillis());
+      case "Storage#setMaxOperationRetryTime":
+        methodCallTask = setMaxOperationRetryTime(call.arguments());
         break;
-      case "FirebaseStorage#getMaxUploadRetryTime":
-        result.success(firebaseStorage.getMaxUploadRetryTimeMillis());
+      case "Storage#setMaxUploadRetryTime":
+        methodCallTask = setMaxUploadRetryTime(call.arguments());
         break;
-      case "FirebaseStorage#getMaxOperationRetryTime":
-        result.success(firebaseStorage.getMaxOperationRetryTimeMillis());
+      case "Reference#delete":
+        methodCallTask = referenceDelete(call.arguments());
         break;
-      case "FirebaseStorage#setMaxDownloadRetryTime":
-        setMaxDownloadRetryTimeMillis(call, result);
+      case "Reference#getDownloadURL":
+        methodCallTask = referenceGetDownloadURL(call.arguments());
         break;
-      case "FirebaseStorage#setMaxUploadRetryTime":
-        setMaxUploadRetryTimeMillis(call, result);
+      case "Reference#getMetadata":
+        methodCallTask = referenceGetMetadata(call.arguments());
         break;
-      case "FirebaseStorage#setMaxOperationRetryTime":
-        setMaxOperationTimeMillis(call, result);
+      case "Reference#list":
+        methodCallTask = referenceList(call.arguments());
         break;
-      case "FirebaseStorage#getReferenceFromUrl":
-        getReferenceFromUrl(call, result);
-        break;
-      case "StorageReference#putFile":
-        putFile(call, result);
-        break;
-      case "StorageReference#putData":
-        putData(call, result);
-        break;
-      case "StorageReference#getData":
-        getData(call, result);
-        break;
-      case "StorageReference#delete":
-        delete(call, result);
-        break;
-      case "StorageReference#getBucket":
-        getBucket(call, result);
-        break;
-      case "StorageReference#getName":
-        getName(call, result);
-        break;
-      case "StorageReference#getPath":
-        getPath(call, result);
-        break;
-      case "StorageReference#getDownloadUrl":
-        getDownloadUrl(call, result);
-        break;
-      case "StorageReference#getMetadata":
-        getMetadata(call, result);
-        break;
-      case "StorageReference#updateMetadata":
-        updateMetadata(call, result);
-        break;
-      case "StorageReference#writeToFile":
-        writeToFile(call, result);
-        break;
-      case "UploadTask#pause":
-        pauseUploadTask(call, result);
-        break;
-      case "UploadTask#resume":
-        resumeUploadTask(call, result);
-        break;
-      case "UploadTask#cancel":
-        cancelUploadTask(call, result);
+      case "Reference#listAll":
+        methodCallTask = referenceListAll(call.arguments());
         break;
       default:
         result.notImplemented();
-        break;
+        return;
     }
+
+    methodCallTask.addOnCompleteListener(
+        task -> {
+          if (task.isSuccessful()) {
+            result.success(task.getResult());
+          } else {
+            Exception exception = task.getException();
+            // todo handle details
+            result.error(
+                "firebase_storage", exception != null ? exception.getMessage() : null, null);
+          }
+        });
+
+    //    String app = call.argument("app");
+    //    String storageBucket = call.argument("bucket");
+    //    if (app == null && storageBucket == null) {
+    //      firebaseStorage = FirebaseStorage.getInstance();
+    //    } else if (storageBucket == null) {
+    //      firebaseStorage = FirebaseStorage.getInstance(FirebaseApp.getInstance(app));
+    //    } else if (app == null) {
+    //      firebaseStorage = FirebaseStorage.getInstance(storageBucket);
+    //    } else {
+    //      firebaseStorage = FirebaseStorage.getInstance(FirebaseApp.getInstance(app),
+    // storageBucket);
+    //    }
+    //
+    //    switch (call.method) {
+    //      case "FirebaseStorage#getMaxDownloadRetryTime":
+    //        result.success(firebaseStorage.getMaxDownloadRetryTimeMillis());
+    //        break;
+    //      case "FirebaseStorage#getMaxUploadRetryTime":
+    //        result.success(firebaseStorage.getMaxUploadRetryTimeMillis());
+    //        break;
+    //      case "FirebaseStorage#getMaxOperationRetryTime":
+    //        result.success(firebaseStorage.getMaxOperationRetryTimeMillis());
+    //        break;
+    //      case "FirebaseStorage#setMaxDownloadRetryTime":
+    //        setMaxDownloadRetryTimeMillis(call, result);
+    //        break;
+    //      case "FirebaseStorage#setMaxUploadRetryTime":
+    //        setMaxUploadRetryTimeMillis(call, result);
+    //        break;
+    //      case "FirebaseStorage#setMaxOperationRetryTime":
+    //        setMaxOperationTimeMillis(call, result);
+    //        break;
+    //      case "FirebaseStorage#getReferenceFromUrl":
+    //        getReferenceFromUrl(call, result);
+    //        break;
+    //      case "StorageReference#putFile":
+    //        putFile(call, result);
+    //        break;
+    //      case "StorageReference#putData":
+    //        putData(call, result);
+    //        break;
+    //      case "StorageReference#getData":
+    //        getData(call, result);
+    //        break;
+    //      case "StorageReference#delete":
+    //        delete(call, result);
+    //        break;
+    //      case "StorageReference#getBucket":
+    //        getBucket(call, result);
+    //        break;
+    //      case "StorageReference#getName":
+    //        getName(call, result);
+    //        break;
+    //      case "StorageReference#getPath":
+    //        getPath(call, result);
+    //        break;
+    //      case "StorageReference#getDownloadUrl":
+    //        getDownloadUrl(call, result);
+    //        break;
+    //      case "StorageReference#getMetadata":
+    //        getMetadata(call, result);
+    //        break;
+    //      case "StorageReference#updateMetadata":
+    //        updateMetadata(call, result);
+    //        break;
+    //      case "StorageReference#writeToFile":
+    //        writeToFile(call, result);
+    //        break;
+    //      case "UploadTask#pause":
+    //        pauseUploadTask(call, result);
+    //        break;
+    //      case "UploadTask#resume":
+    //        resumeUploadTask(call, result);
+    //        break;
+    //      case "UploadTask#cancel":
+    //        cancelUploadTask(call, result);
+    //        break;
+    //      default:
+    //        result.notImplemented();
+    //        break;
+    //    }
   }
 
   private void setMaxDownloadRetryTimeMillis(MethodCall call, Result result) {
@@ -469,12 +683,14 @@ public class FirebaseStoragePlugin implements MethodCallHandler, FlutterPlugin {
     return handle;
   }
 
-  private enum StorageTaskEventType {
-    resume,
-    progress,
-    pause,
-    success,
-    failure
+  @Override
+  public Task<Map<String, Object>> getPluginConstantsForFirebaseApp(FirebaseApp firebaseApp) {
+    return null;
+  }
+
+  @Override
+  public Task<Void> didReinitializeFirebaseCore() {
+    return null;
   }
 
   private void invokeStorageTaskEvent(
@@ -527,12 +743,11 @@ public class FirebaseStoragePlugin implements MethodCallHandler, FlutterPlugin {
     return metadata;
   }
 
-  private static String getMimeType(Uri file) {
-    String type = null;
-    String extension = MimeTypeMap.getFileExtensionFromUrl(file.toString());
-    if (extension != null) {
-      type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-    }
-    return type;
+  private enum StorageTaskEventType {
+    resume,
+    progress,
+    pause,
+    success,
+    failure
   }
 }

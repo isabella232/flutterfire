@@ -43,6 +43,11 @@ class Reference {
   Future<FullMetadata> getMetadata() => _delegate.getMetadata();
 
   Future<ListResult> list(ListOptions options) async {
+    if (options?.maxResults != null) {
+      assert(options.maxResults > 0);
+      assert(options.maxResults <= 1000);
+    }
+
     return ListResult._(storage, await _delegate.list(options));
   }
 
