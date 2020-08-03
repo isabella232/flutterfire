@@ -10,6 +10,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 
 import '../../firebase_storage_platform_interface.dart';
+import '../../firebase_storage_platform_interface.dart';
 import '../internal/pointer.dart';
 
 abstract class ReferencePlatform extends PlatformInterface {
@@ -97,5 +98,10 @@ abstract class ReferencePlatform extends PlatformInterface {
 
   Future<FullMetadata> updateMetadata(SettableMetadata metadata) {
     throw UnimplementedError('updateMetadata() is not implemented');
+  }
+
+
+  TaskPlatform writeToFile(File file) {
+    throw UnimplementedError('writeToFile() is not implemented');
   }
 }

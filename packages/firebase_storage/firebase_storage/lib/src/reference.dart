@@ -55,30 +55,64 @@ class Reference {
     return ListResult._(storage, await _delegate.listAll());
   }
 
-  Task put(ByteBuffer buffer, [SettableMetadata metadata]) {
+  UploadTask put(ByteBuffer buffer, [SettableMetadata metadata]) {
     assert(buffer != null);
-    return Task._(storage, _delegate.put(buffer, metadata));
+    return UploadTask._(storage, _delegate.put(buffer, metadata));
   }
 
-  Task putBlob(dynamic blob, [SettableMetadata metadata]) {
+  UploadTask putBlob(dynamic blob, [SettableMetadata metadata]) {
     assert(blob != null);
-    return Task._(storage, _delegate.putBlob(blob, metadata));
+    return UploadTask._(storage, _delegate.putBlob(blob, metadata));
   }
 
-  Task putFile(File file, [SettableMetadata metadata]) {
+  UploadTask putFile(File file, [SettableMetadata metadata]) {
     assert(file != null);
-    assert(file.existsSync()); // TODO required?
-    return Task._(storage, _delegate.putFile(file, metadata));
+    assert(file.existsSync());
+    return UploadTask._(storage, _delegate.putFile(file, metadata));
   }
 
-  Task putString(
+  UploadTask putString(
     String data, {
     PutStringFormat format = PutStringFormat.raw,
     SettableMetadata metadata,
   }) {
     assert(data != null);
     assert(format != null);
-    return Task._(storage, _delegate.putString(data, format, metadata));
+
+    // Convert any raw string values into a Base64 format
+    if (format == PutStringFormat.raw) {
+      data = base64.encode(utf8.encode(data));
+      format = PutStringFormat.base64;
+    }
+
+    // Convert a data_url into a Base64 format
+    if (format == PutStringFormat.dataUrl) {
+      format = PutStringFormat.base64;
+      UriData uri = UriData.fromUri(Uri.parse(data));
+      assert(uri.isBase64);
+      data = uri.contentText;
+
+      if (metadata == null && uri.mimeType.isNotEmpty) {
+        metadata = SettableMetadata(
+          contentType: uri.mimeType,
+        );
+      }
+
+      // If the data_url contains a mime-type & the user has not provided it,
+      // set it
+      if ((metadata.contentType == null || metadata.contentType.isEmpty) &&
+          uri.mimeType.isNotEmpty) {
+        metadata = SettableMetadata(
+          cacheControl: metadata.cacheControl,
+          contentDisposition: metadata.contentDisposition,
+          contentEncoding: metadata.contentEncoding,
+          contentLanguage: metadata.contentLanguage,
+          contentType: uri.mimeType,
+        );
+      }
+    }
+
+    return UploadTask._(storage, _delegate.putString(data, format, metadata));
   }
 
   Future<FullMetadata> updateMetadata(SettableMetadata metadata) {
@@ -86,5 +120,8 @@ class Reference {
     return _delegate.updateMetadata(metadata);
   }
 
-  // TODO writeToFile?
+  DownloadTask writeToFile(File file) {
+    assert(file != null);
+    return DownloadTask._(storage, _delegate.writeToFile(file));
+  }
 }

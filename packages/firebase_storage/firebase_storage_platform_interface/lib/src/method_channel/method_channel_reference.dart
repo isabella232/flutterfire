@@ -136,4 +136,11 @@ class MethodChannelReference extends ReferencePlatform {
 
     return FullMetadata(data);
   }
+
+  TaskPlatform writeToFile(File file) {
+    int handle = MethodChannelFirebaseStorage.nextMethodChannelHandleId;
+    MethodChannelFirebaseStorage.taskObservers[handle] =
+        StreamController<TaskSnapshotPlatform>.broadcast();
+    return MethodChannelDownloadTask(handle, storage, fullPath, file);
+  }
 }

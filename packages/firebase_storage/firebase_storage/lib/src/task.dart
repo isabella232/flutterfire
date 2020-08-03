@@ -4,7 +4,7 @@
 
 part of firebase_storage;
 
-class Task {
+abstract class Task {
   TaskPlatform _delegate;
 
   final FirebaseStorage storage;

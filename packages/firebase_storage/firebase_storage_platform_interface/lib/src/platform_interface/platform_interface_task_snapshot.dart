@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
-
-import '../../firebase_storage_platform_interface.dart';
 
 abstract class TaskSnapshotPlatform extends PlatformInterface {
   TaskSnapshotPlatform(this._state, this._data) : super(token: _token);
@@ -30,7 +26,9 @@ abstract class TaskSnapshotPlatform extends PlatformInterface {
 
   int get bytesTransferred => _data['bytesTransferred'];
 
-  FullMetadata get metadata => FullMetadata(_data['metadata']);
+  FullMetadata get metadata => _data['metadata'] == null
+      ? null
+      : FullMetadata(Map<String, dynamic>.from(_data['metadata']));
 
   ReferencePlatform get ref {
     throw UnimplementedError('ref is not implemented');

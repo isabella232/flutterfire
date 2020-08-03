@@ -79,8 +79,15 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
                 message: 'User canceled the upload/download.',
               ));
         case 'Task#onError':
-          // TODO Convert error
-          return _sendTaskException(arguments['handle'], null);
+          Map<String, dynamic> errorMap =
+              Map<String, dynamic>.from(arguments['error']);
+          return _sendTaskException(
+              arguments['handle'],
+              FirebaseException(
+                plugin: 'cloud_firestore',
+                code: errorMap['code'],
+                message: errorMap['message'],
+              ));
       }
     });
 
