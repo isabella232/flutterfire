@@ -11,25 +11,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 Before using Firestore, you must first have ensured you have [initialized FlutterFire](overview#initializing-flutterfire).
 
-To create a new Firestore instance, call the [`instance`](!cloud_firestore.Firestore.instance) getter on [`FirebaseFirestore`](!cloud_firestore.FirebaseFirestore):
+To create a new Firestore instance, call the [`instance`](!cloud_firestore.FirebaseFirestore.instance) getter on [`FirebaseFirestore`](!cloud_firestore.FirebaseFirestore):
 
 ```dart
-Firestore firestore = FirebaseFirestore.instance;
+FirebaseFirestore firestore = FirebaseFirestore.instance;
 ```
 
 By default, this allows you to interact with Firestore using the default Firebase App used whilst installing FlutterFire on your
-platform. If however you'd like to use Firestore with a secondary Firebase App, use the [`instanceFor`](!cloud_firestore.Firestore.instanceFor) method:
+platform. If however you'd like to use Firestore with a secondary Firebase App, use the [`instanceFor`](!cloud_firestore.FirebaseFirestore.instanceFor) method:
 
 ```dart
-FirebaseApp secondaryApp = Firebase.app('SecondaryApp');
-Firestore firestore = FirebaseFirestore.instanceFor(app: secondaryApp);
+FirebaseApp secondaryApp = Firebase.app('SecondayApp');
+FirebaseFirestore firestore = FirebaseFirestore.instanceFor(app: secondaryApp);
 ```
 
 ## Collections & Documents
 
 Firestore stores data within "documents", which are contained within "collections". Documents can also contain
 nested collections. For example, our users would each have their own "document" stored inside the "Users" collection.
-The [`collection`](!cloud_firestore.Firestore.collection) method allows us to reference a collection within our code.
+The [`collection`](!cloud_firestore.FirebaseFirestore.collection) method allows us to reference a collection within our code.
 
 In the below example, we can reference the collection `users`, and create a new user document when a button is pressed:
 
@@ -81,7 +81,7 @@ provided by realtime updates when the data within a query changes.
 
 ### One-time Read
 
-To read a collection or document once, call the [`CollectionReference.get`](!cloud_firestore.CollectionReference.get) or [`DocumentReference.get`](!cloud_firestore.DocumentReference.get) methods.
+To read a collection or document once, call the [`Query.get`](!cloud_firestore.Query.get) or [`DocumentReference.get`](!cloud_firestore.DocumentReference.get) methods.
 In the below example a [`FutureBuilder`](https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html) is used to help manage the state
 of the request:
 
@@ -462,7 +462,7 @@ Future<void> updateUser() {
 Cloud Firestore supports storing and manipulating values on your database, such as Timestamps, GeoPoints, Blobs and
 array management.
 
-To store [`GeoPoint`](!cloud_firestore.GeoPoint) values, provide the latitude
+To store [`GeoPoint`](!cloud_firestore_platform_interface.GeoPoint) values, provide the latitude
 and longitude to the GeoPoint class:
 
 ```dart highlight={6}
@@ -554,7 +554,7 @@ a new value, causing the number to be inconsistent.
 Transactions remove this issue by atomically updating the value of the server. If the value changes whilst the transaction
 is executing, it will retry, ensuring the value on the server is used, rather than the client value.
 
-To execute a transaction, call the [`runTransaction`](!cloud_firestore.Firestore.runTransaction) method:
+To execute a transaction, call the [`runTransaction`](!cloud_firestore.FirebaseFirestore.runTransaction) method:
 
 ```dart
 // Create a reference to the document the transaction will use
@@ -562,7 +562,7 @@ DocumentReference documentReference = FirebaseFirestore.instance
   .collection('users')
   .doc(documentId);
 
-return FirebaseFirestore.instance.runTransaction((transaction) async {
+return Firestore.instance.runTransaction((transaction) async {
   // Get the document
   DocumentSnapshot snapshot = await transaction.get(documentReference);
 
@@ -598,7 +598,7 @@ Firestore lets you execute multiple write operations as a single batch that can 
 combination of [`set`](!cloud_firestore.WriteBatch.set), [`update`](!cloud_firestore.WriteBatch.update),
 or [`delete`](!cloud_firestore.WriteBatch.delete) operations.
 
-First, create a new batch instance via the [`batch`](!cloud_firestore.Firestore.batch) method, then perform
+First, create a new batch instance via the [`batch`](!cloud_firestore.FirebaseFirestore.batch) method, then perform
 the operations on the batch, and then commit it once ready. The below example shows how to delete
 all documents in a collection in a single operation:
 
@@ -631,7 +631,7 @@ Firestore provides out of the box support for offline capabilities. When reading
 local database which automatically synchronizes with the server. Cloud Firestore functionality continues when users are
 offline, and automatically handles data migration when they regain connectivity.
 
-This functionality is enabled by default, however it can be disabled if needed. The [`settings`](!cloud_firestore.Firestore.settings)
+This functionality is enabled by default, however it can be disabled if needed. The [`settings`](!cloud_firestore.FirebaseFirestore.settings)
 method must be called before any Firestore interaction is performed:
 
 ```dart
@@ -640,7 +640,7 @@ await FirebaseFirestore.instance.settings(
 );
 ```
 
-If you want to clear any persisted data, you can call the `clearPersistence()` method.
+If you want to clear any persisted data, you can call the [`clearPersistence()`](!cloud_firestore.FirebaseFirestore.clearPersistence) method.
 
 ```dart
 await FirebaseFirestore.instance.clearPersistence();
@@ -674,7 +674,7 @@ retrieve results from the cache. Any write operations are queued until network a
 await FirebaseFirestore.instance.disableNetwork()
 ```
 
-To re-enabled network access, call the [`enableNetwork`](!cloud_firestore.Firestore.enableNetwork) method:
+To re-enabled network access, call the [`enableNetwork`](!cloud_firestore.FirebaseFirestore.enableNetwork) method:
 
 ```dart
 await FirebaseFirestore.instance.enableNetwork()
@@ -683,15 +683,16 @@ await FirebaseFirestore.instance.enableNetwork()
 ## Emulator Usage
 
 If you are using the local [Firestore emulators](https://firebase.google.com/docs/rules/emulator-setup), then it is possible to
-connect to these by passing a [`host`](!cloud_firestore.Settings.host) parameter to the [`settings`](!cloud_firestore.Firestore.settings) method,
+connect to these by passing a [`host`](!cloud_firestore.Settings.host) parameter to the [`settings`](!cloud_firestore.FirebaseFirestore.settings) method,
 immediately after initializing Firebase. Ensure you pass the correct port on which the Firebase emulator is running on.
 
 > On Android, to reference `localhost`, use the `10.0.2.2` IP address instead.
 
 ```dart
 // Initialize first
-await Firebase.initializeApp();
+await FirebaseCore.instance.initializeApp();
 
 // Set the host as soon as possible
-await FirebaseFirestore.instance.settings = Settings(host: "10.0.2.2", sslEnabled: false);
+await FirebaseFirestore.instance
+  .settings(Settings(host: "localhost:8080", sslEnabled: false));
 ```

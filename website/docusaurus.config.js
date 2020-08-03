@@ -36,6 +36,10 @@ module.exports = {
     },
     navbar: {
       title: 'FlutterFire',
+      logo: {
+        alt: 'FlutterFire Logo',
+        src: '/img/flutterfire_300x.png',
+      },
       links: [
         {
           to: 'docs/overview',
@@ -127,7 +131,7 @@ module.exports = {
         docs: {
           path: '../docs',
           sidebarPath: require.resolve('../docs/sidebars.js'),
-          editUrl: 'https://github.com/FirebaseExtended/flutterfire/edit/next/docs/',
+          editUrl: 'https://github.com/FirebaseExtended/flutterfire/edit/master/docs/',
         },
         theme: {
           customCss: require.resolve('./src/styles.scss'),
