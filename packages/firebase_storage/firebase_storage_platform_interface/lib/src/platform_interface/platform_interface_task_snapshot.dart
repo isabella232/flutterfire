@@ -5,17 +5,16 @@
 import 'dart:async';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
 import '../../firebase_storage_platform_interface.dart';
 
 abstract class TaskSnapshotPlatform extends PlatformInterface {
-  TaskSnapshotPlatform(this._data) : super(token: _token);
+  TaskSnapshotPlatform(this._state, this._data) : super(token: _token);
 
   static final Object _token = Object();
+
+  final TaskState _state;
 
   final Map<String, dynamic> _data;
 
@@ -38,8 +37,7 @@ abstract class TaskSnapshotPlatform extends PlatformInterface {
   }
 
   TaskState get state {
-    // TODO convert native to dart
-    return TaskState.running;
+    return _state;
   }
 
   int get totalBytes => _data['totalBytes'];

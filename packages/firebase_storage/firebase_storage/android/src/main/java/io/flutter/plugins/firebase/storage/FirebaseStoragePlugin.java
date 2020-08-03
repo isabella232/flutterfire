@@ -6,28 +6,21 @@ package io.flutter.plugins.firebase.storage;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Base64;
 import android.util.SparseArray;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
-import com.google.firebase.storage.OnPausedListener;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageException;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,10 +43,9 @@ import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 // reworked.
 public class FirebaseStoragePlugin
     implements FlutterFirebasePlugin, MethodCallHandler, FlutterPlugin {
-  private final SparseArray<UploadTask> uploadTasks = new SparseArray<>();
+  private static final SparseArray<UploadTask> uploadTasks = new SparseArray<>();
   private FirebaseStorage firebaseStorage;
-  private MethodChannel methodChannel;
-  private int nextUploadHandle = 0;
+  private MethodChannel channel;
 
   public static void registerWith(PluginRegistry.Registrar registrar) {
     FirebaseStoragePlugin instance = new FirebaseStoragePlugin();
@@ -69,40 +61,17 @@ public class FirebaseStoragePlugin
     return type;
   }
 
-  private void onAttachedToEngine(Context applicationContext, BinaryMessenger binaryMessenger) {
-    methodChannel = new MethodChannel(binaryMessenger, "plugins.flutter.io/firebase_storage");
-    methodChannel.setMethodCallHandler(this);
+  public static Map<String, Object> parseUploadTaskSnapshot(UploadTask.TaskSnapshot snapshot) {
+    Map<String, Object> out = new HashMap<>();
+    out.put("path", snapshot.getStorage().getPath());
+    out.put("bytesTransferred", snapshot.getBytesTransferred());
+    out.put("totalBytes", snapshot.getTotalByteCount());
+    out.put("metadata", parseMetadata(snapshot.getMetadata()));
+
+    return out;
   }
 
-  @Override
-  public void onAttachedToEngine(FlutterPluginBinding binding) {
-    onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
-  }
-
-  @Override
-  public void onDetachedFromEngine(FlutterPluginBinding binding) {
-    firebaseStorage = null;
-    methodChannel = null;
-  }
-
-  private FirebaseStorage getStorage(Map<String, Object> arguments) {
-    String appName = (String) Objects.requireNonNull(arguments.get("appName"));
-    FirebaseApp app = FirebaseApp.getInstance(appName);
-    String storageBucket = (String) arguments.get("storageBucket");
-
-    if (storageBucket == null) {
-      return FirebaseStorage.getInstance(app);
-    }
-
-    return FirebaseStorage.getInstance(app, storageBucket);
-  }
-
-  private StorageReference getReference(Map<String, Object> arguments) {
-    String path = (String) Objects.requireNonNull(arguments.get("path"));
-    return getStorage(arguments).getReference(path);
-  }
-
-  private Map<String, Object> parseMetadata(StorageMetadata storageMetadata) {
+  private static Map<String, Object> parseMetadata(StorageMetadata storageMetadata) {
     Map<String, Object> out = new HashMap<>();
     out.put("name", storageMetadata.getName());
     out.put("bucket", storageMetadata.getBucket());
@@ -125,6 +94,39 @@ public class FirebaseStoragePlugin
     }
     out.put("customMetadata", customMetadata);
     return out;
+  }
+
+  private void onAttachedToEngine(Context applicationContext, BinaryMessenger binaryMessenger) {
+    channel = new MethodChannel(binaryMessenger, "plugins.flutter.io/firebase_storage");
+    channel.setMethodCallHandler(this);
+  }
+
+  @Override
+  public void onAttachedToEngine(FlutterPluginBinding binding) {
+    onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
+  }
+
+  @Override
+  public void onDetachedFromEngine(FlutterPluginBinding binding) {
+    firebaseStorage = null;
+    channel = null;
+  }
+
+  private FirebaseStorage getStorage(Map<String, Object> arguments) {
+    String appName = (String) Objects.requireNonNull(arguments.get("appName"));
+    FirebaseApp app = FirebaseApp.getInstance(appName);
+    String storageBucket = (String) arguments.get("storageBucket");
+
+    if (storageBucket == null) {
+      return FirebaseStorage.getInstance(app);
+    }
+
+    return FirebaseStorage.getInstance(app, storageBucket);
+  }
+
+  private StorageReference getReference(Map<String, Object> arguments) {
+    String path = (String) Objects.requireNonNull(arguments.get("path"));
+    return getStorage(arguments).getReference(path);
   }
 
   private Map<String, Object> parseListResult(ListResult listResult) {
@@ -229,11 +231,85 @@ public class FirebaseStoragePlugin
 
   private Task<Map<String, Object>> referenceListAll(Map<String, Object> arguments) {
     return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          StorageReference reference = getReference(arguments);
+          ListResult listResult = Tasks.await(reference.listAll());
+          return parseListResult(listResult);
+        });
+  }
+
+  private Task<Void> taskPutString(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          StorageReference reference = getReference(arguments);
+          String data = (String) Objects.requireNonNull(arguments.get("data"));
+          String format = (String) Objects.requireNonNull(arguments.get("format"));
+
+          @SuppressWarnings("unchecked")
+          Map<String, Object> metadata = (Map<String, Object>) arguments.get("metadata");
+
+          final int handle = (int) Objects.requireNonNull(arguments.get("handle"));
+          FirebaseStorageTask task =
+              new FirebaseStorageTask(
+                  handle, reference, stringToByteData(data, format), parseMetadata(metadata));
+
+          UploadTask uploadTask = task.start(channel, cachedThreadPool);
+          uploadTasks.put(handle, uploadTask);
+
+          return null;
+        });
+  }
+
+  private Task<Void> taskPause(Map<String, Object> arguments) {
+    return Tasks.call(
       cachedThreadPool,
       () -> {
-        StorageReference reference = getReference(arguments);
-        ListResult listResult = Tasks.await(reference.listAll());
-        return parseListResult(listResult);
+        final int handle = (int) Objects.requireNonNull(arguments.get("handle"));
+        UploadTask task = uploadTasks.get(handle);
+
+        if (task == null) {
+          // TODO throw error;
+          throw new Exception("TODO");
+        }
+
+        task.pause();
+        return null;
+      });
+  }
+
+  private Task<Void> taskResume(Map<String, Object> arguments) {
+    return Tasks.call(
+      cachedThreadPool,
+      () -> {
+        final int handle = (int) Objects.requireNonNull(arguments.get("handle"));
+        UploadTask task = uploadTasks.get(handle);
+
+        if (task == null) {
+          // TODO throw error;
+          throw new Exception("TODO");
+        }
+
+        task.resume();
+        return null;
+      });
+  }
+
+  private Task<Void> taskCancel(Map<String, Object> arguments) {
+    return Tasks.call(
+      cachedThreadPool,
+      () -> {
+        final int handle = (int) Objects.requireNonNull(arguments.get("handle"));
+        UploadTask task = uploadTasks.get(handle);
+
+        if (task == null) {
+          // TODO throw error;
+          throw new Exception("TODO");
+        }
+
+        task.cancel();
+        return null;
       });
   }
 
@@ -263,12 +339,25 @@ public class FirebaseStoragePlugin
       case "Reference#listAll":
         methodCallTask = referenceListAll(call.arguments());
         break;
+      case "Task#startPutString":
+        methodCallTask = taskPutString(call.arguments());
+        break;
+      case "Task#pause":
+        methodCallTask = taskPause(call.arguments());
+        break;
+      case "Task#resume":
+        methodCallTask = taskResume(call.arguments());
+        break;
+      case "Task#cancel":
+        methodCallTask = taskCancel(call.arguments());
+        break;
       default:
         result.notImplemented();
         return;
     }
 
     methodCallTask.addOnCompleteListener(
+        cachedThreadPool,
         task -> {
           if (task.isSuccessful()) {
             result.success(task.getResult());
@@ -279,409 +368,169 @@ public class FirebaseStoragePlugin
                 "firebase_storage", exception != null ? exception.getMessage() : null, null);
           }
         });
-
-    //    String app = call.argument("app");
-    //    String storageBucket = call.argument("bucket");
-    //    if (app == null && storageBucket == null) {
-    //      firebaseStorage = FirebaseStorage.getInstance();
-    //    } else if (storageBucket == null) {
-    //      firebaseStorage = FirebaseStorage.getInstance(FirebaseApp.getInstance(app));
-    //    } else if (app == null) {
-    //      firebaseStorage = FirebaseStorage.getInstance(storageBucket);
-    //    } else {
-    //      firebaseStorage = FirebaseStorage.getInstance(FirebaseApp.getInstance(app),
-    // storageBucket);
-    //    }
-    //
-    //    switch (call.method) {
-    //      case "FirebaseStorage#getMaxDownloadRetryTime":
-    //        result.success(firebaseStorage.getMaxDownloadRetryTimeMillis());
-    //        break;
-    //      case "FirebaseStorage#getMaxUploadRetryTime":
-    //        result.success(firebaseStorage.getMaxUploadRetryTimeMillis());
-    //        break;
-    //      case "FirebaseStorage#getMaxOperationRetryTime":
-    //        result.success(firebaseStorage.getMaxOperationRetryTimeMillis());
-    //        break;
-    //      case "FirebaseStorage#setMaxDownloadRetryTime":
-    //        setMaxDownloadRetryTimeMillis(call, result);
-    //        break;
-    //      case "FirebaseStorage#setMaxUploadRetryTime":
-    //        setMaxUploadRetryTimeMillis(call, result);
-    //        break;
-    //      case "FirebaseStorage#setMaxOperationRetryTime":
-    //        setMaxOperationTimeMillis(call, result);
-    //        break;
-    //      case "FirebaseStorage#getReferenceFromUrl":
-    //        getReferenceFromUrl(call, result);
-    //        break;
-    //      case "StorageReference#putFile":
-    //        putFile(call, result);
-    //        break;
-    //      case "StorageReference#putData":
-    //        putData(call, result);
-    //        break;
-    //      case "StorageReference#getData":
-    //        getData(call, result);
-    //        break;
-    //      case "StorageReference#delete":
-    //        delete(call, result);
-    //        break;
-    //      case "StorageReference#getBucket":
-    //        getBucket(call, result);
-    //        break;
-    //      case "StorageReference#getName":
-    //        getName(call, result);
-    //        break;
-    //      case "StorageReference#getPath":
-    //        getPath(call, result);
-    //        break;
-    //      case "StorageReference#getDownloadUrl":
-    //        getDownloadUrl(call, result);
-    //        break;
-    //      case "StorageReference#getMetadata":
-    //        getMetadata(call, result);
-    //        break;
-    //      case "StorageReference#updateMetadata":
-    //        updateMetadata(call, result);
-    //        break;
-    //      case "StorageReference#writeToFile":
-    //        writeToFile(call, result);
-    //        break;
-    //      case "UploadTask#pause":
-    //        pauseUploadTask(call, result);
-    //        break;
-    //      case "UploadTask#resume":
-    //        resumeUploadTask(call, result);
-    //        break;
-    //      case "UploadTask#cancel":
-    //        cancelUploadTask(call, result);
-    //        break;
-    //      default:
-    //        result.notImplemented();
-    //        break;
-    //    }
   }
 
-  private void setMaxDownloadRetryTimeMillis(MethodCall call, Result result) {
-    Number time = call.argument("time");
-    firebaseStorage.setMaxDownloadRetryTimeMillis(time.longValue());
-    result.success(null);
-  }
-
-  private void setMaxUploadRetryTimeMillis(MethodCall call, Result result) {
-    Number time = call.argument("time");
-    firebaseStorage.setMaxUploadRetryTimeMillis(time.longValue());
-    result.success(null);
-  }
-
-  private void setMaxOperationTimeMillis(MethodCall call, Result result) {
-    Number time = call.argument("time");
-    firebaseStorage.setMaxOperationRetryTimeMillis(time.longValue());
-    result.success(null);
-  }
-
-  private void getReferenceFromUrl(MethodCall call, Result result) {
-    String fullUrl = call.argument("fullUrl");
-    StorageReference ref = firebaseStorage.getReferenceFromUrl(fullUrl);
-    result.success(ref != null ? ref.getPath() : null);
-  }
-
-  private void getMetadata(MethodCall call, final Result result) {
-    StorageReference ref = firebaseStorage.getReference();
-    String path = call.argument("path");
-    if (!path.isEmpty()) {
-      ref = ref.child(path);
-    }
-    ref.getMetadata()
-        .addOnSuccessListener(
-            new OnSuccessListener<StorageMetadata>() {
-              @Override
-              public void onSuccess(StorageMetadata storageMetadata) {
-                result.success(buildMapFromMetadata(storageMetadata));
-              }
-            })
-        .addOnFailureListener(
-            new OnFailureListener() {
-              @Override
-              public void onFailure(@NonNull Exception e) {
-                result.error("metadata_error", e.getMessage(), null);
-              }
-            });
-  }
-
-  private void updateMetadata(MethodCall call, final Result result) {
-    StorageReference ref = firebaseStorage.getReference();
-    String path = call.argument("path");
-    if (!path.isEmpty()) {
-      ref = ref.child(path);
-    }
-    Map<String, Object> metadata = call.argument("metadata");
-    ref.updateMetadata(buildMetadataFromMap(metadata))
-        .addOnSuccessListener(
-            new OnSuccessListener<StorageMetadata>() {
-              @Override
-              public void onSuccess(StorageMetadata storageMetadata) {
-                result.success(buildMapFromMetadata(storageMetadata));
-              }
-            })
-        .addOnFailureListener(
-            new OnFailureListener() {
-              @Override
-              public void onFailure(@NonNull Exception e) {
-                result.error("metadata_error", e.getMessage(), null);
-              }
-            });
-  }
-
-  private void getBucket(MethodCall call, final Result result) {
-    StorageReference ref = firebaseStorage.getReference();
-
-    String path = call.argument("path");
-    if (!path.isEmpty()) {
-      ref = ref.child(path);
-    }
-
-    result.success(ref.getBucket());
-  }
-
-  private void getName(MethodCall call, final Result result) {
-    String path = call.argument("path");
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    result.success(ref.getName());
-  }
-
-  private void getPath(MethodCall call, final Result result) {
-    String path = call.argument("path");
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    result.success(ref.getPath());
-  }
-
-  private void getDownloadUrl(MethodCall call, final Result result) {
-    String path = call.argument("path");
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    ref.getDownloadUrl()
-        .addOnSuccessListener(
-            new OnSuccessListener<Uri>() {
-              @Override
-              public void onSuccess(Uri uri) {
-                result.success(uri.toString());
-              }
-            })
-        .addOnFailureListener(
-            new OnFailureListener() {
-              @Override
-              public void onFailure(@NonNull Exception e) {
-                result.error("download_error", e.getMessage(), null);
-              }
-            });
-  }
-
-  private void delete(MethodCall call, final Result result) {
-    String path = call.argument("path");
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    final Task<Void> deleteTask = ref.delete();
-    deleteTask.addOnSuccessListener(
-        new OnSuccessListener<Void>() {
-          @Override
-          public void onSuccess(Void aVoid) {
-            result.success(null);
-          }
-        });
-    deleteTask.addOnFailureListener(
-        new OnFailureListener() {
-          @Override
-          public void onFailure(@NonNull Exception e) {
-            result.error("deletion_error", e.getMessage(), null);
-          }
-        });
-  }
-
-  private void putFile(MethodCall call, Result result) {
-    String filename = call.argument("filename");
-    String path = call.argument("path");
-    File file = new File(filename);
-    final Uri fileUri = Uri.fromFile(file);
-    Map<String, Object> metadata = call.argument("metadata");
-    metadata = ensureMimeType(metadata, fileUri);
-
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    final UploadTask uploadTask = ref.putFile(fileUri, buildMetadataFromMap(metadata));
-    final int handle = addUploadListeners(uploadTask);
-    result.success(handle);
-  }
-
-  private void putData(MethodCall call, Result result) {
-    byte[] bytes = call.argument("data");
-    String path = call.argument("path");
-    Map<String, Object> metadata = call.argument("metadata");
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    UploadTask uploadTask;
+  private StorageMetadata parseMetadata(Map<String, Object> metadata) {
     if (metadata == null) {
-      uploadTask = ref.putBytes(bytes);
-    } else {
-      uploadTask = ref.putBytes(bytes, buildMetadataFromMap(metadata));
+      return null;
     }
-    final int handle = addUploadListeners(uploadTask);
-    result.success(handle);
-  }
 
-  private StorageMetadata buildMetadataFromMap(Map<String, Object> map) {
     StorageMetadata.Builder builder = new StorageMetadata.Builder();
-    builder.setCacheControl((String) map.get("cacheControl"));
-    builder.setContentEncoding((String) map.get("contentEncoding"));
-    builder.setContentDisposition((String) map.get("contentDisposition"));
-    builder.setContentLanguage((String) map.get("contentLanguage"));
-    builder.setContentType((String) map.get("contentType"));
 
-    @SuppressWarnings("unchecked")
-    Map<String, String> customMetadata = (Map<String, String>) map.get("customMetadata");
-    if (customMetadata != null) {
+    if (metadata.get("cacheControl") != null) {
+      builder.setCacheControl((String) metadata.get("cacheControl"));
+    }
+    if (metadata.get("contentDisposition") != null) {
+      builder.setContentDisposition((String) metadata.get("contentDisposition"));
+    }
+    if (metadata.get("contentEncoding") != null) {
+      builder.setContentEncoding((String) metadata.get("contentEncoding"));
+    }
+    if (metadata.get("contentLanguage") != null) {
+      builder.setContentLanguage((String) metadata.get("contentLanguage"));
+    }
+    if (metadata.get("contentType") != null) {
+      builder.setContentType((String) metadata.get("contentType"));
+    }
+    if (metadata.get("customMetadata") != null) {
+      Map<String, String> customMetadata =
+          (Map<String, String>) Objects.requireNonNull(metadata.get("customMetadata"));
       for (String key : customMetadata.keySet()) {
         builder.setCustomMetadata(key, customMetadata.get(key));
       }
     }
+
     return builder.build();
   }
 
-  private Map<String, Object> buildMapFromMetadata(StorageMetadata storageMetadata) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("name", storageMetadata.getName());
-    map.put("bucket", storageMetadata.getBucket());
-    map.put("generation", storageMetadata.getGeneration());
-    map.put("metadataGeneration", storageMetadata.getMetadataGeneration());
-    map.put("path", storageMetadata.getPath());
-    map.put("sizeBytes", storageMetadata.getSizeBytes());
-    map.put("creationTimeMillis", storageMetadata.getCreationTimeMillis());
-    map.put("updatedTimeMillis", storageMetadata.getUpdatedTimeMillis());
-    map.put("md5Hash", storageMetadata.getMd5Hash());
-    map.put("cacheControl", storageMetadata.getCacheControl());
-    map.put("contentDisposition", storageMetadata.getContentDisposition());
-    map.put("contentEncoding", storageMetadata.getContentEncoding());
-    map.put("contentLanguage", storageMetadata.getContentLanguage());
-    map.put("contentType", storageMetadata.getContentType());
-
-    Map<String, String> customMetadata = new HashMap<>();
-    for (String key : storageMetadata.getCustomMetadataKeys()) {
-      customMetadata.put(key, storageMetadata.getCustomMetadata(key));
-    }
-    map.put("customMetadata", customMetadata);
-    return map;
-  }
-
-  private void getData(MethodCall call, final Result result) {
-    Integer maxSize = call.argument("maxSize");
-    String path = call.argument("path");
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    Task<byte[]> downloadTask = ref.getBytes(maxSize);
-    downloadTask.addOnSuccessListener(
-        new OnSuccessListener<byte[]>() {
-          @Override
-          public void onSuccess(byte[] bytes) {
-            result.success(bytes);
-          }
-        });
-    downloadTask.addOnFailureListener(
-        new OnFailureListener() {
-          @Override
-          public void onFailure(@NonNull Exception e) {
-            result.error("download_error", e.getMessage(), null);
-          }
-        });
-  }
-
-  private void writeToFile(MethodCall call, final Result result) {
-    String path = call.argument("path");
-    String filePath = call.argument("filePath");
-    File file = new File(filePath);
-    StorageReference ref = firebaseStorage.getReference().child(path);
-    FileDownloadTask downloadTask = ref.getFile(file);
-    downloadTask.addOnSuccessListener(
-        new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-          @Override
-          public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-            result.success(taskSnapshot.getTotalByteCount());
-          }
-        });
-    downloadTask.addOnFailureListener(
-        new OnFailureListener() {
-          @Override
-          public void onFailure(@NonNull Exception e) {
-            result.error("download_error", e.getMessage(), null);
-          }
-        });
-  }
-
-  private void pauseUploadTask(MethodCall call, final Result result) {
-    int handle = call.argument("handle");
-    UploadTask task = uploadTasks.get(handle);
-    if (task != null) {
-      task.pause();
-      result.success(null);
-    } else {
-      result.error("pause_error", "task == null", null);
+  private byte[] stringToByteData(@NonNull String data, @NonNull String format) {
+    switch (format) {
+      case "base64":
+        return Base64.decode(data, Base64.DEFAULT);
+      case "base64url":
+        return Base64.decode(data, Base64.URL_SAFE);
+      case "raw":
+        return data.getBytes();
+      case "dataUrl":
+        {
+          int contentStartIndex = data.indexOf("base64,") + "base64,".length();
+          return Base64.decode(data.substring(contentStartIndex), Base64.DEFAULT);
+        }
+      default:
+        return null;
     }
   }
 
-  private void cancelUploadTask(MethodCall call, final Result result) {
-    int handle = call.argument("handle");
-    UploadTask task = uploadTasks.get(handle);
-    if (task != null) {
-      task.cancel();
-      result.success(null);
-    } else {
-      result.error("cancel_error", "task == null", null);
-    }
-  }
+  //
+  //  private void putFile(MethodCall call, Result result) {
+  //    String filename = call.argument("filename");
+  //    String path = call.argument("path");
+  //    File file = new File(filename);
+  //    final Uri fileUri = Uri.fromFile(file);
+  //    Map<String, Object> metadata = call.argument("metadata");
+  //    metadata = ensureMimeType(metadata, fileUri);
+  //
+  //    StorageReference ref = firebaseStorage.getReference().child(path);
+  //    final UploadTask uploadTask = ref.putFile(fileUri, buildMetadataFromMap(metadata));
+  //    final int handle = addUploadListeners(uploadTask);
+  //    result.success(handle);
+  //  }
+  //
+  //  private void putData(MethodCall call, Result result) {
+  //    byte[] bytes = call.argument("data");
+  //    String path = call.argument("path");
+  //    Map<String, Object> metadata = call.argument("metadata");
+  //    StorageReference ref = firebaseStorage.getReference().child(path);
+  //    UploadTask uploadTask;
+  //    if (metadata == null) {
+  //      uploadTask = ref.putBytes(bytes);
+  //    } else {
+  //      uploadTask = ref.putBytes(bytes, buildMetadataFromMap(metadata));
+  //    }
+  //    final int handle = addUploadListeners(uploadTask);
+  //    result.success(handle);
+  //  }
+  //
+  //  private void getData(MethodCall call, final Result result) {
+  //    Integer maxSize = call.argument("maxSize");
+  //    String path = call.argument("path");
+  //    StorageReference ref = firebaseStorage.getReference().child(path);
+  //    Task<byte[]> downloadTask = ref.getBytes(maxSize);
+  //    downloadTask.addOnSuccessListener(
+  //        new OnSuccessListener<byte[]>() {
+  //          @Override
+  //          public void onSuccess(byte[] bytes) {
+  //            result.success(bytes);
+  //          }
+  //        });
+  //    downloadTask.addOnFailureListener(
+  //        new OnFailureListener() {
+  //          @Override
+  //          public void onFailure(@NonNull Exception e) {
+  //            result.error("download_error", e.getMessage(), null);
+  //          }
+  //        });
+  //  }
 
-  private void resumeUploadTask(MethodCall call, @NonNull final Result result) {
-    int handle = call.argument("handle");
-    UploadTask task = uploadTasks.get(handle);
-    if (task != null) {
-      task.resume();
-      result.success(null);
-    } else {
-      result.error("resume_error", "task == null", null);
-    }
-  }
+  //  private void writeToFile(MethodCall call, final Result result) {
+  //    String path = call.argument("path");
+  //    String filePath = call.argument("filePath");
+  //    File file = new File(filePath);
+  //    StorageReference ref = firebaseStorage.getReference().child(path);
+  //    FileDownloadTask downloadTask = ref.getFile(file);
+  //    downloadTask.addOnSuccessListener(
+  //        new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+  //          @Override
+  //          public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+  //            result.success(taskSnapshot.getTotalByteCount());
+  //          }
+  //        });
+  //    downloadTask.addOnFailureListener(
+  //        new OnFailureListener() {
+  //          @Override
+  //          public void onFailure(@NonNull Exception e) {
+  //            result.error("download_error", e.getMessage(), null);
+  //          }
+  //        });
+  //  }
 
-  private int addUploadListeners(final UploadTask uploadTask) {
-    final int handle = ++nextUploadHandle;
-    uploadTask
-        .addOnProgressListener(
-            new OnProgressListener<UploadTask.TaskSnapshot>() {
-              @Override
-              public void onProgress(UploadTask.TaskSnapshot snapshot) {
-                invokeStorageTaskEvent(handle, StorageTaskEventType.progress, snapshot, null);
-              }
-            })
-        .addOnPausedListener(
-            new OnPausedListener<UploadTask.TaskSnapshot>() {
-              @Override
-              public void onPaused(UploadTask.TaskSnapshot snapshot) {
-                invokeStorageTaskEvent(handle, StorageTaskEventType.pause, snapshot, null);
-              }
-            })
-        .addOnCompleteListener(
-            new OnCompleteListener<UploadTask.TaskSnapshot>() {
-              @Override
-              public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if (!task.isSuccessful()) {
-                  invokeStorageTaskEvent(
-                      handle,
-                      StorageTaskEventType.failure,
-                      uploadTask.getSnapshot(),
-                      (StorageException) task.getException());
-                } else {
-                  invokeStorageTaskEvent(
-                      handle, StorageTaskEventType.success, task.getResult(), null);
-                }
-                uploadTasks.remove(handle);
-              }
-            });
-    uploadTasks.put(handle, uploadTask);
-    return handle;
-  }
+  //  private int addUploadListeners(final UploadTask uploadTask) {
+  //    final int handle = ++nextUploadHandle;
+  //    uploadTask
+  //        .addOnProgressListener(
+  //            new OnProgressListener<UploadTask.TaskSnapshot>() {
+  //              @Override
+  //              public void onProgress(UploadTask.TaskSnapshot snapshot) {
+  //                invokeStorageTaskEvent(handle, StorageTaskEventType.progress, snapshot, null);
+  //              }
+  //            })
+  //        .addOnPausedListener(
+  //            new OnPausedListener<UploadTask.TaskSnapshot>() {
+  //              @Override
+  //              public void onPaused(UploadTask.TaskSnapshot snapshot) {
+  //                invokeStorageTaskEvent(handle, StorageTaskEventType.pause, snapshot, null);
+  //              }
+  //            })
+  //        .addOnCompleteListener(
+  //            new OnCompleteListener<UploadTask.TaskSnapshot>() {
+  //              @Override
+  //              public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+  //                if (!task.isSuccessful()) {
+  //                  invokeStorageTaskEvent(
+  //                      handle,
+  //                      StorageTaskEventType.failure,
+  //                      uploadTask.getSnapshot(),
+  //                      (StorageException) task.getException());
+  //                } else {
+  //                  invokeStorageTaskEvent(
+  //                      handle, StorageTaskEventType.success, task.getResult(), null);
+  //                }
+  //                uploadTasks.remove(handle);
+  //              }
+  //            });
+  //    uploadTasks.put(handle, uploadTask);
+  //    return handle;
+  //  }
 
   @Override
   public Task<Map<String, Object>> getPluginConstantsForFirebaseApp(FirebaseApp firebaseApp) {
@@ -691,63 +540,5 @@ public class FirebaseStoragePlugin
   @Override
   public Task<Void> didReinitializeFirebaseCore() {
     return null;
-  }
-
-  private void invokeStorageTaskEvent(
-      int handle,
-      StorageTaskEventType type,
-      UploadTask.TaskSnapshot snapshot,
-      StorageException error) {
-    methodChannel.invokeMethod(
-        "StorageTaskEvent", buildMapFromTaskEvent(handle, type, snapshot, error));
-  }
-
-  private Map<String, Object> buildMapFromTaskEvent(
-      int handle,
-      StorageTaskEventType type,
-      UploadTask.TaskSnapshot snapshot,
-      StorageException error) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("handle", handle);
-    map.put("type", type.ordinal());
-    map.put("snapshot", buildMapFromTaskSnapshot(snapshot, error));
-    return map;
-  }
-
-  private Map<String, Object> buildMapFromTaskSnapshot(
-      UploadTask.TaskSnapshot snapshot, StorageException error) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("bytesTransferred", snapshot.getBytesTransferred());
-    map.put("totalByteCount", snapshot.getTotalByteCount());
-    if (snapshot.getUploadSessionUri() != null) {
-      map.put("uploadSessionUri", snapshot.getUploadSessionUri().toString());
-    }
-    if (error != null) {
-      map.put("error", error.getErrorCode());
-    }
-    if (snapshot.getMetadata() != null) {
-      map.put("storageMetadata", buildMapFromMetadata(snapshot.getMetadata()));
-    }
-    return map;
-  }
-
-  private Map<String, Object> ensureMimeType(Map<String, Object> metadata, Uri file) {
-    if (metadata == null) {
-      metadata = new HashMap<>();
-    }
-
-    if (metadata.get("contentType") == null) {
-      metadata.put("contentType", getMimeType(file));
-    }
-
-    return metadata;
-  }
-
-  private enum StorageTaskEventType {
-    resume,
-    progress,
-    pause,
-    success,
-    failure
   }
 }

@@ -28,26 +28,6 @@ abstract class TaskPlatform extends PlatformInterface {
     throw UnimplementedError('snapshotEvents is not implemented');
   }
 
-  bool get isCanceled {
-    throw UnimplementedError('isCanceled is not implemented');
-  }
-
-  bool get isComplete {
-    throw UnimplementedError('isComplete is not implemented');
-  }
-
-  bool get isInProgress {
-    throw UnimplementedError('isInProgress is not implemented');
-  }
-
-  bool get isPaused {
-    throw UnimplementedError('isPaused is not implemented');
-  }
-
-  bool get isSuccessful {
-    throw UnimplementedError('isSuccessful is not implemented');
-  }
-
   TaskSnapshotPlatform get snapshot {
     throw UnimplementedError('snapshot is not implemented');
   }

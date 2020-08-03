@@ -23,16 +23,6 @@ class Task {
         .map((snapshotDelegate) => TaskSnapshot._(storage, snapshotDelegate));
   }
 
-  bool get isCanceled => _delegate.isCanceled;
-
-  bool get isComplete => _delegate.isComplete;
-
-  bool get isInProgress => _delegate.isInProgress;
-
-  bool get isPaused => _delegate.isPaused;
-
-  bool get isSuccessful => _delegate.isSuccessful;
-
   @Deprecated("Deprecated in favor of [snapshot]")
   TaskSnapshot get lastSnapshot => snapshot;
 

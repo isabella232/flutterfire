@@ -4,18 +4,19 @@
 
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 
+import '../../firebase_storage_platform_interface.dart';
 import './method_channel_reference.dart';
 
 class MethodChannelTaskSnapshot extends TaskSnapshotPlatform {
-  MethodChannelTaskSnapshot(this.storage, this.path, Map<String, dynamic> data)
-      : super(data);
+  MethodChannelTaskSnapshot(this.storage, TaskState state, this._data)
+      : super(state, _data);
 
   final FirebaseStoragePlatform storage;
 
-  final String path;
+  final Map<String, dynamic> _data;
 
   @override
   ReferencePlatform get ref {
-    return MethodChannelReference(storage, path);
+    return MethodChannelReference(storage, _data['path']);
   }
 }

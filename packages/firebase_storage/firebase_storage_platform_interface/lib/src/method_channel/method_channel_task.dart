@@ -39,23 +39,6 @@ class MethodChannelTask extends TaskPlatform {
   }
 
   @override
-  bool get isCanceled => snapshot?.state == TaskState.canceled ?? false;
-
-  @override
-  bool get isComplete => snapshot?.state == TaskState.complete ?? false;
-
-  @override
-  bool get isInProgress => snapshot?.state == TaskState.running ?? true;
-
-  @override
-  bool get isPaused => snapshot?.state == TaskState.paused ?? false;
-
-  @override
-  bool get isSuccessful {
-    // TODO HOW?
-  }
-
-  @override
   TaskSnapshotPlatform get snapshot => _lastSnapshot;
 
   @override

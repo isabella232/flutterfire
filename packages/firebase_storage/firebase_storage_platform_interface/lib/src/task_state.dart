@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 enum TaskState {
-  canceled,
-  error,
   paused,
   running,
   complete,

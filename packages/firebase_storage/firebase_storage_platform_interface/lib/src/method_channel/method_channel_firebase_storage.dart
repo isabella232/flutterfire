@@ -64,15 +64,31 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
       Map<dynamic, dynamic> arguments = call.arguments;
 
       switch (call.method) {
-        case 'Task#stateChange':
-          return _handleTaskStateChange(arguments);
+        case 'Task#onProgress':
+          return _handleTaskStateChange(TaskState.running, arguments);
+        case 'Task#onPaused':
+          return _handleTaskStateChange(TaskState.paused, arguments);
+        case 'Task#onComplete':
+          return _handleTaskStateChange(TaskState.complete, arguments);
+        case 'Task#onCancel':
+          return _sendTaskException(
+              arguments['handle'],
+              FirebaseException(
+                plugin: 'cloud_firestore',
+                code: 'canceled',
+                message: 'User canceled the upload/download.',
+              ));
+        case 'Task#onError':
+          // TODO Convert error
+          return _sendTaskException(arguments['handle'], null);
       }
     });
 
     _initialized = true;
   }
 
-  Future<void> _handleTaskStateChange(Map<dynamic, dynamic> arguments) async {
+  Future<void> _handleTaskStateChange(
+      TaskState taskState, Map<dynamic, dynamic> arguments) async {
     // Get & cast native snapshot data to a Map
     Map<String, dynamic> snapshotData =
         Map<String, dynamic>.from(arguments['snapshot']);
@@ -83,10 +99,14 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
 
     // Create a snapshot.
     TaskSnapshotPlatform snapshot =
-        MethodChannelTaskSnapshot(storage, arguments['path'], snapshotData);
+        MethodChannelTaskSnapshot(storage, taskState, snapshotData);
 
     // Fire a snapshot event.
     taskObservers[arguments['handle']].add(snapshot);
+  }
+
+  void _sendTaskException(int handle, FirebaseException exception) {
+    taskObservers[handle].addError(exception);
   }
 
   @override
@@ -125,6 +145,4 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
       'time': time,
     }).catchError(catchPlatformException);
   }
-
-  // todo max operation retry time
 }
