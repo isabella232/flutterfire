@@ -4,6 +4,7 @@
 
 part of firebase_storage;
 
+/// The entrypoint for [FirebaseStorage].
 class FirebaseStorage extends FirebasePluginPlatform {
   // Cached and lazily loaded instance of [FirestorePlatform] to avoid
   // creating a [MethodChannelFirestore] when not needed or creating an
@@ -35,7 +36,6 @@ class FirebaseStorage extends FirebasePluginPlatform {
   }
 
   /// Returns an instance using a specified [FirebaseApp].
-  // TODO HANDLE DATABASE URL & BUCKET!
   static FirebaseStorage instanceFor({FirebaseApp app, String storageBucket}) {
     assert(app != null);
     String key = '${app.name}|${storageBucket ?? ''}';
@@ -55,7 +55,6 @@ class FirebaseStorage extends FirebasePluginPlatform {
   @Deprecated(
       "Constructing Storage is deprecated, use 'FirebaseStorage.instance' or 'FirebaseStorage.instanceFor' instead")
   factory FirebaseStorage({FirebaseApp app, String storageBucket}) {
-    // TODO HANDLE DATABASE URL & BUCKET!
     return FirebaseStorage.instanceFor(app: app, storageBucket: storageBucket);
   }
 
@@ -65,6 +64,8 @@ class FirebaseStorage extends FirebasePluginPlatform {
 
   Reference refFromURL(String url) {
     assert(url != null);
+    assert(url.startsWith('gs://') || url.startsWith('http'));
+
     // TODO validate URL
     return Reference._(this, _delegate.refFromURL(url));
   }
@@ -79,5 +80,11 @@ class FirebaseStorage extends FirebasePluginPlatform {
     assert(time != null);
     assert(time > 0);
     return _delegate.setMaxUploadRetryTime(time);
+  }
+
+  Future<void> setMaxDownloadRetryTime(int time) {
+    assert(time != null);
+    assert(time > 0);
+    return _delegate.setMaxDownloadRetryTime(time);
   }
 }

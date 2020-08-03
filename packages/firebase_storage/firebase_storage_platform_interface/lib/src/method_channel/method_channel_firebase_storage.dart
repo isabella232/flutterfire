@@ -152,4 +152,14 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
       'time': time,
     }).catchError(catchPlatformException);
   }
+
+  @override
+  Future<void> setMaxDownloadRetryTime(int time) async {
+    await channel
+        .invokeMethod('Storage#setMaxDownloadRetryTime', <String, dynamic>{
+      'appName': app.name,
+      'storageBucket': storageBucket,
+      'time': time,
+    }).catchError(catchPlatformException);
+  }
 }

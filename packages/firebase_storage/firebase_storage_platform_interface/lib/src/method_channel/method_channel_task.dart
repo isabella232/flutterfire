@@ -10,7 +10,7 @@ import 'package:firebase_storage_platform_interface/firebase_storage_platform_in
 import 'method_channel_firebase_storage.dart';
 import 'utils/exception.dart';
 
-class MethodChannelTask extends TaskPlatform {
+abstract class MethodChannelTask extends TaskPlatform {
   MethodChannelTask(
     this._handle,
     this.storage,

@@ -179,8 +179,8 @@ public class FlutterFirebaseStoragePlugin
         cachedThreadPool,
         () -> {
           FirebaseStorage storage = getStorage(arguments);
-          Long time = (Long) Objects.requireNonNull(arguments.get("time"));
-          storage.setMaxOperationRetryTimeMillis(time);
+          Object time = Objects.requireNonNull(arguments.get("time"));
+          storage.setMaxOperationRetryTimeMillis(getLongValue(time));
           return null;
         });
   }
@@ -190,8 +190,19 @@ public class FlutterFirebaseStoragePlugin
         cachedThreadPool,
         () -> {
           FirebaseStorage storage = getStorage(arguments);
-          Long time = (Long) Objects.requireNonNull(arguments.get("time"));
-          storage.setMaxUploadRetryTimeMillis(time);
+          Object time = Objects.requireNonNull(arguments.get("time"));
+          storage.setMaxUploadRetryTimeMillis(getLongValue(time));
+          return null;
+        });
+  }
+
+  private Task<Void> setMaxDownloadRetryTime(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          FirebaseStorage storage = getStorage(arguments);
+          Object time = Objects.requireNonNull(arguments.get("time"));
+          storage.setMaxDownloadRetryTimeMillis(getLongValue(time));
           return null;
         });
   }
@@ -408,6 +419,9 @@ public class FlutterFirebaseStoragePlugin
       case "Storage#setMaxUploadRetryTime":
         methodCallTask = setMaxUploadRetryTime(call.arguments());
         break;
+      case "Storage#setMaxDownloadRetryTime":
+        methodCallTask = setMaxDownloadRetryTime(call.arguments());
+        break;
       case "Reference#delete":
         methodCallTask = referenceDelete(call.arguments());
         break;
@@ -510,9 +524,31 @@ public class FlutterFirebaseStoragePlugin
     }
   }
 
+  private Long getLongValue(Object value) throws Exception {
+    if (value instanceof Long) {
+      return (Long) value;
+    } else if (value instanceof Integer) {
+      return Long.valueOf((Integer) value);
+    } else {
+      throw new Exception("Could not convert provided value to a Long value.");
+    }
+  }
+
   @Override
   public Task<Map<String, Object>> getPluginConstantsForFirebaseApp(FirebaseApp firebaseApp) {
-    return null;
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          Map<String, Object> constants = new HashMap<>();
+          FirebaseStorage firebaseStorage = FirebaseStorage.getInstance(firebaseApp);
+
+          constants.put(
+              "MAX_OPERATION_RETRY_TIME", firebaseStorage.getMaxOperationRetryTimeMillis());
+          constants.put("MAX_UPLOAD_RETRY_TIME", firebaseStorage.getMaxUploadRetryTimeMillis());
+          constants.put("MAX_DOWNLOAD_RETRY_TIME", firebaseStorage.getMaxDownloadRetryTimeMillis());
+
+          return constants;
+        });
   }
 
   @Override

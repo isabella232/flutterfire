@@ -92,4 +92,8 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
   Future<void> setMaxUploadRetryTime(int time) {
     throw UnimplementedError('setMaxUploadRetryTime() is not implemented');
   }
+
+    Future<void> setMaxDownloadRetryTime(int time) {
+    throw UnimplementedError('setMaxDownloadRetryTime() is not implemented');
+  }
 }
