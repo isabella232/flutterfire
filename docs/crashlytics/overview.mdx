@@ -1,0 +1,83 @@
+---
+title: Crashlytics
+sidebar_label: Overview
+---
+
+##  What does it do?
+
+Crashlytics helps you to collect analytics and details about crashes and errors that occur in your app. It does this through three aspects:
+
+- **Logs**: Log events in your app to be sent with the crash report for context if your app crashes.
+- **Crash reports**: Every crash is automatically turned into a crash report and sent.
+- **Stack traces**: Even when an error is caught and your app recovers, the JavaScript stack trace can still be sent.
+
+<YouTube id="k_mdNRZzd30"/>
+
+## Installation
+
+### 1. Add dependency
+
+```yaml {5} title="pubspec.yaml"
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: "^{{ plugins.firebase_core }}"
+  firebase_crashlytics: "^{{ plugins.firebase_crashlytics }}"
+```
+
+### 2. Download dependency
+
+```
+$ flutter pub get
+```
+
+### 3. Platform Integration
+
+#### a. Android
+
+1. Add the `Fabric` repository to the `/android/build.gradle` file.
+
+```dart
+repositories {
+  // ... other repositories
+  maven {
+    url 'https://maven.fabric.io/public'
+  }
+}
+```
+
+2. Add the following classpaths to the `/android.build.gradle` file.
+
+```dart
+dependencies {
+  // ... other dependencies
+  classpath 'io.fabric.tools:gradle:1.26.1'
+}
+```
+
+3. Apply the following plugins to the `/android/app/build.gradle` file.
+
+```dart
+apply plugin: 'io.fabric'
+```
+
+#### b. iOS
+
+1. From Xcode select `Runner` from the project navigation.
+2. Select the `Build Phases` tab.
+3. Click `+ Add a new build phase`, and select `New Run Script Phase`.
+4. Add `${PODS_ROOT}/Fabric/run` to the `Type a script...` text box.
+5. If you are using Xcode 10, add the location of `Info.plist`, built by your app, to the `Build Phase's Input Files` field.
+E.g.: `$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)`
+
+### 3. Rebuild your app
+
+Once complete, rebuild your Flutter application:
+
+```bash
+$ flutter run
+```
+
+## Next Steps
+
+Once installed, you're ready to start using Crashlytics in your Flutter Project.

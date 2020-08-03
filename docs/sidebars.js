@@ -33,7 +33,10 @@ module.exports = {
     // "Cloud Messaging": ["messaging/usage", toReferenceAPI("firebase_messaging")],
     "Cloud Storage": ["storage/overview", "storage/usage", toReferenceAPI("firebase_storage")],
     Core: ["core/usage", toReferenceAPI("firebase_core")],
-    Crashlytics: ["crashlytics/usage", toReferenceAPI("firebase_crashlytics")],
+    Crashlytics: [
+      "crashlytics/overview",
+      "crashlytics/usage",
+      toReferenceAPI("firebase_crashlytics")],
     "Realtime Database": ["database/overview", toReferenceAPI("firebase_database")],
     // "Dynamic Links": ["dynamic-links/usage", toReferenceAPI("firebase_dynamic_links")],
     // "Instance ID": ["iid/usage", toReferenceAPI("firebase_in_app_messaging")],
