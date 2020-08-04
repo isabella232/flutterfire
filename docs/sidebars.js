@@ -36,6 +36,7 @@ module.exports = {
     Crashlytics: [
       "crashlytics/overview",
       "crashlytics/usage",
+      "crashlytics/reports",
       toReferenceAPI("firebase_crashlytics")],
     "Realtime Database": ["database/overview", toReferenceAPI("firebase_database")],
     // "Dynamic Links": ["dynamic-links/usage", toReferenceAPI("firebase_dynamic_links")],
