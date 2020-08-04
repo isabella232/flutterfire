@@ -49,6 +49,8 @@ FirebaseCrashlytics.instance.setCustomKey("float_key", 1.0f);
 FirebaseCrashlytics.instance.setCustomKey("double_key", 1.0);
 ```
 
+>   This accepts a maximum of 64 key/value pairs. New keys beyond that limit are ignored. Keys or values that exceed 1024 characters are truncated.
+
 ## Add custom log messages
 
 To add custom Crashlytics log messages to your app, use the `log` method

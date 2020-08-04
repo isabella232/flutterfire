@@ -35,30 +35,27 @@ $ flutter pub get
 
 #### a. Android
 
-1. Add the `Fabric` repository to the `/android/build.gradle` file.
-
-```dart
-repositories {
-  // ... other repositories
-  maven {
-    url 'https://maven.fabric.io/public'
-  }
-}
-```
-
-2. Add the following classpaths to the `/android/build.gradle` file.
+1. Add the following classpaths to the `/android/build.gradle` file.
 
 ```dart
 dependencies {
   // ... other dependencies
-  classpath 'io.fabric.tools:gradle:1.26.1'
+  classpath 'com.google.firebase:firebase-crashlytics-gradle:2.2.0'
 }
 ```
 
 3. Apply the following plugins to the `/android/app/build.gradle` file.
 
 ```dart
-apply plugin: 'io.fabric'
+apply plugin: 'com.google.firebase.crashlytics'
+
+dependencies {
+  // ... other dependencies
+  implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
+
+  // Recommended: Add the Google Analytics SDK.
+  implementation 'com.google.firebase:firebase-analytics:17.4.4'
+}
 ```
 
 #### b. iOS
