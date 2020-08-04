@@ -9,12 +9,12 @@ import 'package:flutter/services.dart';
 
 /// Catches a [PlatformException] and converts it into a [FirebaseException] if
 /// it was intentially caught on the native platform.
-FutureOr<Map<String, dynamic>> catchPlatformException(Object exception) async {
+Future catchPlatformException(Object exception) {
   if (exception is! Exception || exception is! PlatformException) {
-    throw exception;
+    return Future.error(exception);
   }
 
-  throw platformExceptionToFirebaseException(exception as PlatformException);
+  return Future.error(platformExceptionToFirebaseException(exception as PlatformException));
 }
 
 /// Converts a [PlatformException] into a [FirebaseException].

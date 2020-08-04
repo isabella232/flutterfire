@@ -32,7 +32,7 @@ abstract class TaskPlatform extends PlatformInterface {
     throw UnimplementedError('snapshot is not implemented');
   }
 
-  Future<void> get onComplete {
+  Future<TaskSnapshotPlatform> get onComplete {
     throw UnimplementedError('onComplete is not implemented');
   }
 

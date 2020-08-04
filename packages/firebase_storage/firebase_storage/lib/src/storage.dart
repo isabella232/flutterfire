@@ -66,8 +66,8 @@ class FirebaseStorage extends FirebasePluginPlatform {
     assert(url != null);
     assert(url.startsWith('gs://') || url.startsWith('http'));
 
-    // TODO validate URL
-    return Reference._(this, _delegate.refFromURL(url));
+    // TODO get bucket & path from URL
+    return FirebaseStorage.instanceFor(app: app, storageBucket: '').ref('path');
   }
 
   Future<void> setMaxOperationRetryTime(int time) {

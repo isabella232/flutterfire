@@ -80,11 +80,6 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
     throw UnimplementedError('ref() is not implemented');
   }
 
-  /// Returns a reference for the given absolute URL.
-  ReferencePlatform refFromURL(String url) {
-    throw UnimplementedError('refFromURL() is not implemented');
-  }
-
   Future<void> setMaxOperationRetryTime(int time) {
     throw UnimplementedError('setMaxOperationRetryTime() is not implemented');
   }

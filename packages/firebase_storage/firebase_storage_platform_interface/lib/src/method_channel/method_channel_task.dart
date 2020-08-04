@@ -16,31 +16,38 @@ abstract class MethodChannelTask extends TaskPlatform {
     this.storage,
     this._task,
   ) : super() {
-    // Create a completer instance.
-    _completer = Completer();
-
     // Catch any errors associated with the initial task call.
     _task.catchError((Object e) {
-      _completer.completeError(catchPlatformException(e));
+      _didComplete = true;
+      _exception = e;
+      catchPlatformException(e).catchError(_completer?.completeError);
     });
 
     // Get the task stream.
     _stream = MethodChannelFirebaseStorage.taskObservers[_handle].stream;
+    StreamSubscription _subscription;
 
     // Listen for stream events
-    _stream.listen((TaskSnapshotPlatform snapshot) {
+    _subscription = _stream.listen((TaskSnapshotPlatform snapshot) async {
       _lastSnapshot = snapshot;
 
       // If the stream event is complete, trigger the
       // completer to resolve with the snapshot.
       if (snapshot.state == TaskState.complete) {
-        _completer.complete(snapshot);
+        _didComplete = true;
+        _completer?.complete(snapshot);
+        await _subscription.cancel();
       }
-    });
-
-    // If the stream errors, throw a completer error.
-    _stream.handleError(_completer.completeError);
+    }, onError: (Object e) {
+      _didComplete = true;
+      _exception = e;
+      catchPlatformException(e).catchError(_completer?.completeError);
+    }, cancelOnError: true);
   }
+
+  Object _exception;
+
+  bool _didComplete = false;
 
   Completer<TaskSnapshotPlatform> _completer;
 
@@ -63,7 +70,19 @@ abstract class MethodChannelTask extends TaskPlatform {
   TaskSnapshotPlatform get snapshot => _lastSnapshot;
 
   @override
-  Future<TaskSnapshotPlatform> get onComplete => _completer.future;
+  Future<TaskSnapshotPlatform> get onComplete async {
+    if (_didComplete && _exception == null) {
+      return Future.value(snapshot);
+    } else if (_didComplete && _exception != null) {
+      return catchPlatformException(_exception);
+    } else {
+      if (_completer == null) {
+        _completer = Completer<TaskSnapshotPlatform>();
+      }
+
+      return _completer.future;
+    }
+  }
 
   @override
   Future<void> pause() async {

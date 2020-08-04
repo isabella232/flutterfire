@@ -28,7 +28,9 @@ abstract class Task {
 
   TaskSnapshot get snapshot => TaskSnapshot._(storage, _delegate.snapshot);
 
-  Future<dynamic> get onComplete => _delegate.onComplete;
+  Future<TaskSnapshot> get onComplete async {
+    return TaskSnapshot._(storage, await _delegate.onComplete);
+  }
 
   Future<void> pause() => _delegate.pause();
 
