@@ -1,5 +1,6 @@
 package io.flutter.plugins.firebase.storage;
 
+import android.app.Activity;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -67,7 +68,9 @@ class FlutterFirebaseStorageTask {
   }
 
   StorageTask start(
-      MethodChannel channel, @SuppressWarnings("SameParameterValue") ExecutorService executor)
+      @NonNull MethodChannel channel,
+      @NonNull Activity activity,
+      @SuppressWarnings("SameParameterValue") ExecutorService executor)
       throws Exception {
     StorageTask task;
 
@@ -98,30 +101,31 @@ class FlutterFirebaseStorageTask {
         executor,
         taskSnapshot -> {
           arguments.put("snapshot", parseTaskSnapshot(taskSnapshot));
-          channel.invokeMethod("Task#onProgress", arguments);
+          activity.runOnUiThread(() -> channel.invokeMethod("Task#onProgress", arguments));
         });
 
-    task.addOnCanceledListener(executor, () -> channel.invokeMethod("Task#onCancel", arguments));
+    task.addOnCanceledListener(executor, () ->
+      channel.invokeMethod("Task#onCancel", arguments));
 
     task.addOnPausedListener(
         executor,
         taskSnapshot -> {
           arguments.put("snapshot", parseTaskSnapshot(taskSnapshot));
-          channel.invokeMethod("Task#onPaused", arguments);
+          activity.runOnUiThread(() -> channel.invokeMethod("Task#onPaused", arguments));
         });
 
     task.addOnSuccessListener(
         executor,
         taskSnapshot -> {
           arguments.put("snapshot", parseTaskSnapshot(taskSnapshot));
-          channel.invokeMethod("Task#onComplete", arguments);
+          activity.runOnUiThread(() -> channel.invokeMethod("Task#onComplete", arguments));
         });
 
     task.addOnFailureListener(
         executor,
         exception -> {
           arguments.put("error", getExceptionDetails(exception));
-          channel.invokeMethod("Task#onError", arguments);
+          activity.runOnUiThread(() -> channel.invokeMethod("Task#onError", arguments));
         });
 
     return task;

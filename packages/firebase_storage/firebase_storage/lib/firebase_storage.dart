@@ -15,7 +15,7 @@ import 'package:firebase_core_platform_interface/firebase_core_platform_interfac
     show FirebasePluginPlatform;
 
 export 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart'
-    show ListOptions, FullMetadata, SettableMetadata;
+    show ListOptions, FullMetadata, SettableMetadata, PutStringFormat;
 
 export 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
     show FirebaseException;

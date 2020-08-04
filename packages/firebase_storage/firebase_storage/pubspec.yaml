@@ -9,7 +9,7 @@ flutter:
     platforms:
       android:
         package: io.flutter.plugins.firebase.storage
-        pluginClass: FirebaseStoragePlugin
+        pluginClass: FlutterFirebaseStoragePlugin
       ios:
         pluginClass: FLTFirebaseStoragePlugin
       macos:
@@ -18,10 +18,11 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^0.5.0-dev.1
+  firebase_core: ">=0.5.0-dev.1 <0.6.0"
+  firebase_core_platform_interface: ">=2.0.0-dev.1 <2.1.0"
+  firebase_storage_platform_interface: ">=2.0.0-dev.1 <2.1.0"
 
 dev_dependencies:
-  firebase_core_platform_interface: ^2.0.0-dev.1
   pedantic: ^1.8.0
   http: ^0.12.0
   flutter_test:

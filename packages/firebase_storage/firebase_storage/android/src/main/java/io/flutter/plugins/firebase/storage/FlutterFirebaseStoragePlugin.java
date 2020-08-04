@@ -4,7 +4,7 @@
 
 package io.flutter.plugins.firebase.storage;
 
-import android.content.Context;
+import android.app.Activity;
 import android.net.Uri;
 import android.util.Base64;
 import android.util.SparseArray;
@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -38,6 +40,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
+import io.flutter.plugins.firebase.core.FlutterFirebasePluginRegistry;
 
 // TODO(kroikie): Better handle empty paths.
 //                https://github.com/FirebaseExtended/flutterfire/issues/1505
@@ -45,13 +48,15 @@ import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 // TODO(Salakar): Should also implement io.flutter.plugins.firebase.core.FlutterFirebasePlugin when
 // reworked.
 public class FlutterFirebaseStoragePlugin
-    implements FlutterFirebasePlugin, MethodCallHandler, FlutterPlugin {
+    implements FlutterFirebasePlugin, MethodCallHandler, FlutterPlugin, ActivityAware {
   private static final SparseArray<StorageTask<?>> storageTasks = new SparseArray<>();
   private MethodChannel channel;
+  private Activity activity;
 
   public static void registerWith(PluginRegistry.Registrar registrar) {
     FlutterFirebaseStoragePlugin instance = new FlutterFirebaseStoragePlugin();
-    instance.onAttachedToEngine(registrar.context(), registrar.messenger());
+    instance.activity = registrar.activity();
+    instance.initInstance(registrar.messenger());
   }
 
   public static Map<String, Object> parseUploadTaskSnapshot(UploadTask.TaskSnapshot snapshot) {
@@ -122,19 +127,52 @@ public class FlutterFirebaseStoragePlugin
     return details;
   }
 
-  private void onAttachedToEngine(Context applicationContext, BinaryMessenger binaryMessenger) {
-    channel = new MethodChannel(binaryMessenger, "plugins.flutter.io/firebase_storage");
-    channel.setMethodCallHandler(this);
+  @Override
+  public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+    initInstance(binding.getBinaryMessenger());
   }
 
   @Override
-  public void onAttachedToEngine(FlutterPluginBinding binding) {
-    onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
-  }
-
-  @Override
-  public void onDetachedFromEngine(FlutterPluginBinding binding) {
+  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+    //    removeEventListeners();
+    channel.setMethodCallHandler(null);
     channel = null;
+  }
+
+  @Override
+  public void onAttachedToActivity(@NonNull ActivityPluginBinding activityPluginBinding) {
+    attachToActivity(activityPluginBinding);
+  }
+
+  @Override
+  public void onDetachedFromActivityForConfigChanges() {
+    detachToActivity();
+  }
+
+  @Override
+  public void onReattachedToActivityForConfigChanges(
+      @NonNull ActivityPluginBinding activityPluginBinding) {
+    attachToActivity(activityPluginBinding);
+  }
+
+  @Override
+  public void onDetachedFromActivity() {
+    detachToActivity();
+  }
+
+  private void attachToActivity(ActivityPluginBinding activityPluginBinding) {
+    activity = activityPluginBinding.getActivity();
+  }
+
+  private void detachToActivity() {
+    activity = null;
+  }
+
+  private void initInstance(BinaryMessenger messenger) {
+    String channelName = "plugins.flutter.io/firebase_storage";
+    channel = new MethodChannel(messenger, channelName);
+    channel.setMethodCallHandler(this);
+    FlutterFirebasePluginRegistry.registerPlugin(channelName, this);
   }
 
   private FirebaseStorage getStorage(Map<String, Object> arguments) {
@@ -252,7 +290,7 @@ public class FlutterFirebaseStoragePlugin
 
           int maxResults = (Integer) Objects.requireNonNull(listOptions.get("maxResults"));
 
-          if (listOptions.containsKey("pageToken")) {
+          if (listOptions.get("pageToken") != null) {
             task =
                 reference.list(
                     maxResults, (String) Objects.requireNonNull(listOptions.get("pageToken")));
@@ -275,6 +313,23 @@ public class FlutterFirebaseStoragePlugin
         });
   }
 
+  private Task<Map<String, Object>> referenceUpdateMetadata(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          StorageReference reference = getReference(arguments);
+
+          @SuppressWarnings("unchecked")
+          Map<String, Object> metadata =
+              (Map<String, Object>) Objects.requireNonNull(arguments.get("metadata"));
+
+          StorageMetadata updatedMetadata =
+              Tasks.await(reference.updateMetadata(parseMetadata(metadata)));
+
+          return parseMetadata(updatedMetadata);
+        });
+  }
+
   private Task<Void> taskPut(Map<String, Object> arguments) {
     return Tasks.call(
         cachedThreadPool,
@@ -290,7 +345,7 @@ public class FlutterFirebaseStoragePlugin
               FlutterFirebaseStorageTask.uploadBytes(
                   handle, reference, bytes, parseMetadata(metadata));
 
-          StorageTask uploadTask = task.start(channel, cachedThreadPool);
+          StorageTask uploadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, uploadTask);
 
           return null;
@@ -313,7 +368,7 @@ public class FlutterFirebaseStoragePlugin
               FlutterFirebaseStorageTask.uploadBytes(
                   handle, reference, stringToByteData(data, format), parseMetadata(metadata));
 
-          StorageTask uploadTask = task.start(channel, cachedThreadPool);
+          StorageTask uploadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, uploadTask);
 
           return null;
@@ -335,7 +390,7 @@ public class FlutterFirebaseStoragePlugin
               FlutterFirebaseStorageTask.uploadFile(
                   handle, reference, Uri.fromFile(new File(filePath)), parseMetadata(metadata));
 
-          StorageTask uploadTask = task.start(channel, cachedThreadPool);
+          StorageTask uploadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, uploadTask);
 
           return null;
@@ -353,7 +408,7 @@ public class FlutterFirebaseStoragePlugin
           FlutterFirebaseStorageTask task =
               FlutterFirebaseStorageTask.downloadFile(handle, reference, new File(filePath));
 
-          StorageTask downloadTask = task.start(channel, cachedThreadPool);
+          StorageTask downloadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, downloadTask);
 
           return null;
@@ -437,6 +492,9 @@ public class FlutterFirebaseStoragePlugin
       case "Reference#listAll":
         methodCallTask = referenceListAll(call.arguments());
         break;
+      case "Reference#updateMetadata":
+        methodCallTask = referenceUpdateMetadata(call.arguments());
+        break;
       case "Task#startPut":
         methodCallTask = taskPut(call.arguments());
         break;
@@ -464,7 +522,6 @@ public class FlutterFirebaseStoragePlugin
     }
 
     methodCallTask.addOnCompleteListener(
-        cachedThreadPool,
         task -> {
           if (task.isSuccessful()) {
             result.success(task.getResult());
@@ -515,9 +572,9 @@ public class FlutterFirebaseStoragePlugin
 
   private byte[] stringToByteData(@NonNull String data, @NonNull String format) {
     switch (format) {
-      case "base64":
+      case "PutStringFormat.base64":
         return Base64.decode(data, Base64.DEFAULT);
-      case "base64url":
+      case "PutStringFormat.base64Url":
         return Base64.decode(data, Base64.URL_SAFE);
       default:
         return null;
@@ -553,6 +610,6 @@ public class FlutterFirebaseStoragePlugin
 
   @Override
   public Task<Void> didReinitializeFirebaseCore() {
-    return null;
+    return Tasks.call(cachedThreadPool, () -> null);
   }
 }

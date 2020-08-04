@@ -111,7 +111,6 @@ class Reference {
         );
       }
     }
-
     return UploadTask._(storage, _delegate.putString(data, format, metadata));
   }
 

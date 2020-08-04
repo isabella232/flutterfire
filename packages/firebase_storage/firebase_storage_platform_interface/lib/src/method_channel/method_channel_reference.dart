@@ -70,8 +70,8 @@ class MethodChannelReference extends ReferencePlatform {
     return MethodChannelListResult(
       storage,
       nextPageToken: data['nextPageToken'],
-      items: data['items'],
-      prefixes: data['prefixes'],
+      items: List.from(data['items']),
+      prefixes: List.from(data['prefixes']),
     );
   }
 
@@ -88,8 +88,8 @@ class MethodChannelReference extends ReferencePlatform {
     return MethodChannelListResult(
       storage,
       nextPageToken: data['nextPageToken'],
-      items: data['items'],
-      prefixes: data['prefixes'],
+      items: List.from(data['items']),
+      prefixes: List.from(data['prefixes']),
     );
   }
 
