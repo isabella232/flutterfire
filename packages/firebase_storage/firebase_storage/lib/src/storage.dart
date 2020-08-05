@@ -66,8 +66,18 @@ class FirebaseStorage extends FirebasePluginPlatform {
     assert(url != null);
     assert(url.startsWith('gs://') || url.startsWith('http'));
 
-    // TODO get bucket & path from URL
-    return FirebaseStorage.instanceFor(app: app, storageBucket: '').ref('path');
+    String storageBucket;
+    String path;
+
+    if (url.startsWith('http')) {
+      // TODO REGEX https://regex101.com/r/ZimjV0/1
+    } else {
+      storageBucket = bucketFromGoogleStorageUrl(url);
+      path = pathFromGoogleStorageUrl(url);
+    }
+
+    return FirebaseStorage.instanceFor(app: app, storageBucket: storageBucket)
+        .ref(path);
   }
 
   Future<void> setMaxOperationRetryTime(int time) {
@@ -87,4 +97,17 @@ class FirebaseStorage extends FirebasePluginPlatform {
     assert(time > 0);
     return _delegate.setMaxDownloadRetryTime(time);
   }
+
+  @override
+  bool operator ==(dynamic o) =>
+      o is FirebaseStorage &&
+      o.app.name == app.name &&
+      o.storageBucket == storageBucket;
+
+  @override
+  int get hashCode => hash2(app.name, storageBucket);
+
+  @override
+  String toString() =>
+      '$FirebaseStorage(app: ${app.name}, storageBucket: $storageBucket)';
 }

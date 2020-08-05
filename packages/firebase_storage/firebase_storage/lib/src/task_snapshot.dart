@@ -24,4 +24,14 @@ class TaskSnapshot {
   TaskState get state => _delegate.state;
 
   int get totalBytes => _delegate.totalBytes;
+
+  @override
+  bool operator ==(dynamic o) =>
+      o is TaskSnapshot && o.ref == ref && o.storage == storage;
+
+  @override
+  int get hashCode => hash2(storage, ref);
+
+  @override
+  String toString() => '$TaskSnapshot(app: ${storage.app.name}, ref: $ref)';
 }

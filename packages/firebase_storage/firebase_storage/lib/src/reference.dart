@@ -4,21 +4,30 @@
 
 part of firebase_storage;
 
+/// Represents a reference to a Google Cloud Storage object. Developers can
+/// upload, download, and delete objects, as well as get/set object metadata.
 class Reference {
   ReferencePlatform _delegate;
 
+  /// The storage service associated with this reference.
   final FirebaseStorage storage;
 
   Reference._(this.storage, this._delegate) {
     ReferencePlatform.verifyExtends(_delegate);
   }
 
+  /// The name of the bucket containing this reference's object.
   String get bucket => _delegate.bucket;
 
+  /// The full path of this object.
   String get fullPath => _delegate.fullPath;
 
+  /// The short name of this object, which is the last component of the full path.
+  ///
+  /// For example, if fullPath is 'full/path/image.png', name is 'image.png'.
   String get name => _delegate.name;
 
+  /// A reference pointing to the parent location of this reference, or `null` if this reference is the root.
   Reference get parent {
     ReferencePlatform referenceParentPlatform = _delegate.parent;
 
@@ -29,19 +38,38 @@ class Reference {
     return Reference._(storage, referenceParentPlatform);
   }
 
+  /// A reference to the root of this reference's bucket.
   Reference get root => Reference._(storage, _delegate.root);
 
+  /// Returns a reference to a relative path from this reference.
+  ///
+  /// [path] The relative path from this reference. Leading, trailing, and
+  ///   consecutive slashes are removed.
   Reference child(String path) {
     assert(path != null);
     return Reference._(storage, _delegate.child(path));
   }
 
+  /// Deletes the object at this reference's location.
   Future<void> delete() => _delegate.delete();
 
+  /// Fetches a long lived download URL for this object.
   Future<String> getDownloadURL() => _delegate.getDownloadURL();
 
+  /// Fetches metadata for the object at this location, if one exists.
   Future<FullMetadata> getMetadata() => _delegate.getMetadata();
 
+  /// List items (files) and prefixes (folders) under this storage reference.
+  ///
+  /// List API is only available for Firebase Rules Version 2.
+  ///
+  /// GCS is a key-blob store. Firebase Storage imposes the semantic of '/'
+  /// delimited folder structure. Refer to GCS's List API if you want to learn more.
+  ///
+  /// To adhere to Firebase Rules's Semantics, Firebase Storage does not support
+  /// objects whose paths end with "/" or contain two consecutive "/"s. Firebase
+  /// Storage List API will filter these unsupported objects. [list] may fail
+  /// if there are too many unsupported objects in the bucket.
   Future<ListResult> list(ListOptions options) async {
     if (options?.maxResults != null) {
       assert(options.maxResults > 0);
@@ -51,26 +79,57 @@ class Reference {
     return ListResult._(storage, await _delegate.list(options));
   }
 
+  ///List all items (files) and prefixes (folders) under this storage reference.
+  ///
+  /// This is a helper method for calling [list] repeatedly until there are no
+  /// more results. The default pagination size is 1000.
+  ///
+  /// Note: The results may not be consistent if objects are changed while this
+  /// operation is running.
+  ///
+  /// Warning: [listAll] may potentially consume too many resources if there are
+  /// too many results.
   Future<ListResult> listAll() async {
     return ListResult._(storage, await _delegate.listAll());
   }
 
+  /// Uploads data to this reference's location.
+  ///
+  /// Use this method to upload fixed sized data as a [ByteBuffer].
+  ///
+  /// Optionally, you can also set metadata onto the uploaded object.
   UploadTask put(ByteBuffer buffer, [SettableMetadata metadata]) {
     assert(buffer != null);
     return UploadTask._(storage, _delegate.put(buffer, metadata));
   }
 
+  /// Upload a [Blob]. Note; this is only supported on web platforms.
+  ///
+  /// Optionally, you can also set metadata onto the uploaded object.
   UploadTask putBlob(dynamic blob, [SettableMetadata metadata]) {
     assert(blob != null);
     return UploadTask._(storage, _delegate.putBlob(blob, metadata));
   }
 
+  /// Upload a [File] from the filesystem. The file must exist.
+  ///
+  /// Optionally, you can also set metadata onto the uploaded object.
   UploadTask putFile(File file, [SettableMetadata metadata]) {
     assert(file != null);
     assert(file.existsSync());
     return UploadTask._(storage, _delegate.putFile(file, metadata));
   }
 
+  /// Upload a [String] value as a storage object.
+  ///
+  /// Use [PutStringFormat] to correctly encode the string:
+  ///   - [PutStringFormat.raw] the string will be encoded in a Base64 format.
+  ///   - [PutStringFormat.dataUrl] the string must be in a data url format
+  ///     (e.g. "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=="). If no
+  ///     [SettableMetadata.mimeType] is provided as part of the [metadata]
+  ///     argument, the [mimeType] will be automatically set.
+  ///   - [PutStringFormat.base64] will be encoded as a Base64 string.
+  ///   - [PutStringFormat.base64Url] will be encoded as a Base64 string safe URL.
   UploadTask putString(
     String data, {
     PutStringFormat format = PutStringFormat.raw,
@@ -114,13 +173,28 @@ class Reference {
     return UploadTask._(storage, _delegate.putString(data, format, metadata));
   }
 
+  /// Updates the metadata on a storage object.
   Future<FullMetadata> updateMetadata(SettableMetadata metadata) {
     assert(metadata != null);
     return _delegate.updateMetadata(metadata);
   }
 
+  /// Writes a remote storage object to the local filesystem.
+  ///
+  /// If a file already exists at the given location, it will be overwritten.
   DownloadTask writeToFile(File file) {
     assert(file != null);
     return DownloadTask._(storage, _delegate.writeToFile(file));
   }
+
+  @override
+  bool operator ==(dynamic o) =>
+      o is Reference && o.fullPath == fullPath && o.storage == storage;
+
+  @override
+  int get hashCode => hash2(storage, fullPath);
+
+  @override
+  String toString() =>
+      '$Reference(app: ${storage.app.name}, fullPath: $fullPath)';
 }
