@@ -23,6 +23,7 @@ abstract class ListResultPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
   }
 
+  /// The [FirebaseStoragePlatform] used when fetching list items.
   final FirebaseStoragePlatform storage;
 
   /// Objects in this directory. You can call [getMetadata] and [getDownloadUrl] on them.

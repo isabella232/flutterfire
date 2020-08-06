@@ -186,13 +186,13 @@ public class FlutterFirebaseStoragePlugin
   private FirebaseStorage getStorage(Map<String, Object> arguments) {
     String appName = (String) Objects.requireNonNull(arguments.get("appName"));
     FirebaseApp app = FirebaseApp.getInstance(appName);
-    String storageBucket = (String) arguments.get("storageBucket");
+    String bucket = (String) arguments.get("bucket");
 
-    if (storageBucket == null) {
+    if (bucket == null) {
       return FirebaseStorage.getInstance(app);
     }
 
-    return FirebaseStorage.getInstance(app, storageBucket);
+    return FirebaseStorage.getInstance(app, bucket);
   }
 
   private StorageReference getReference(Map<String, Object> arguments) {

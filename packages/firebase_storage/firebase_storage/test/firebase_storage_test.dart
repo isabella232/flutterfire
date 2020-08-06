@@ -15,7 +15,7 @@ import 'test_common.dart';
 
 void main() {
   initializeMethodChannel();
-  final String storageBucket = 'gs://fake-storage-bucket-url.com';
+  final String bucket = 'gs://fake-storage-bucket-url.com';
   FirebaseApp app;
   FirebaseStorage storage;
 
@@ -30,7 +30,7 @@ void main() {
           messagingSenderId: '1234567890',
         ),
       );
-      storage = FirebaseStorage(app: app, storageBucket: storageBucket);
+      storage = FirebaseStorage(app: app, bucket: bucket);
     });
 
     group('getMaxDownloadRetryTimeMillis', () {

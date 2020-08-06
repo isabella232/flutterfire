@@ -40,7 +40,11 @@ class StorageExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Reference ref = FirebaseStorage.instance.ref('/playground/landscape.jpeg');
+    print('>>> ${FirebaseStorage.instance.maxOperationRetryTime}');
+    print('>>> ${FirebaseStorage.instance.maxDownloadRetryTime}');
+    print('>>> ${FirebaseStorage.instance.maxUploadRetryTime}');
+
+    // Reference ref = FirebaseStorage.instance.ref('/playground/landscape.jpeg');
     // print(ref.bucket);
     // print(ref.fullPath);
     // print(ref.name);
@@ -48,7 +52,7 @@ class StorageExampleApp extends StatelessWidget {
     // print(ref.root.fullPath);
     // print(ref.child('/baz.jpg').fullPath);
 
-    var list = utf8.encode('hello world');
+    // var list = utf8.encode('hello world');
 
     // String str =
     // "data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7";
@@ -58,30 +62,30 @@ class StorageExampleApp extends StatelessWidget {
     // UploadTask task =
     //     ref.put(buffer, SettableMetadata(contentType: 'application/text'));
 
-    Future foo() async {
-      FirebaseStorage.instance.ref().listAll().then((l) {
-        print(l.items);
-      }).catchError(print);
-      // // await Permission.storage;
-      // String downloadDir =
-      //     (await DownloadsPathProvider.downloadsDirectory).path;
-      // File file = File('$downloadDir/landscape.jpeg');
+    // Future foo() async {
+    // FirebaseStorage.instance.ref().listAll().then((l) {
+    //   print(l.items);
+    // }).catchError(print);
+    // // await Permission.storage;
+    // String downloadDir =
+    //     (await DownloadsPathProvider.downloadsDirectory).path;
+    // File file = File('$downloadDir/landscape.jpeg');
 
-      // UploadTask task = ref.putFile(file);
-      // // DownloadTask task = ref.writeToFile(file);
-      // await Future.delayed(Duration(milliseconds: 30));
-      // await task.cancel();
-      // print('pause');
-      // task.snapshotEvents.listen((event) {
-      //   print('GOT EVENT ${event.state}');
-      //   print(event.bytesTransferred);
-      //   task.resume();
-      // });
+    // UploadTask task = ref.putFile(file);
+    // // DownloadTask task = ref.writeToFile(file);
+    // await Future.delayed(Duration(milliseconds: 30));
+    // await task.cancel();
+    // print('pause');
+    // task.snapshotEvents.listen((event) {
+    //   print('GOT EVENT ${event.state}');
+    //   print(event.bytesTransferred);
+    //   task.resume();
+    // });
 
-      // task.onComplete.then(print).catchError(print);
-    }
+    // task.onComplete.then(print).catchError(print);
+    // }
 
-    foo().then(print).catchError(print);
+    // foo().then(print).catchError(print);
 
     // ref
     //     .updateMetadata(

@@ -20,8 +20,8 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
 
   /// Returns a unique key to identify the instance by [FirebaseApp] name and
   /// any custom storage buckets.
-  static String _getInstanceKey(String appName, String storageBucket) {
-    return '${appName}|${storageBucket ?? ''}';
+  static String _getInstanceKey(String appName, String bucket) {
+    return '${appName}|${bucket ?? ''}';
   }
 
   /// The [MethodChannelFirebaseAuth] method channel.
@@ -54,8 +54,8 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
   /// then initialized via the [delegateFor] method.
   MethodChannelFirebaseStorage._() : super(appInstance: null);
 
-  MethodChannelFirebaseStorage({FirebaseApp app, String storageBucket})
-      : super(appInstance: app, storageBucket: storageBucket) {
+  MethodChannelFirebaseStorage({FirebaseApp app, String bucket})
+      : super(appInstance: app, bucket: bucket) {
     // The channel setMethodCallHandler callback is not app specific, so there
     // is no need to register the caller more than once.
     if (_initialized) return;
@@ -94,6 +94,10 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
     _initialized = true;
   }
 
+  int maxOperationRetryTime;
+  int maxUploadRetryTime;
+  int maxDownloadRetryTime;
+
   Future<void> _handleTaskStateChange(
       TaskState taskState, Map<dynamic, dynamic> arguments) async {
     // Get & cast native snapshot data to a Map
@@ -102,7 +106,7 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
 
     // Get the cached Storage instance.
     FirebaseStoragePlatform storage = _methodChannelFirebaseStorageInstances[
-        _getInstanceKey(arguments['appName'], arguments['storageBucket'])];
+        _getInstanceKey(arguments['appName'], arguments['bucket'])];
 
     // Create a snapshot.
     TaskSnapshotPlatform snapshot =
@@ -117,15 +121,28 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
   }
 
   @override
-  FirebaseStoragePlatform delegateFor({FirebaseApp app, String storageBucket}) {
-    String key = _getInstanceKey(app.name, storageBucket);
+  FirebaseStoragePlatform delegateFor({FirebaseApp app, String bucket}) {
+    String key = _getInstanceKey(app.name, bucket);
 
     if (!_methodChannelFirebaseStorageInstances.containsKey(key)) {
       _methodChannelFirebaseStorageInstances[key] =
-          MethodChannelFirebaseStorage(app: app, storageBucket: storageBucket);
+          MethodChannelFirebaseStorage(app: app, bucket: bucket);
     }
 
     return _methodChannelFirebaseStorageInstances[key];
+  }
+
+  @override
+  FirebaseStoragePlatform setInitialValues({
+    int maxOperationRetryTime,
+    int maxUploadRetryTime,
+    int maxDownloadRetryTime,
+  }) {
+    this.maxOperationRetryTime = maxOperationRetryTime;
+    this.maxUploadRetryTime = maxUploadRetryTime;
+    this.maxDownloadRetryTime = maxDownloadRetryTime;
+
+    return this;
   }
 
   @override
@@ -138,9 +155,11 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
     await channel
         .invokeMethod('Storage#setMaxOperationRetryTime', <String, dynamic>{
       'appName': app.name,
-      'storageBucket': storageBucket,
+      'bucket': bucket,
       'time': time,
     }).catchError(catchPlatformException);
+
+    maxOperationRetryTime = time;
   }
 
   @override
@@ -148,9 +167,11 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
     await channel
         .invokeMethod('Storage#setMaxUploadRetryTime', <String, dynamic>{
       'appName': app.name,
-      'storageBucket': storageBucket,
+      'bucket': bucket,
       'time': time,
     }).catchError(catchPlatformException);
+
+    maxUploadRetryTime = time;
   }
 
   @override
@@ -158,8 +179,10 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
     await channel
         .invokeMethod('Storage#setMaxDownloadRetryTime', <String, dynamic>{
       'appName': app.name,
-      'storageBucket': storageBucket,
+      'bucket': bucket,
       'time': time,
     }).catchError(catchPlatformException);
+
+    maxDownloadRetryTime = time;
   }
 }

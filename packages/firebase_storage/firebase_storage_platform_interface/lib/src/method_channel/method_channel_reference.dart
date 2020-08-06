@@ -23,7 +23,7 @@ class MethodChannelReference extends ReferencePlatform {
     await MethodChannelFirebaseStorage.channel
         .invokeMethod('Reference#delete', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
   }
@@ -34,7 +34,7 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#getDownloadURL', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
 
@@ -47,7 +47,7 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#getMetadata', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
 
@@ -59,7 +59,7 @@ class MethodChannelReference extends ReferencePlatform {
     Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
         .invokeMapMethod<String, dynamic>('Reference#list', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'path': fullPath,
       'options': <String, dynamic>{
         'maxResults': options?.maxResults ?? 1000,
@@ -81,7 +81,7 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#listAll', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
 
@@ -129,7 +129,7 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#updateMetadata', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'path': fullPath,
       'metadata': metadata.asMap(),
     }).catchError(catchPlatformException);

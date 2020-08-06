@@ -10,7 +10,11 @@ import 'package:firebase_storage_platform_interface/firebase_storage_platform_in
 import 'method_channel_firebase_storage.dart';
 import 'utils/exception.dart';
 
+/// Implementation for a [TaskPlatform].
+///
+/// Other implementations for specific tasks should extend this class.
 abstract class MethodChannelTask extends TaskPlatform {
+  /// Creates a new [MethodChannelTask] with a given task.
   MethodChannelTask(
     this._handle,
     this.storage,
@@ -57,6 +61,7 @@ abstract class MethodChannelTask extends TaskPlatform {
 
   final int _handle;
 
+  /// The [FirebaseStoragePlatform] used to create the task.
   final FirebaseStoragePlatform storage;
 
   TaskSnapshotPlatform _lastSnapshot;
@@ -115,7 +120,9 @@ abstract class MethodChannelTask extends TaskPlatform {
   }
 }
 
+/// Implementation for [putFile] tasks.
 class MethodChannelPutFileTask extends MethodChannelTask {
+  // ignore: public_member_api_docs
   MethodChannelPutFileTask(int handle, FirebaseStoragePlatform storage,
       String path, File file, SettableMetadata metadata)
       : super(handle, storage, _getTask(handle, storage, path, file, metadata));
@@ -125,7 +132,7 @@ class MethodChannelPutFileTask extends MethodChannelTask {
     return MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#startPutFile', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'handle': handle,
       'path': path,
       'filePath': file.path,
@@ -134,7 +141,9 @@ class MethodChannelPutFileTask extends MethodChannelTask {
   }
 }
 
+/// Implementation for [putString] tasks.
 class MethodChannelPutStringTask extends MethodChannelTask {
+  // ignore: public_member_api_docs
   MethodChannelPutStringTask(
       int handle,
       FirebaseStoragePlatform storage,
@@ -155,7 +164,7 @@ class MethodChannelPutStringTask extends MethodChannelTask {
     return MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#startPutString', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'handle': handle,
       'path': path,
       'data': data,
@@ -165,7 +174,9 @@ class MethodChannelPutStringTask extends MethodChannelTask {
   }
 }
 
+/// Implementation for [put] tasks.
 class MethodChannelPutTask extends MethodChannelTask {
+  // ignore: public_member_api_docs
   MethodChannelPutTask(int handle, FirebaseStoragePlatform storage, String path,
       ByteBuffer buffer, SettableMetadata metadata)
       : super(
@@ -176,7 +187,7 @@ class MethodChannelPutTask extends MethodChannelTask {
     return MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#startPut', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'handle': handle,
       'path': path,
       'data': buffer.asUint8List(),
@@ -185,7 +196,9 @@ class MethodChannelPutTask extends MethodChannelTask {
   }
 }
 
+/// Implementation for [writeToFile] tasks.
 class MethodChannelDownloadTask extends MethodChannelTask {
+  // ignore: public_member_api_docs
   MethodChannelDownloadTask(
       int handle, FirebaseStoragePlatform storage, String path, File file)
       : super(handle, storage, _getTask(handle, storage, path, file));
@@ -195,7 +208,7 @@ class MethodChannelDownloadTask extends MethodChannelTask {
     return MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#writeToFile', <String, dynamic>{
       'appName': storage.app.name,
-      'storageBucket': storage.storageBucket,
+      'bucket': storage.bucket,
       'handle': handle,
       'path': path,
       'filePath': file.path,

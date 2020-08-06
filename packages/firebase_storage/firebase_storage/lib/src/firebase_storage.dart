@@ -13,7 +13,11 @@ class FirebaseStorage extends FirebasePluginPlatform {
 
   FirebaseStoragePlatform get _delegate {
     if (_delegatePackingProperty == null) {
-      _delegatePackingProperty = FirebaseStoragePlatform.instanceFor(app: app);
+      _delegatePackingProperty = FirebaseStoragePlatform.instanceFor(
+        app: app,
+        bucket: bucket,
+        pluginConstants: pluginConstants,
+      );
     }
     return _delegatePackingProperty;
   }
@@ -21,9 +25,25 @@ class FirebaseStorage extends FirebasePluginPlatform {
   /// The [FirebaseApp] for this current [FirebaseFirestore] instance.
   FirebaseApp app;
 
-  String storageBucket;
+  /// The storage bucket of this instance.
+  String bucket;
 
-  FirebaseStorage._({this.app, this.storageBucket})
+  /// The maximum time to retry operations other than uploads or downloads in milliseconds.
+  int get maxOperationRetryTime {
+    return _delegate.maxOperationRetryTime;
+  }
+
+  /// The maximum time to retry uploads in milliseconds.
+  int get maxUploadRetryTime {
+    return _delegate.maxUploadRetryTime;
+  }
+
+  /// The maximum time to retry downloads in milliseconds.
+  int get maxDownloadRetryTime {
+    return _delegate.maxDownloadRetryTime;
+  }
+
+  FirebaseStorage._({this.app, this.bucket})
       : super(app.name, 'plugins.flutter.io/firebase_storage');
 
   static final Map<String, FirebaseStorage> _cachedInstances = {};
@@ -36,16 +56,16 @@ class FirebaseStorage extends FirebasePluginPlatform {
   }
 
   /// Returns an instance using a specified [FirebaseApp].
-  static FirebaseStorage instanceFor({FirebaseApp app, String storageBucket}) {
+  static FirebaseStorage instanceFor({FirebaseApp app, String bucket}) {
     assert(app != null);
-    String key = '${app.name}|${storageBucket ?? ''}';
+    String key = '${app.name}|${bucket ?? ''}';
 
     if (_cachedInstances.containsKey(key)) {
       return _cachedInstances[key];
     }
 
     FirebaseStorage newInstance =
-        FirebaseStorage._(app: app, storageBucket: storageBucket);
+        FirebaseStorage._(app: app, bucket: bucket);
     _cachedInstances[key] = newInstance;
 
     return newInstance;
@@ -54,45 +74,58 @@ class FirebaseStorage extends FirebasePluginPlatform {
   // ignore: public_member_api_docs
   @Deprecated(
       "Constructing Storage is deprecated, use 'FirebaseStorage.instance' or 'FirebaseStorage.instanceFor' instead")
-  factory FirebaseStorage({FirebaseApp app, String storageBucket}) {
-    return FirebaseStorage.instanceFor(app: app, storageBucket: storageBucket);
+  factory FirebaseStorage({FirebaseApp app, String bucket}) {
+    return FirebaseStorage.instanceFor(app: app, bucket: bucket);
   }
 
+  /// Returns a new [Reference].
+  ///
+  /// If the [path] is empty, the reference will point to the root of the
+  /// storage bucket.
   Reference ref([String path]) {
     path ??= '/';
     return Reference._(this, _delegate.ref(path));
   }
 
+  /// Returns a new [Reference] from a given URL.
+  ///
+  /// The [url] can either be a HTTP or Google Storage URL pointing to an object.
+  /// If the URL contains a storage bucket which is differen to the current
+  /// [FirebaseStorage.bucket], a new [FirebaseStorage] instance for the
+  /// [Reference] will be used instead.
   Reference refFromURL(String url) {
     assert(url != null);
     assert(url.startsWith('gs://') || url.startsWith('http'));
 
-    String storageBucket;
+    String bucket;
     String path;
 
     if (url.startsWith('http')) {
       // TODO REGEX https://regex101.com/r/ZimjV0/1
     } else {
-      storageBucket = bucketFromGoogleStorageUrl(url);
+      bucket = bucketFromGoogleStorageUrl(url);
       path = pathFromGoogleStorageUrl(url);
     }
 
-    return FirebaseStorage.instanceFor(app: app, storageBucket: storageBucket)
+    return FirebaseStorage.instanceFor(app: app, bucket: bucket)
         .ref(path);
   }
 
+  /// The new maximum operation retry time in milliseconds.
   Future<void> setMaxOperationRetryTime(int time) {
     assert(time != null);
     assert(time > 0);
     return _delegate.setMaxOperationRetryTime(time);
   }
 
+  /// The new maximum upload retry time in milliseconds.
   Future<void> setMaxUploadRetryTime(int time) {
     assert(time != null);
     assert(time > 0);
     return _delegate.setMaxUploadRetryTime(time);
   }
 
+  /// The new maximum download retry time in milliseconds.
   Future<void> setMaxDownloadRetryTime(int time) {
     assert(time != null);
     assert(time > 0);
@@ -103,12 +136,12 @@ class FirebaseStorage extends FirebasePluginPlatform {
   bool operator ==(dynamic o) =>
       o is FirebaseStorage &&
       o.app.name == app.name &&
-      o.storageBucket == storageBucket;
+      o.bucket == bucket;
 
   @override
-  int get hashCode => hash2(app.name, storageBucket);
+  int get hashCode => hash2(app.name, bucket);
 
   @override
   String toString() =>
-      '$FirebaseStorage(app: ${app.name}, storageBucket: $storageBucket)';
+      '$FirebaseStorage(app: ${app.name}, bucket: $bucket)';
 }

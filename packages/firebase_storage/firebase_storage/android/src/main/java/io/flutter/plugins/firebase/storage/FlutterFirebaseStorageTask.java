@@ -95,7 +95,7 @@ class FlutterFirebaseStorageTask {
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("handle", handle);
     arguments.put("appName", reference.getStorage().getApp().getName());
-    arguments.put("storageBucket", reference.getBucket());
+    arguments.put("bucket", reference.getBucket());
 
     task.addOnProgressListener(
         executor,

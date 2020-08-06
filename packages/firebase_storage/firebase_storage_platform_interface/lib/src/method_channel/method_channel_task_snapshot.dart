@@ -7,10 +7,13 @@ import 'package:firebase_storage_platform_interface/firebase_storage_platform_in
 import '../../firebase_storage_platform_interface.dart';
 import './method_channel_reference.dart';
 
+/// Implementation for a [TaskSnapshotPlatform].
 class MethodChannelTaskSnapshot extends TaskSnapshotPlatform {
+  // ignore: public_member_api_docs
   MethodChannelTaskSnapshot(this.storage, TaskState state, this._data)
       : super(state, _data);
 
+  /// The [FirebaseStoragePlatform] used to create the task.
   final FirebaseStoragePlatform storage;
 
   final Map<String, dynamic> _data;

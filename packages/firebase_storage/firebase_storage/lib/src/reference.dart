@@ -27,7 +27,8 @@ class Reference {
   /// For example, if fullPath is 'full/path/image.png', name is 'image.png'.
   String get name => _delegate.name;
 
-  /// A reference pointing to the parent location of this reference, or `null` if this reference is the root.
+  /// A reference pointing to the parent location of this reference, or `null` 
+  /// if this reference is the root.
   Reference get parent {
     ReferencePlatform referenceParentPlatform = _delegate.parent;
 

@@ -7,7 +7,9 @@ import 'package:firebase_storage_platform_interface/firebase_storage_platform_in
 import '../../firebase_storage_platform_interface.dart';
 import './method_channel_reference.dart';
 
+/// Implementation for a [ListResultPlatform].
 class MethodChannelListResult extends ListResultPlatform {
+  // ignore: public_member_api_docs
   MethodChannelListResult(
     FirebaseStoragePlatform storage, {
     String nextPageToken,
@@ -28,6 +30,8 @@ class MethodChannelListResult extends ListResultPlatform {
 
   @override
   List<ReferencePlatform> get prefixes {
-    return _prefixes.map((path) => MethodChannelReference(storage, path)).toList();
+    return _prefixes
+        .map((path) => MethodChannelReference(storage, path))
+        .toList();
   }
 }

@@ -8,7 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import '../../firebase_storage_platform_interface.dart';
+import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 import '../method_channel/method_channel_firebase_storage.dart';
 
 /// The Firebase Storage platform interface.
@@ -17,20 +17,28 @@ import '../method_channel/method_channel_firebase_storage.dart';
 /// other Flutter supported platforms.
 abstract class FirebaseStoragePlatform extends PlatformInterface {
   @protected
+  // ignore: public_member_api_docs
   final FirebaseApp appInstance;
 
-  final String storageBucket;
+  /// The storage bucket of this instance.
+  final String bucket;
 
   /// Create an instance using [app]
-  FirebaseStoragePlatform({this.appInstance, this.storageBucket})
+  FirebaseStoragePlatform({this.appInstance, this.bucket})
       : super(token: _token);
 
   static final Object _token = Object();
 
+  /// Returns a [FirebaseStoragePlatform] with the provided arguments.
   factory FirebaseStoragePlatform.instanceFor(
-      {FirebaseApp app, String storageBucket}) {
+      {FirebaseApp app, String bucket, Map<dynamic, dynamic> pluginConstants}) {
     return FirebaseStoragePlatform.instance
-        .delegateFor(app: app, storageBucket: storageBucket);
+        .delegateFor(app: app, bucket: bucket)
+        .setInitialValues(
+          maxOperationRetryTime: pluginConstants['MAX_OPERATION_RETRY_TIME'],
+          maxUploadRetryTime: pluginConstants['MAX_UPLOAD_RETRY_TIME'],
+          maxDownloadRetryTime: pluginConstants['MAX_DOWNLOAD_RETRY_TIME'],
+        );
   }
 
   /// Returns the [FirebaseApp] for the current instance.
@@ -61,15 +69,41 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  /// The maximum time to retry operations other than uploads or downloads in milliseconds.
+  int get maxOperationRetryTime {
+    throw UnimplementedError('get.maxOperationRetryTime is not implemented');
+  }
+
+  /// The maximum time to retry uploads in milliseconds.
+  int get maxUploadRetryTime {
+    throw UnimplementedError('get.maxUploadRetryTime is not implemented');
+  }
+
+  /// The maximum time to retry downloads in milliseconds.
+  int get maxDownloadRetryTime {
+    throw UnimplementedError('get.maxDownloadRetryTime is not implemented');
+  }
+
   /// Enables delegates to create new instances of themselves if a none default
   /// [FirebaseApp] instance is required by the user.
   @protected
-  FirebaseStoragePlatform delegateFor({FirebaseApp app, String storageBucket}) {
+  FirebaseStoragePlatform delegateFor({FirebaseApp app, String bucket}) {
     throw UnimplementedError('delegateFor() is not implemented');
   }
 
-  // todo get maxOperationRetryTime
-  // todo get maxUploadRetryTime
+  /// Sets any initial values on the instance.
+  ///
+  /// Platforms with Method Channels can provide constant values to be available
+  /// before the instance has initialized to prevent any unnecessary async
+  /// calls.
+  @protected
+  FirebaseStoragePlatform setInitialValues({
+    int maxOperationRetryTime,
+    int maxUploadRetryTime,
+    int maxDownloadRetryTime,
+  }) {
+    throw UnimplementedError('setInitialValues() is not implemented');
+  }
 
   /// Returns a reference for the given path in the default bucket.
   ///
@@ -80,15 +114,18 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
     throw UnimplementedError('ref() is not implemented');
   }
 
+  /// The new maximum operation retry time in milliseconds.
   Future<void> setMaxOperationRetryTime(int time) {
     throw UnimplementedError('setMaxOperationRetryTime() is not implemented');
   }
 
+  /// The new maximum upload retry time in milliseconds.
   Future<void> setMaxUploadRetryTime(int time) {
     throw UnimplementedError('setMaxUploadRetryTime() is not implemented');
   }
 
-    Future<void> setMaxDownloadRetryTime(int time) {
+  /// The new maximum download retry time in milliseconds.
+  Future<void> setMaxDownloadRetryTime(int time) {
     throw UnimplementedError('setMaxDownloadRetryTime() is not implemented');
   }
 }
