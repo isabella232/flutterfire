@@ -56,16 +56,20 @@ class FirebaseStorage extends FirebasePluginPlatform {
   }
 
   /// Returns an instance using a specified [FirebaseApp].
-  static FirebaseStorage instanceFor({FirebaseApp app, String bucket}) {
+  static FirebaseStorage instanceFor(
+      {FirebaseApp app,
+      String bucket,
+      @Deprecated("Deprecated in favour of using the [bucket] argument.")
+          String storageBucket}) {
     assert(app != null);
+    bucket ??= storageBucket;
     String key = '${app.name}|${bucket ?? ''}';
 
     if (_cachedInstances.containsKey(key)) {
       return _cachedInstances[key];
     }
 
-    FirebaseStorage newInstance =
-        FirebaseStorage._(app: app, bucket: bucket);
+    FirebaseStorage newInstance = FirebaseStorage._(app: app, bucket: bucket);
     _cachedInstances[key] = newInstance;
 
     return newInstance;
@@ -107,8 +111,31 @@ class FirebaseStorage extends FirebasePluginPlatform {
       path = pathFromGoogleStorageUrl(url);
     }
 
-    return FirebaseStorage.instanceFor(app: app, bucket: bucket)
-        .ref(path);
+    return FirebaseStorage.instanceFor(app: app, bucket: bucket).ref(path);
+  }
+
+  @Deprecated("Deprecated in favor of refFromURL")
+  // ignore: public_member_api_docs
+  Future<Reference> getReferenceFromUrl(String url) async {
+    return refFromURL(url);
+  }
+
+  @Deprecated("Deprecated in favor of get.maxOperationRetryTime")
+  // ignore: public_member_api_docs
+  Future<int> getMaxOperationRetryTimeMillis() async {
+    return maxOperationRetryTime;
+  }
+
+  @Deprecated("Deprecated in favor of get.maxUploadRetryTime")
+  // ignore: public_member_api_docs
+  Future<int> getMaxUploadRetryTimeMillis() async {
+    return maxUploadRetryTime;
+  }
+
+  @Deprecated("Deprecated in favor of get.maxDownloadRetryTime")
+  // ignore: public_member_api_docs
+  Future<int> getMaxDownloadRetryTimeMillis() async {
+    return maxDownloadRetryTime;
   }
 
   /// The new maximum operation retry time in milliseconds.
@@ -118,11 +145,23 @@ class FirebaseStorage extends FirebasePluginPlatform {
     return _delegate.setMaxOperationRetryTime(time);
   }
 
+  @Deprecated("Deprecated in favor of setMaxUploadRetryTime()")
+  // ignore: public_member_api_docs
+  Future<void> setMaxOperationRetryTimeMillis(int time) {
+    return setMaxUploadRetryTime(time);
+  }
+
   /// The new maximum upload retry time in milliseconds.
   Future<void> setMaxUploadRetryTime(int time) {
     assert(time != null);
     assert(time > 0);
     return _delegate.setMaxUploadRetryTime(time);
+  }
+
+  @Deprecated("Deprecated in favor of setMaxUploadRetryTime()")
+  // ignore: public_member_api_docs
+  Future<void> setMaxUploadRetryTimeMillis(int time) {
+    return setMaxUploadRetryTime(time);
   }
 
   /// The new maximum download retry time in milliseconds.
@@ -132,16 +171,19 @@ class FirebaseStorage extends FirebasePluginPlatform {
     return _delegate.setMaxDownloadRetryTime(time);
   }
 
+  @Deprecated("Deprecated in favor of setMaxDownloadRetryTime()")
+  // ignore: public_member_api_docs
+  Future<void> setMaxDownloadRetryTimeMillis(int time) {
+    return setMaxDownloadRetryTime(time);
+  }
+
   @override
   bool operator ==(dynamic o) =>
-      o is FirebaseStorage &&
-      o.app.name == app.name &&
-      o.bucket == bucket;
+      o is FirebaseStorage && o.app.name == app.name && o.bucket == bucket;
 
   @override
   int get hashCode => hash2(app.name, bucket);
 
   @override
-  String toString() =>
-      '$FirebaseStorage(app: ${app.name}, bucket: $bucket)';
+  String toString() => '$FirebaseStorage(app: ${app.name}, bucket: $bucket)';
 }
