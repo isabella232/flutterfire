@@ -135,7 +135,7 @@ class MethodChannelPutFileTask extends MethodChannelTask {
       'bucket': storage.bucket,
       'handle': handle,
       'path': path,
-      'filePath': file.path,
+      'filePath': file.absolute.path,
       'metadata': metadata?.asMap(),
     });
   }

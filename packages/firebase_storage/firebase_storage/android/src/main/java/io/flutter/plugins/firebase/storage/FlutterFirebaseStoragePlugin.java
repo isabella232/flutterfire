@@ -135,6 +135,16 @@ public class FlutterFirebaseStoragePlugin
     return details;
   }
 
+  void cancelTasks() {
+    for (int i = 0; i < storageTasks.size(); i++) {
+      int key = storageTasks.keyAt(i);
+      StorageTask<?> task = storageTasks.get(key);
+      task.cancel();
+    }
+
+    storageTasks.clear();
+  }
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
     initInstance(binding.getBinaryMessenger());
@@ -142,7 +152,7 @@ public class FlutterFirebaseStoragePlugin
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    //    removeEventListeners();
+    cancelTasks();
     channel.setMethodCallHandler(null);
     channel = null;
   }
@@ -639,6 +649,9 @@ public class FlutterFirebaseStoragePlugin
 
   @Override
   public Task<Void> didReinitializeFirebaseCore() {
-    return Tasks.call(cachedThreadPool, () -> null);
+    return Tasks.call(cachedThreadPool, () -> {
+      cancelTasks();
+      return null;
+    });
   }
 }

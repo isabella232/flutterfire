@@ -160,7 +160,7 @@ class Reference {
   /// Optionally, you can also set metadata onto the uploaded object.
   UploadTask putFile(File file, [SettableMetadata metadata]) {
     assert(file != null);
-    assert(file.existsSync());
+    assert(file.absolute.existsSync());
     return UploadTask._(storage, _delegate.putFile(file, metadata));
   }
 
