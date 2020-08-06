@@ -42,11 +42,6 @@ import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 import io.flutter.plugins.firebase.core.FlutterFirebasePluginRegistry;
 
-// TODO(kroikie): Better handle empty paths.
-//                https://github.com/FirebaseExtended/flutterfire/issues/1505
-/** FirebaseStoragePlugin */
-// TODO(Salakar): Should also implement io.flutter.plugins.firebase.core.FlutterFirebasePlugin when
-// reworked.
 public class FlutterFirebaseStoragePlugin
     implements FlutterFirebasePlugin, MethodCallHandler, FlutterPlugin, ActivityAware {
   private static final SparseArray<StorageTask<?>> storageTasks = new SparseArray<>();
@@ -64,7 +59,9 @@ public class FlutterFirebaseStoragePlugin
     out.put("path", snapshot.getStorage().getPath());
     out.put("bytesTransferred", snapshot.getBytesTransferred());
     out.put("totalBytes", snapshot.getTotalByteCount());
-    out.put("metadata", parseMetadata(snapshot.getMetadata()));
+    if (snapshot.getMetadata() != null) {
+      out.put("metadata", parseMetadata(snapshot.getMetadata()));
+    }
 
     return out;
   }
@@ -80,21 +77,32 @@ public class FlutterFirebaseStoragePlugin
   }
 
   private static Map<String, Object> parseMetadata(StorageMetadata storageMetadata) {
+    if (storageMetadata == null) {
+      return null;
+    }
+
     Map<String, Object> out = new HashMap<>();
-    out.put("name", storageMetadata.getName());
-    out.put("bucket", storageMetadata.getBucket());
-    out.put("generation", storageMetadata.getGeneration());
-    out.put("metageneration", storageMetadata.getMetadataGeneration());
+    if (storageMetadata.getName() != null) out.put("name", storageMetadata.getName());
+    if (storageMetadata.getBucket() != null) out.put("bucket", storageMetadata.getBucket());
+    if (storageMetadata.getGeneration() != null)
+      out.put("generation", storageMetadata.getGeneration());
+    if (storageMetadata.getGeneration() != null)
+      out.put("generation", storageMetadata.getGeneration());
     out.put("fullPath", storageMetadata.getPath());
     out.put("size", storageMetadata.getSizeBytes());
     out.put("creationTimeMillis", storageMetadata.getCreationTimeMillis());
     out.put("updatedTimeMillis", storageMetadata.getUpdatedTimeMillis());
-    out.put("md5Hash", storageMetadata.getMd5Hash());
-    out.put("cacheControl", storageMetadata.getCacheControl());
-    out.put("contentDisposition", storageMetadata.getContentDisposition());
-    out.put("contentEncoding", storageMetadata.getContentEncoding());
-    out.put("contentLanguage", storageMetadata.getContentLanguage());
-    out.put("contentType", storageMetadata.getContentType());
+    if (storageMetadata.getMd5Hash() != null) out.put("md5Hash", storageMetadata.getMd5Hash());
+    if (storageMetadata.getCacheControl() != null)
+      out.put("cacheControl", storageMetadata.getCacheControl());
+    if (storageMetadata.getContentDisposition() != null)
+      out.put("contentDisposition", storageMetadata.getContentDisposition());
+    if (storageMetadata.getContentEncoding() != null)
+      out.put("contentEncoding", storageMetadata.getContentEncoding());
+    if (storageMetadata.getContentLanguage() != null)
+      out.put("contentLanguage", storageMetadata.getContentLanguage());
+    if (storageMetadata.getContentType() != null)
+      out.put("contentType", storageMetadata.getContentType());
 
     Map<String, String> customMetadata = new HashMap<>();
     for (String key : storageMetadata.getCustomMetadataKeys()) {
@@ -194,7 +202,10 @@ public class FlutterFirebaseStoragePlugin
 
   private Map<String, Object> parseListResult(ListResult listResult) {
     Map<String, Object> out = new HashMap<>();
-    out.put("nextPageToken", listResult.getPageToken());
+
+    if (listResult.getPageToken() != null) {
+      out.put("nextPageToken", listResult.getPageToken());
+    }
 
     List<String> items = new ArrayList<>();
     List<String> prefixes = new ArrayList<>();
@@ -345,7 +356,7 @@ public class FlutterFirebaseStoragePlugin
               FlutterFirebaseStorageTask.uploadBytes(
                   handle, reference, bytes, parseMetadata(metadata));
 
-          StorageTask uploadTask = task.start(channel, activity, cachedThreadPool);
+          StorageTask<?> uploadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, uploadTask);
 
           return null;
@@ -368,7 +379,7 @@ public class FlutterFirebaseStoragePlugin
               FlutterFirebaseStorageTask.uploadBytes(
                   handle, reference, stringToByteData(data, format), parseMetadata(metadata));
 
-          StorageTask uploadTask = task.start(channel, activity, cachedThreadPool);
+          StorageTask<?> uploadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, uploadTask);
 
           return null;
@@ -390,7 +401,7 @@ public class FlutterFirebaseStoragePlugin
               FlutterFirebaseStorageTask.uploadFile(
                   handle, reference, Uri.fromFile(new File(filePath)), parseMetadata(metadata));
 
-          StorageTask uploadTask = task.start(channel, activity, cachedThreadPool);
+          StorageTask<?> uploadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, uploadTask);
 
           return null;
@@ -408,58 +419,75 @@ public class FlutterFirebaseStoragePlugin
           FlutterFirebaseStorageTask task =
               FlutterFirebaseStorageTask.downloadFile(handle, reference, new File(filePath));
 
-          StorageTask downloadTask = task.start(channel, activity, cachedThreadPool);
+          StorageTask<?> downloadTask = task.start(channel, activity, cachedThreadPool);
           storageTasks.put(handle, downloadTask);
 
           return null;
         });
   }
 
-  private Task<Void> taskPause(Map<String, Object> arguments) {
+  private Map<String, Boolean> setTaskState(StorageTask<?> task, String state) {
+    boolean status = false;
+
+    switch (state) {
+      case "pause":
+        status = task.pause();
+        break;
+      case "resume":
+        status = task.resume();
+        break;
+      case "cancel":
+        status = task.cancel();
+        break;
+    }
+
+    Map<String, Boolean> statusMap = new HashMap<>();
+    statusMap.put("status", status);
+    return statusMap;
+  }
+
+  private Task<Map<String, Boolean>> taskPause(Map<String, Object> arguments) {
     return Tasks.call(
         cachedThreadPool,
         () -> {
           final int handle = (int) Objects.requireNonNull(arguments.get("handle"));
-          StorageTask task = storageTasks.get(handle);
+          StorageTask<?> task = storageTasks.get(handle);
 
           if (task == null) {
             throw new Exception("Pause operation was called on a task which does not exist.");
           }
 
-          task.pause();
-          return null;
+          return setTaskState(task, "pause");
         });
   }
 
-  private Task<Void> taskResume(Map<String, Object> arguments) {
+  private Task<Map<String, Boolean>> taskResume(Map<String, Object> arguments) {
     return Tasks.call(
         cachedThreadPool,
         () -> {
           final int handle = (int) Objects.requireNonNull(arguments.get("handle"));
-          StorageTask task = storageTasks.get(handle);
+          StorageTask<?> task = storageTasks.get(handle);
 
           if (task == null) {
             throw new Exception("Resume operation was called on a task which does not exist.");
           }
 
-          task.resume();
-          return null;
+          return setTaskState(task, "resume");
         });
   }
 
-  private Task<Void> taskCancel(Map<String, Object> arguments) {
+  private Task<Map<String, Boolean>> taskCancel(Map<String, Object> arguments) {
     return Tasks.call(
         cachedThreadPool,
         () -> {
           final int handle = (int) Objects.requireNonNull(arguments.get("handle"));
-          StorageTask task = storageTasks.get(handle);
+          StorageTask<?> task = storageTasks.get(handle);
 
           if (task == null) {
             throw new Exception("Cancel operation was called on a task which does not exist.");
           }
 
-          task.cancel();
-          return null;
+          return setTaskState(task, "cancel");
         });
   }
 
@@ -560,6 +588,7 @@ public class FlutterFirebaseStoragePlugin
       builder.setContentType((String) metadata.get("contentType"));
     }
     if (metadata.get("customMetadata") != null) {
+      @SuppressWarnings("unchecked")
       Map<String, String> customMetadata =
           (Map<String, String>) Objects.requireNonNull(metadata.get("customMetadata"));
       for (String key : customMetadata.keySet()) {

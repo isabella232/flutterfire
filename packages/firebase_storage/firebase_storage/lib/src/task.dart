@@ -52,19 +52,19 @@ abstract class Task {
   /// 
   /// Calling this method will trigger a snapshot event with a [TaskState.paused]
   /// state.
-  Future<void> pause() => _delegate.pause();
+  Future<bool> pause() => _delegate.pause();
 
   /// Resumes the current task.
   /// 
   /// Calling this method will trigger a snapshot event with a [TaskState.running]
   /// state.
-  Future<void> resume() => _delegate.resume();
+  Future<bool> resume() => _delegate.resume();
 
   /// Cancels the current task.
   /// 
   /// Calling this method will cause the task to fail. Both the Future ([onComplete])
   /// and stream ([streamEvents]) will trigger an error with a [FirebaseException].
-  Future<void> cancel() => _delegate.cancel();
+  Future<bool> cancel() => _delegate.cancel();
 }
 
 /// A class which indicates an on-going upload task.

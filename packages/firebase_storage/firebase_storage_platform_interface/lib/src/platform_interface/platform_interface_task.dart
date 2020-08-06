@@ -36,15 +36,15 @@ abstract class TaskPlatform extends PlatformInterface {
     throw UnimplementedError('onComplete is not implemented');
   }
 
-  Future<void> pause() {
+  Future<bool> pause() {
     throw UnimplementedError('pause() is not implemented');
   }
 
-  Future<void> resume() {
+  Future<bool> resume() {
     throw UnimplementedError('resume() is not implemented');
   }
 
-  Future<void> cancel() {
+  Future<bool> cancel() {
     throw UnimplementedError('cancel() is not implemented');
   }
 }

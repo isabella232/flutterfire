@@ -85,27 +85,33 @@ abstract class MethodChannelTask extends TaskPlatform {
   }
 
   @override
-  Future<void> pause() async {
-    await MethodChannelFirebaseStorage.channel
-        .invokeMethod<void>('Task#pause', <String, dynamic>{
+  Future<bool> pause() async {
+    Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
+        .invokeMapMethod<String, dynamic>('Task#pause', <String, dynamic>{
       'handle': _handle,
     }).catchError(catchPlatformException);
+
+    return data['status'];
   }
 
   @override
-  Future<void> resume() async {
-    await MethodChannelFirebaseStorage.channel
-        .invokeMethod<void>('Task#resume', <String, dynamic>{
+  Future<bool> resume() async {
+    Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
+        .invokeMapMethod<String, dynamic>('Task#resume', <String, dynamic>{
       'handle': _handle,
     }).catchError(catchPlatformException);
+
+    return data['status'];
   }
 
   @override
-  Future<void> cancel() async {
-    await MethodChannelFirebaseStorage.channel
-        .invokeMethod<void>('Task#cancel', <String, dynamic>{
+  Future<bool> cancel() async {
+    Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
+        .invokeMapMethod<String, dynamic>('Task#cancel', <String, dynamic>{
       'handle': _handle,
     }).catchError(catchPlatformException);
+
+    return data['status'];
   }
 }
 

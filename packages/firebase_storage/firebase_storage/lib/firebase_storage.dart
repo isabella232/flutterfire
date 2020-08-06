@@ -22,7 +22,7 @@ export 'package:firebase_storage_platform_interface/firebase_storage_platform_in
 export 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
     show FirebaseException;
 
-part 'src/storage.dart';
+part 'src/firebase_storage.dart';
 part 'src/reference.dart';
 part 'src/list_result.dart';
 part 'src/task.dart';

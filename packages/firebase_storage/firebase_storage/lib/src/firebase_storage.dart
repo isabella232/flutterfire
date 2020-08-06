@@ -58,7 +58,8 @@ class FirebaseStorage extends FirebasePluginPlatform {
     return FirebaseStorage.instanceFor(app: app, storageBucket: storageBucket);
   }
 
-  Reference ref(String path) {
+  Reference ref([String path]) {
+    path ??= '/';
     return Reference._(this, _delegate.ref(path));
   }
 

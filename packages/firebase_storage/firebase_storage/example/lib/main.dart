@@ -4,12 +4,16 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
+import 'package:downloads_path_provider/downloads_path_provider.dart';
 
 const String kTestString = 'Hello world!';
 
@@ -36,7 +40,7 @@ class StorageExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Reference ref = FirebaseStorage.instance.ref('/playground/test.png');
+    Reference ref = FirebaseStorage.instance.ref('/playground/landscape.jpeg');
     // print(ref.bucket);
     // print(ref.fullPath);
     // print(ref.name);
@@ -44,17 +48,40 @@ class StorageExampleApp extends StatelessWidget {
     // print(ref.root.fullPath);
     // print(ref.child('/baz.jpg').fullPath);
 
-    String str =
-        "data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7";
+    var list = utf8.encode('hello world');
 
-    UploadTask task = ref.putString(str, format: PutStringFormat.dataUrl);
+    // String str =
+    // "data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7";
 
-    task.snapshotEvents.listen((event) {
-      print('GOT EVENT ${event.state}');
-      print(event.bytesTransferred);
-    });
+    // ByteBuffer buffer = Uint8List.fromList(list).buffer;
+    // UploadTask task = ref.putString(str, format: PutStringFormat.dataUrl);
+    // UploadTask task =
+    //     ref.put(buffer, SettableMetadata(contentType: 'application/text'));
 
-    task.onComplete.then(print).catchError(print);
+    Future foo() async {
+      FirebaseStorage.instance.ref().listAll().then((l) {
+        print(l.items);
+      }).catchError(print);
+      // // await Permission.storage;
+      // String downloadDir =
+      //     (await DownloadsPathProvider.downloadsDirectory).path;
+      // File file = File('$downloadDir/landscape.jpeg');
+
+      // UploadTask task = ref.putFile(file);
+      // // DownloadTask task = ref.writeToFile(file);
+      // await Future.delayed(Duration(milliseconds: 30));
+      // await task.cancel();
+      // print('pause');
+      // task.snapshotEvents.listen((event) {
+      //   print('GOT EVENT ${event.state}');
+      //   print(event.bytesTransferred);
+      //   task.resume();
+      // });
+
+      // task.onComplete.then(print).catchError(print);
+    }
+
+    foo().then(print).catchError(print);
 
     // ref
     //     .updateMetadata(
