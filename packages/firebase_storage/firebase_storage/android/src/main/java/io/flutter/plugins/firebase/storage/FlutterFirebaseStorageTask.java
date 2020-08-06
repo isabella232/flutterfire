@@ -67,12 +67,12 @@ class FlutterFirebaseStorageTask {
         FlutterFirebaseStorageTaskType.DOWNLOAD, handle, reference, null, Uri.fromFile(file), null);
   }
 
-  StorageTask start(
+  StorageTask<?> start(
       @NonNull MethodChannel channel,
       @NonNull Activity activity,
       @SuppressWarnings("SameParameterValue") ExecutorService executor)
       throws Exception {
-    StorageTask task;
+    StorageTask<?> task;
 
     if (type == FlutterFirebaseStorageTaskType.BYTES && bytes != null) {
       if (metadata == null) {
@@ -104,8 +104,7 @@ class FlutterFirebaseStorageTask {
           activity.runOnUiThread(() -> channel.invokeMethod("Task#onProgress", arguments));
         });
 
-    task.addOnCanceledListener(executor, () ->
-      channel.invokeMethod("Task#onCancel", arguments));
+    task.addOnCanceledListener(executor, () -> channel.invokeMethod("Task#onCancel", arguments));
 
     task.addOnPausedListener(
         executor,
@@ -121,9 +120,9 @@ class FlutterFirebaseStorageTask {
           activity.runOnUiThread(() -> channel.invokeMethod("Task#onComplete", arguments));
         });
 
-    task.addOnCanceledListener(executor, () -> {
-      activity.runOnUiThread(() -> channel.invokeMethod("Task#onCancel", arguments));
-    });
+    task.addOnCanceledListener(
+        executor,
+        () -> activity.runOnUiThread(() -> channel.invokeMethod("Task#onCancel", arguments)));
 
     task.addOnFailureListener(
         executor,
