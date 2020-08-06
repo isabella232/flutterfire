@@ -56,13 +56,11 @@ class FirebaseStorage extends FirebasePluginPlatform {
   }
 
   /// Returns an instance using a specified [FirebaseApp].
-  static FirebaseStorage instanceFor(
-      {FirebaseApp app,
-      String bucket,
-      @Deprecated("Deprecated in favour of using the [bucket] argument.")
-          String storageBucket}) {
-    assert(app != null);
-    bucket ??= storageBucket;
+  static FirebaseStorage instanceFor({
+    FirebaseApp app,
+    String bucket,
+  }) {
+    app ??= Firebase.app();
     String key = '${app.name}|${bucket ?? ''}';
 
     if (_cachedInstances.containsKey(key)) {
@@ -78,8 +76,8 @@ class FirebaseStorage extends FirebasePluginPlatform {
   // ignore: public_member_api_docs
   @Deprecated(
       "Constructing Storage is deprecated, use 'FirebaseStorage.instance' or 'FirebaseStorage.instanceFor' instead")
-  factory FirebaseStorage({FirebaseApp app, String bucket}) {
-    return FirebaseStorage.instanceFor(app: app, bucket: bucket);
+  factory FirebaseStorage({FirebaseApp app, String storageBucket}) {
+    return FirebaseStorage.instanceFor(app: app, bucket: storageBucket);
   }
 
   /// Returns a new [Reference].

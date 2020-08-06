@@ -5,7 +5,7 @@
 library firebase_storage;
 
 import 'dart:async';
-import 'dart:typed_data' show ByteBuffer;
+import 'dart:typed_data' show ByteBuffer, Uint8List;
 import 'dart:io' show File;
 import 'dart:convert' show utf8, base64;
 import 'package:quiver/core.dart';
