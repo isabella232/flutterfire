@@ -25,6 +25,24 @@ One of the issues above originates from `FirebaseCrashlyticsPlugin.java`, which 
 Crashlytics [`crash`](usage#forcing-a-crash) method by throwing an uncaught exception to crash the app.  Using the [`crash`](usage#forcing-a-crash) method on the same platform
 will always add reports to the same issue.
 
+## Filtering Crash Types
+
+The Crashlytics console allows you to filter your issues by event types such as `Crashes` and `Non-fatals`.
+In the below example, you can see our project filtered by `Non-fatal` crashes.
+
+![hide:Crashlytics Filter Example](crashlytics-filter.png)
+
+In the issues section, it shows us that the event was triggered in the `mobile.dart` file on line 62, which is the below
+code snippet:
+
+```dart highlight={2} title="mobile.dart"
+try {
+  throw 'error_example';
+} catch (e, s) {
+  FirebaseCrashlytics.instance.recordError(e, s, context: 'as an example');
+}
+```
+
 ## Managing Issues
 
 By clicking on an issue, you can view its statistics and associated reports in more detail.  The below screenshot shows the
