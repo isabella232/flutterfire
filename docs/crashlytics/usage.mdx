@@ -9,6 +9,11 @@ To start using Firebase Crashlytics within your project, import it at the top of
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 ```
 
+## Sending reports to Crashlytics
+
+To send report data to Crashlytics, the **application must be restarted**.  Crashlytics automatically sends any crash reports
+to Firebase next time the application is launched
+
 ## Enabling Debug Mode
 
 Set `enabledInDevMode` to true to see reports whilst in debug mode.  This is only to be used for confirming that reports are being
