@@ -18,10 +18,17 @@ abstract class MethodChannelTask extends TaskPlatform {
   MethodChannelTask(
     this._handle,
     this.storage,
-    this._task,
+    this._initialTask,
   ) : super() {
+    // Keep reference to whether the initial "start" task has completed.
+    _initialTaskCompleter = Completer<void>();
+
+    // Once complete, set the completer.
+    _initialTask.then((value) => _initialTaskCompleter.complete());
+
     // Catch any errors associated with the initial task call.
-    _task.catchError((Object e) {
+    _initialTask.catchError((Object e) {
+      _initialTaskCompleter.completeError(e);
       _didComplete = true;
       _exception = e;
       catchPlatformException(e).catchError(_completer?.completeError);
@@ -31,7 +38,7 @@ abstract class MethodChannelTask extends TaskPlatform {
     _stream = MethodChannelFirebaseStorage.taskObservers[_handle].stream;
     StreamSubscription _subscription;
 
-    // Listen for stream events
+    // Listen for stream events.
     _subscription = _stream.listen((TaskSnapshotPlatform snapshot) async {
       _lastSnapshot = snapshot;
 
@@ -57,7 +64,9 @@ abstract class MethodChannelTask extends TaskPlatform {
 
   Stream<TaskSnapshotPlatform> _stream;
 
-  Future<void> _task;
+  Completer<void> _initialTaskCompleter;
+
+  Future<void> _initialTask;
 
   final int _handle;
 
@@ -91,32 +100,56 @@ abstract class MethodChannelTask extends TaskPlatform {
 
   @override
   Future<bool> pause() async {
-    Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
-        .invokeMapMethod<String, dynamic>('Task#pause', <String, dynamic>{
-      'handle': _handle,
-    }).catchError(catchPlatformException);
+    try {
+      if (!_initialTaskCompleter.isCompleted) {
+        await _initialTaskCompleter.future;
+      }
 
-    return data['status'];
+      Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
+          .invokeMapMethod<String, dynamic>('Task#pause', <String, dynamic>{
+        'handle': _handle,
+      }).catchError(catchPlatformException);
+
+      return data['status'];
+    } catch (e) {
+      return catchPlatformException(e);
+    }
   }
 
   @override
   Future<bool> resume() async {
-    Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
-        .invokeMapMethod<String, dynamic>('Task#resume', <String, dynamic>{
-      'handle': _handle,
-    }).catchError(catchPlatformException);
+    try {
+      if (!_initialTaskCompleter.isCompleted) {
+        await _initialTaskCompleter.future;
+      }
 
-    return data['status'];
+      Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
+          .invokeMapMethod<String, dynamic>('Task#resume', <String, dynamic>{
+        'handle': _handle,
+      });
+
+      return data['status'];
+    } catch (e) {
+      return catchPlatformException(e);
+    }
   }
 
   @override
   Future<bool> cancel() async {
-    Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
-        .invokeMapMethod<String, dynamic>('Task#cancel', <String, dynamic>{
-      'handle': _handle,
-    }).catchError(catchPlatformException);
+    try {
+      if (!_initialTaskCompleter.isCompleted) {
+        await _initialTaskCompleter.future;
+      }
 
-    return data['status'];
+      Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
+          .invokeMapMethod<String, dynamic>('Task#cancel', <String, dynamic>{
+        'handle': _handle,
+      });
+
+      return data['status'];
+    } catch (e) {
+      return catchPlatformException(e);
+    }
   }
 }
 
