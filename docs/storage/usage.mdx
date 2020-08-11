@@ -1,6 +1,195 @@
 ---
-title: Cloud Storage
+title: Using Cloud Storage
 sidebar_label: Usage
 ---
 
-> Documentation coming soon.
+Once installed, you can access the [`firebase_storage`](!firebase_storage) plugin by importing it in your Dart code:
+
+```dart
+import 'package:firebase_storage/firebase_storage.dart';
+```
+
+Before using Firebase Storage, you must first have ensured you have [initialized FlutterFire](overview#initializing-flutterfire).
+
+## Create a default Storage bucket
+
+If you haven't already done so, you first need to create the default storage bucket on the [Firebase console](https://console.firebase.google.com/).
+If you're unsure on how to do this, the [Firebase documentation](https://firebase.google.com/docs/storage/web/start#create-default-bucket) gives a good overview how to do that.  More information can
+be [found here](https://firebase.google.com/docs/storage/web/start#create-default-bucket)
+
+## Creating references
+
+A reference is a local pointer to a file within your bucket. This can be a file that already exists, or for one that does not exist yet.
+To create a reference, use the `ref` method:
+
+```dart
+final Reference ref = FirebaseStorage.instance.ref('/notes.txt');
+```
+
+You can also specify a file in a nested directory:
+
+```dart
+final Reference ref = FirebaseStorage.instance.ref().child('images').child('defaultProfile.png');
+```
+
+## Uploading Files
+
+###  Upload from a File
+
+Once you've created a reference for you file, you can then call either the `putFile` or `putBlob` method that takes the
+passed data and uploads them to Firebase Storage.
+
+```dart
+Future<void> uploadFile() {
+// Create bucket storage reference to not yet existing file
+Reference ref = FirebaseStorage.instance.ref('/file-upload-test.txt');
+
+// Upload file
+UploadTask task = ref.putFile(file);
+}
+```
+
+### Upload from a String
+
+It is possible to upload a raw, `base64`, `base64url`, or `data_url` encoded string to Firebase Storage using the `putString`
+method
+
+```dart
+Future<void> uploadString() {
+// Create bucket storage reference to not yet existing file
+Reference ref = FirebaseStorage.instance.ref('/file-upload-test.txt');
+
+// Upload file
+UploadTask task = ref.putFile(file);
+}
+```
+
+### Add File Metadata
+
+When uploading a file, you can specify metadata for that file.  File metadata contains properties such as `name` and `size`.
+There are a number of writable metadata properties that can be overwritten.  Please refer to the [full list]('https://firebase.google.com/docs/storage/web/file-metadata#file_metadata_properties')
+
+To add metadata on when using `putFile`:
+
+```dart highlight={3}
+UploadTask task = ref.putFile(
+  file,
+  SettableMetadata(
+    customMetadata: <String, String>{'activity': 'test'}
+  )
+);
+```
+
+To add metadata when using `putString`:
+
+```dart highlight={3}
+UploadTask task = ref.putString(
+  file,
+  metadata: SettableMetadata(
+    customMetadata: <String, String>{'activity': 'test'}
+  )
+);
+```
+
+## Downloading Files
+
+### Create a reference
+
+To download a file from Firebase Storage, you need to create a reference to the file you want. This can be passed via a
+path, or you can create a reference from an existing `gs://` or `https://` URL referencing an object in Cloud Storage.
+
+```dart
+// Create a reference to a file based on the path
+Reference ref = FirebaseStorage.instance.ref('/coding.jpg');
+
+// Create a reference to a file from a Google Cloud Storage URI
+Reference ref = FirebaseStorage.instance.refFromURL("gs://bucket.appspot.com/coding.jpg");
+
+// Create a reference to a file from a HTTPS URL
+Reference ref = FirebaseStorage.instance
+  .refFromURL("https://firebasestorage.googleapis.com/v0/b/bucket/o/coding.jpg");
+```
+
+> If you are using the GS URI, the default bucket must include `.appspot.com` and secondary buckets should not
+
+### Download Files
+
+Once you have the reference, you can download the files using the `writeToFile` method to store the file to a local device:
+
+```dart
+import 'package:path_provider/path_provider.dart';
+
+Future<void> downloadFiles() async {
+  // Create reference to the file
+  Reference ref = FirebaseStorage.instance.ref('/coding.jpg');
+
+  // Create a reference to the local file
+  final dir = await getExternalStorageDirectory();
+  File tempFile = File('${dir.path}/$name');
+
+  // Create download task to start download
+  DownloadTask task = ref.writeToFile(tempFile);
+}
+```
+
+## Managing Transfers
+
+Firebase Storage gives you the ability to manage uploads in progress using the `pause`, `resume` and `cancel` methods.
+These methods return a boolean value that represent whether the status update was successful.
+
+```dart
+// Create a reference
+Reference ref = FirebaseStorage.instance.ref('mountains.png');
+
+// Upload the file
+UploadTask task = ref.putFile(file);
+
+// Pause the upload
+bool paused = task.pause();
+
+// Resume the upload
+bool resumed = task.resume();
+
+// Cancel the upload
+bool cancelled = task.cancel();
+```
+
+## Monitor Transfer Progress
+
+When transferring files, the task listener may trigger events such as:
+
+- `running` - Fired when a task starts or resumes transferring
+- `progress` - Fired when data is transferring
+- `pause` - Fired when the transfer is paused
+
+When an event occurs, a `TaskSnapshot` object is passed back that contains the following properties.
+
+- `bytesTransferred` - Total number of bytes that have been transferred
+- `totalBytes` - Total number of bytes expected to be transferred
+- `state` - Current state of the transfer
+- `metadata` - Before the transfer completes, metadata sent to the server. After the transfer completes, metadata the server sent back
+- `task` - The task this is a snapshot of.  Used to `pause`, `resume` or `cancel` the task
+- `ref` - The reference the task came from
+
+These events can be used to provide a way to monitor upload transfers:
+
+```dart title="Upload Monitor"
+// Create a reference
+Reference ref = FirebaseStorage.instance.ref('/mountains.png');
+
+// Start the upload task
+UploadTask task = ref.putFile(file);
+
+// Listen for task events
+task.snapshotEvents.listen((TaskSnapshot snapshot) {
+  // Get task state such as running, progress and pause
+  print('Snapshot state: ${snapshot.state}');
+  // Calculate the task progress
+  print('Progress: ${(snapshot.totalBytes/snapshot.bytesTransferred) * 100} %');
+});
+
+task.onComplete.then((TaskSnapshot snapshot){
+  // Handle successful uploads on complete
+  print('Upload Complete');
+});
+```
