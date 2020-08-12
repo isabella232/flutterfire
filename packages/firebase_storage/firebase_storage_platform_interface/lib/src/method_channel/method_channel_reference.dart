@@ -104,7 +104,7 @@ class MethodChannelReference extends ReferencePlatform {
   @override
   TaskPlatform putBlob(dynamic data, [SettableMetadata metadata]) {
     throw UnimplementedError(
-        'putBlob() is not suport on native platforms. Use [put], [putFile] or [putString] instead.');
+        'putBlob() is not supported on native platforms. Use [put], [putFile] or [putString] instead.');
   }
 
   @override

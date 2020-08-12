@@ -74,7 +74,7 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
           return _sendTaskException(
               arguments['handle'],
               FirebaseException(
-                plugin: 'cloud_firestore',
+                plugin: 'firebase_storage',
                 code: 'canceled',
                 message: 'User canceled the upload/download.',
               ));
@@ -84,7 +84,7 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
           return _sendTaskException(
               arguments['handle'],
               FirebaseException(
-                plugin: 'cloud_firestore',
+                plugin: 'firebase_storage',
                 code: errorMap['code'],
                 message: errorMap['message'],
               ));
