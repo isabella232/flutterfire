@@ -70,144 +70,146 @@ class _MyHomePageState extends State<MyHomePage> {
       children.add(tile);
     });
 
-
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.clear_all),
-            onPressed: () {},
-          )
-        ]
-      ),
+      appBar: AppBar(title: Text(widget.title), actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.clear_all),
+          onPressed: () {},
+        )
+      ]),
       body: Container(
         alignment: Alignment.center,
         child: ListView(
           children: [
             RaisedButton(
                 child: Text('Upload from a String'),
-                onPressed:() async {
-                  const String putStringText = 'his upload has been generated using the putString method! Check the metadata too!';
+                onPressed: () async {
+                  const String putStringText =
+                      'his upload has been generated using the putString method! Check the metadata too!';
 
                   // Create a Reference to the file
-                  Reference ref = FirebaseStorage.instance.ref().child('playground').child('/put-string-example.txt');
+                  Reference ref = FirebaseStorage.instance
+                      .ref()
+                      .child('playground')
+                      .child('/put-string-example.txt');
 
                   // Start upload of putString
-                  UploadTask task = ref.putString(putStringText, metadata: SettableMetadata(
-                      contentLanguage: 'en',
-                      customMetadata: <String, String>{'example': 'putString'}
-                  ));
+                  UploadTask task = ref.putString(putStringText,
+                      metadata: SettableMetadata(
+                          contentLanguage: 'en',
+                          customMetadata: <String, String>{
+                            'example': 'putString'
+                          }));
 
                   setState(() {
                     _tasks.add(task);
                   });
-                }
-            ),
+                }),
             RaisedButton(
                 child: Text('Upload from a File'),
-                onPressed:() async {
+                onPressed: () async {
                   final Directory systemTempDir = Directory.systemTemp;
-                  final File file = await File('${systemTempDir.path}/temp-file.txt').create();
+                  final File file =
+                      await File('${systemTempDir.path}/temp-file.txt')
+                          .create();
                   await file.writeAsString('This is a file upload test');
 
-                  Reference ref = FirebaseStorage.instance.ref('/file-upload-test.txt');
+                  Reference ref =
+                      FirebaseStorage.instance.ref('/file-upload-test.txt');
 
                   UploadTask task = ref.putFile(file);
 
                   task.snapshotEvents.listen((TaskSnapshot snapshot) {
                     print('Snapshot state: ${snapshot.state}');
-                    print('Progress: ${(snapshot.totalBytes/snapshot.bytesTransferred) * 100} %');
-                  }, onError: (Object e){
+                    print(
+                        'Progress: ${(snapshot.totalBytes / snapshot.bytesTransferred) * 100} %');
+                  }, onError: (Object e) {
                     print(e);
                   });
 
-                  task.onComplete.then((TaskSnapshot snapshot){
+                  task.onComplete.then((TaskSnapshot snapshot) {
                     print('Upload Complete');
                   });
-                }
-            ),
+                }),
             ...children
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Upload',
-        child: Icon(Icons.file_upload)
-      ),
+          onPressed: () {}, tooltip: 'Upload', child: Icon(Icons.file_upload)),
     );
   }
 }
 
 class UploadTaskListTile extends StatelessWidget {
-  const UploadTaskListTile({Key key, this.task, this.onDismissed, this.onDownload}) : super(key: key);
+  const UploadTaskListTile(
+      {Key key, this.task, this.onDismissed, this.onDownload})
+      : super(key: key);
 
-   final UploadTask task;
-   final VoidCallback onDismissed;
-   final VoidCallback onDownload;
+  final UploadTask task;
+  final VoidCallback onDismissed;
+  final VoidCallback onDownload;
 
-   String _bytesTransferred(TaskSnapshot snapshot) {
-     return '${snapshot.bytesTransferred}/${snapshot.totalBytes}';
-   }
+  String _bytesTransferred(TaskSnapshot snapshot) {
+    return '${snapshot.bytesTransferred}/${snapshot.totalBytes}';
+  }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<TaskSnapshot>(
-      stream: task.snapshotEvents,
-      builder: (BuildContext context, AsyncSnapshot<TaskSnapshot> asyncSnapshot) {
-        Widget subtitle;
-        if(asyncSnapshot.hasData) {
-          subtitle = Text('${asyncSnapshot.data.state}: ${_bytesTransferred(asyncSnapshot.data)} bytes sent');
-        }
-        else {
-          subtitle = Text('Starting...');
-        }
+        stream: task.snapshotEvents,
+        builder:
+            (BuildContext context, AsyncSnapshot<TaskSnapshot> asyncSnapshot) {
+          Widget subtitle;
+          if (asyncSnapshot.hasData) {
+            subtitle = Text(
+                '${asyncSnapshot.data.state}: ${_bytesTransferred(asyncSnapshot.data)} bytes sent');
+          } else {
+            subtitle = Text('Starting...');
+          }
 
-        return Dismissible(
-          key: Key(task.hashCode.toString()),
-          onDismissed: ($) => onDismissed(),
-          child: ListTile(
-            title: Text('Upload Task #${task.hashCode}'),
-            subtitle: subtitle,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Offstage(
-                  offstage: false,
-                  child: IconButton(
-                    icon: Icon(Icons.pause),
-                    onPressed: () => task.pause(),
+          return Dismissible(
+            key: Key(task.hashCode.toString()),
+            onDismissed: ($) => onDismissed(),
+            child: ListTile(
+              title: Text('Upload Task #${task.hashCode}'),
+              subtitle: subtitle,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Offstage(
+                    offstage: false,
+                    child: IconButton(
+                      icon: Icon(Icons.pause),
+                      onPressed: () => task.pause(),
+                    ),
                   ),
-                ),
-                Offstage(
-                  offstage: false,
-                  child: IconButton(
-                    icon: Icon(Icons.file_upload),
-                    onPressed: () => task.resume(),
+                  Offstage(
+                    offstage: false,
+                    child: IconButton(
+                      icon: Icon(Icons.file_upload),
+                      onPressed: () => task.resume(),
+                    ),
                   ),
-                ),
-                Offstage(
-                  offstage: false,
-                  child: IconButton(
-                    icon: Icon(Icons.cancel),
-                    onPressed: () => task.cancel(),
+                  Offstage(
+                    offstage: false,
+                    child: IconButton(
+                      icon: Icon(Icons.cancel),
+                      onPressed: () => task.cancel(),
+                    ),
                   ),
-                ),
-                Offstage(
-                  offstage: false,
-                  child: IconButton(
-                    icon: Icon(Icons.file_download),
-                    onPressed: () => onDownload(),
+                  Offstage(
+                    offstage: false,
+                    child: IconButton(
+                      icon: Icon(Icons.file_download),
+                      onPressed: () => onDownload(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-
-      });
+          );
+        });
   }
 }
-

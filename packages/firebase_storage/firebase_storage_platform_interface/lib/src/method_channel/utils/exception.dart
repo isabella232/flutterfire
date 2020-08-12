@@ -14,7 +14,8 @@ Future catchPlatformException(Object exception) {
     return Future.error(exception);
   }
 
-  return Future.error(platformExceptionToFirebaseException(exception as PlatformException));
+  return Future.error(
+      platformExceptionToFirebaseException(exception as PlatformException));
 }
 
 /// Converts a [PlatformException] into a [FirebaseException].
