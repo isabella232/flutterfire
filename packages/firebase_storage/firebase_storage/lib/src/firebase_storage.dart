@@ -61,6 +61,10 @@ class FirebaseStorage extends FirebasePluginPlatform {
     String bucket,
   }) {
     app ??= Firebase.app();
+    if (bucket != null) {
+      assert(bucket.startsWith('gs://'));
+    }
+
     String key = '${app.name}|${bucket ?? ''}';
 
     if (_cachedInstances.containsKey(key)) {
@@ -109,7 +113,8 @@ class FirebaseStorage extends FirebasePluginPlatform {
       path = pathFromGoogleStorageUrl(url);
     }
 
-    return FirebaseStorage.instanceFor(app: app, bucket: bucket).ref(path);
+    return FirebaseStorage.instanceFor(app: app, bucket: 'gs://$bucket')
+        .ref(path);
   }
 
   @Deprecated("Deprecated in favor of refFromURL")
