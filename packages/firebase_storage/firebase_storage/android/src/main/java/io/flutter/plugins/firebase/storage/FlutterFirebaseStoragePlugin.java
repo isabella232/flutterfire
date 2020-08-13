@@ -202,7 +202,7 @@ public class FlutterFirebaseStoragePlugin
       return FirebaseStorage.getInstance(app);
     }
 
-    return FirebaseStorage.getInstance(app, bucket);
+    return FirebaseStorage.getInstance(app, "gs://" + bucket);
   }
 
   private StorageReference getReference(Map<String, Object> arguments) {

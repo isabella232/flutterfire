@@ -61,12 +61,11 @@ class FirebaseStorage extends FirebasePluginPlatform {
     String bucket,
   }) {
     app ??= Firebase.app();
-    if (bucket != null) {
-      assert(bucket.startsWith('gs://'));
-    }
+    bucket ??= app.options.storageBucket;
 
-    String key = '${app.name}|${bucket ?? ''}';
+    assert(!bucket.startsWith("gs://"), "A bucket name should not start with a protocol");
 
+    String key = '${app.name}|${bucket}';
     if (_cachedInstances.containsKey(key)) {
       return _cachedInstances[key];
     }
