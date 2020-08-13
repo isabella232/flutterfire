@@ -8,17 +8,16 @@ dependencies:
   firebase_storage:
     path: ../
   firebase_core:
-    path: ../../firebase_core/firebase_core
-  uuid: ^2.0.2
+    path: ../../../firebase_core/firebase_core
   http: ^0.12.0
   path_provider: ^1.6.11
   downloads_path_provider: ^0.1.0
   permission_handler: ^5.0.1+1
+  uuid: ^2.0.2
 
 dev_dependencies:
   pedantic: ^1.8.0
-  flutter_test:
-    sdk: flutter
+  drive: 0.0.1-6.0.pre
   flutter_driver:
     sdk: flutter
   test: any
@@ -29,4 +28,3 @@ flutter:
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
-  flutter: ">=1.12.13+hotfix.5 <2.0.0"
