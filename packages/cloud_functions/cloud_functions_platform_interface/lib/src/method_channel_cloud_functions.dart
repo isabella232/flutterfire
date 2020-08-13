@@ -12,6 +12,26 @@ class MethodChannelCloudFunctions extends CloudFunctionsPlatform {
     'plugins.flutter.io/cloud_functions',
   );
 
+  /// Returns a stub instance to allow the platform interface to access
+  /// the class instance statically.
+  static MethodChannelCloudFunctions get instance {
+    return MethodChannelCloudFunctions._();
+  }
+
+  /// Internal stub class initializer.
+  ///
+  /// When the user code calls an functions method, the real instance is
+  /// then initialized via the [delegateFor] method.
+  MethodChannelCloudFunctions._() : super(appInstance: null);
+
+  MethodChannelCloudFunctions({FirebaseApp app, String region})
+      : super(appInstance: app, region: region);
+
+  @override
+  CloudFunctionsPlatform delegateFor({FirebaseApp app, String region}) {
+    return MethodChannelCloudFunctions(app: app, region: region);
+  }
+
   /// Invokes the specified cloud function.
   ///
   /// The required parameters, [appName] and [functionName], specify which

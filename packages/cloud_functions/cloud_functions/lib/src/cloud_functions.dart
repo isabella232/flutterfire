@@ -15,20 +15,50 @@ class CloudFunctionsException implements Exception {
 /// The entry point for accessing a CloudFunctions.
 ///
 /// You can get an instance by calling [CloudFunctions.instance].
-class CloudFunctions {
-  CloudFunctions({FirebaseApp app, String region})
-      : _app = app ?? Firebase.app(),
-        _region = region;
+class CloudFunctions extends FirebasePluginPlatform {
+  // Cached and lazily loaded instance of [FirestorePlatform] to avoid
+  // creating a [MethodChannelFirestore] when not needed or creating an
+  // instance with the default app before a user specifies an app.
+  CloudFunctionsPlatform _delegatePackingProperty;
 
-  static CloudFunctions _instance = CloudFunctions();
+  CloudFunctionsPlatform get _delegate {
+    if (_delegatePackingProperty == null) {
+      _delegatePackingProperty =
+          CloudFunctionsPlatform.instanceFor(app: app, region: _region);
+    }
+    return _delegatePackingProperty;
+  }
 
-  static CloudFunctions get instance => _instance;
+  /// The [FirebaseApp] for this current [CloudFunctions] instance.
+  FirebaseApp app;
 
-  final FirebaseApp _app;
-
-  final String _region;
+  String _region;
 
   String _origin;
+
+  CloudFunctions._({this.app, String region})
+      : _region = region,
+        super(app.name, 'plugins.flutter.io/cloud_functions');
+
+  @Deprecated(
+      "Constructing Storage is deprecated, use 'CloudFunctions.instance' or 'CloudFunctions.instanceFor' instead")
+  factory CloudFunctions({FirebaseApp app, String region}) {
+    return CloudFunctions.instanceFor(app: app, region: region);
+  }
+
+  static CloudFunctions get instance {
+    return CloudFunctions.instanceFor(
+      app: Firebase.app(),
+    );
+  }
+
+  static CloudFunctions instanceFor({
+    FirebaseApp app,
+    String region,
+  }) {
+    app ??= Firebase.app();
+    return CloudFunctions._(app: app, region: region);
+  }
 
   /// Gets an instance of a Callable HTTPS trigger in Cloud Functions.
   ///

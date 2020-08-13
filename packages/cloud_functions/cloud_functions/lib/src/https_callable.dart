@@ -31,7 +31,7 @@ class HttpsCallable {
     try {
       return CloudFunctionsPlatform.instance
           .callCloudFunction(
-            appName: _cloudFunctions._app.name,
+            appName: _cloudFunctions.app.name,
             region: _cloudFunctions._region,
             origin: _cloudFunctions._origin,
             timeout: timeout,
