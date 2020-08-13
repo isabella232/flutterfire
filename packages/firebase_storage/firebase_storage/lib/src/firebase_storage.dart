@@ -63,7 +63,13 @@ class FirebaseStorage extends FirebasePluginPlatform {
     app ??= Firebase.app();
     bucket ??= app.options.storageBucket;
 
-    assert(!bucket.startsWith("gs://"), "A bucket name should not start with a protocol");
+    // Previous versions allow storage buckets starting with "gs://".
+    // Since we need to create a key using the bucket, it must not include "gs://"
+    // since native does not include it when requesting the bucket. This keeps
+    // the code backwards compatible but also works with the refactor.
+    if (bucket.startsWith('gs://')) {
+      bucket = bucket.replaceFirst('gs://', '');
+    }
 
     String key = '${app.name}|${bucket}';
     if (_cachedInstances.containsKey(key)) {
