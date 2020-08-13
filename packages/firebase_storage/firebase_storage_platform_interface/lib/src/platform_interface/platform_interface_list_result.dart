@@ -3,8 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-
-import '../../firebase_storage_platform_interface.dart';
+import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 
 /// Result returned by [list].
 abstract class ListResultPlatform extends PlatformInterface {

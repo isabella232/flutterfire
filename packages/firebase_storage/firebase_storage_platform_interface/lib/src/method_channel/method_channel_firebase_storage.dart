@@ -8,9 +8,9 @@ import 'package:firebase_storage_platform_interface/firebase_storage_platform_in
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 
-import './method_channel_reference.dart';
-import './method_channel_task_snapshot.dart';
-import './utils/exception.dart';
+import 'method_channel_reference.dart';
+import 'method_channel_task_snapshot.dart';
+import 'utils/exception.dart';
 
 /// Method Channel delegate for [FirebaseStoragePlatform].
 class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {

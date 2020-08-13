@@ -55,7 +55,10 @@ class FirebaseStorage extends FirebasePluginPlatform {
     );
   }
 
-  /// Returns an instance using a specified [FirebaseApp].
+  /// Returns an instance using a specified [FirebaseApp] and/or custom storage bucket.
+  ///
+  /// If [app] is not provided, the default Firebase app will be used.
+  /// If [bucket] is not provided, the default storage bucket will be used.
   static FirebaseStorage instanceFor({
     FirebaseApp app,
     String bucket,
@@ -95,6 +98,7 @@ class FirebaseStorage extends FirebasePluginPlatform {
   /// storage bucket.
   Reference ref([String path]) {
     path ??= '/';
+    path = path.isEmpty ? '/' : path;
     return Reference._(this, _delegate.ref(path));
   }
 

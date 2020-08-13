@@ -21,7 +21,7 @@ class ListResult {
   /// Returns a [List] of [Reference] instances.
   List<Reference> get items {
     return _delegate.items
-        .map((referencePlatform) => Reference._(storage, referencePlatform))
+        .map<Reference>((referencePlatform) => Reference._(storage, referencePlatform))
         .toList();
   }
 
@@ -38,7 +38,7 @@ class ListResult {
   /// as a prefix.
   List<Reference> get prefixes {
     return _delegate.prefixes
-        .map((referencePlatform) => Reference._(storage, referencePlatform))
+        .map<Reference>((referencePlatform) => Reference._(storage, referencePlatform))
         .toList();
   }
 }

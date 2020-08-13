@@ -7,8 +7,6 @@ import 'dart:async';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 
-import '../../firebase_storage_platform_interface.dart';
-
 /// The interface a task must implement.
 abstract class TaskPlatform extends PlatformInterface {
   // ignore: public_member_api_docs

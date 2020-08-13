@@ -9,10 +9,10 @@ import 'dart:typed_data';
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 
 import '../../firebase_storage_platform_interface.dart';
-import './method_channel_firebase_storage.dart';
-import './method_channel_list_result.dart';
-import './method_channel_task.dart';
-import './utils/exception.dart';
+import 'method_channel_firebase_storage.dart';
+import 'method_channel_list_result.dart';
+import 'method_channel_task.dart';
+import 'utils/exception.dart';
 
 class MethodChannelReference extends ReferencePlatform {
   MethodChannelReference(FirebaseStoragePlatform storage, String path)
