@@ -116,7 +116,7 @@ class Reference {
     return ListResult._(storage, await _delegate.list(options));
   }
 
-  ///List all items (files) and prefixes (folders) under this storage reference.
+  /// List all items (files) and prefixes (folders) under this storage reference.
   ///
   /// This is a helper method for calling [list] repeatedly until there are no
   /// more results. The default pagination size is 1000.
