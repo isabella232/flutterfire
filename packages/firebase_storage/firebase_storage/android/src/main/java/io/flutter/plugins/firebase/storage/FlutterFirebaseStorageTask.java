@@ -104,8 +104,6 @@ class FlutterFirebaseStorageTask {
           activity.runOnUiThread(() -> channel.invokeMethod("Task#onProgress", arguments));
         });
 
-    task.addOnCanceledListener(executor, () -> channel.invokeMethod("Task#onCancel", arguments));
-
     task.addOnPausedListener(
         executor,
         taskSnapshot -> {
@@ -121,7 +119,6 @@ class FlutterFirebaseStorageTask {
         });
 
     task.addOnCanceledListener(
-        executor,
         () -> activity.runOnUiThread(() -> channel.invokeMethod("Task#onCancel", arguments)));
 
     task.addOnFailureListener(

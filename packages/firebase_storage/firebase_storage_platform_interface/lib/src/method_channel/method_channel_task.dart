@@ -27,11 +27,15 @@ abstract class MethodChannelTask extends TaskPlatform {
     _initialTask.then((value) => _initialTaskCompleter.complete());
 
     // Catch any errors associated with the initial task call.
-    _initialTask.catchError((Object e) {
-      _initialTaskCompleter.completeError(e);
+    _initialTask.catchError((Object e, StackTrace stackTrace) {
+      _initialTaskCompleter.completeError(e, stackTrace);
       _didComplete = true;
       _exception = e;
-      catchPlatformException(e).catchError(_completer?.completeError);
+      _stackTrace = stackTrace;
+      if (_completer != null) {
+        catchPlatformException(e, stackTrace)
+            .catchError(_completer.completeError);
+      }
     });
 
     // Get the task stream.
@@ -49,14 +53,20 @@ abstract class MethodChannelTask extends TaskPlatform {
         _completer?.complete(snapshot);
         await _subscription.cancel();
       }
-    }, onError: (Object e) {
+    }, onError: (Object e, StackTrace stackTrace) {
       _didComplete = true;
       _exception = e;
-      catchPlatformException(e).catchError(_completer?.completeError);
+      _stackTrace = stackTrace;
+      if (_completer != null) {
+        catchPlatformException(e, stackTrace)
+            .catchError(_completer.completeError);
+      }
     }, cancelOnError: true);
   }
 
   Object _exception;
+
+  StackTrace _stackTrace;
 
   bool _didComplete = false;
 
@@ -88,7 +98,7 @@ abstract class MethodChannelTask extends TaskPlatform {
     if (_didComplete && _exception == null) {
       return Future.value(snapshot);
     } else if (_didComplete && _exception != null) {
-      return catchPlatformException(_exception);
+      return catchPlatformException(_exception, _stackTrace);
     } else {
       if (_completer == null) {
         _completer = Completer<TaskSnapshotPlatform>();

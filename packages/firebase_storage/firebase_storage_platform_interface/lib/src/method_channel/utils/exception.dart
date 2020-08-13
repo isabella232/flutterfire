@@ -9,12 +9,13 @@ import 'package:flutter/services.dart';
 
 /// Catches a [PlatformException] and converts it into a [FirebaseException] if
 /// it was intentially caught on the native platform.
-Future catchPlatformException(Object exception) {
+Future catchPlatformException(Object exception, [StackTrace stackTrace]) {
   if (exception is! Exception || exception is! PlatformException) {
-    return Future.error(exception);
+    return Future.error(exception, stackTrace);
   }
 
-  return Future.error(platformExceptionToFirebaseException(exception as PlatformException));
+  return Future.error(platformExceptionToFirebaseException(
+      exception as PlatformException, stackTrace));
 }
 
 /// Converts a [PlatformException] into a [FirebaseException].
@@ -23,7 +24,8 @@ Future catchPlatformException(Object exception) {
 /// `details` of the exception exist. Firebase returns specific codes and messages
 /// which can be converted into user friendly exceptions.
 FirebaseException platformExceptionToFirebaseException(
-    PlatformException platformException) {
+    PlatformException platformException,
+    [StackTrace stackTrace]) {
   Map<String, String> details = platformException.details != null
       ? Map<String, String>.from(platformException.details)
       : null;
@@ -36,6 +38,7 @@ FirebaseException platformExceptionToFirebaseException(
     message = details['message'] ?? message;
   }
 
+  // TODO(ehesp): Add stack trace support when it lands
   return FirebaseException(
       plugin: 'firebase_storage', code: code, message: message);
 }
