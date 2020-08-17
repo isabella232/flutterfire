@@ -46,16 +46,16 @@ class _MyHomePageState extends State<MyHomePage> {
     final File tempFile = File('${systemTempDir.path}/temp-${ref.name}');
     if (tempFile.existsSync()) await tempFile.delete();
 
-    DownloadTask task = ref.writeToFile(tempFile);
+    DownloadTask task = await ref.writeToFile(tempFile);
 
-//    _scaffoldKey.currentState.showSnackBar(SnackBar(
-//      content: Text(
-//        'Success!\n Downloaded ${ref.name} \n from bucket: ${ref.bucket}\n '
-//            'at path: ${ref.fullPath} \n'
-//            'Wrote "${ref.fullPath}" to tmp-${ref.name}.txt',
-//        style: const TextStyle(color: Color.fromARGB(255, 0, 155, 0)),
-//      ),
-//    ));
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(
+        'Success!\n Downloaded ${ref.name} \n from bucket: ${ref.bucket}\n '
+            'at path: ${ref.fullPath} \n'
+            'Wrote "${ref.fullPath}" to tmp-${ref.name}.txt',
+        style: const TextStyle(color: Color.fromARGB(255, 0, 155, 0)),
+      ),
+    ));
   }
 
   @override
@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(title: Text(widget.title), actions: <Widget>[
         IconButton(
           icon: Icon(Icons.clear_all),
-          onPressed: () {},
+          onPressed: _tasks.isNotEmpty ? () => setState(() => _tasks.clear()) : null,
         )
       ]),
       body: Container(
@@ -86,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Text('Upload from a String'),
                 onPressed: () async {
                   const String putStringText =
-                      'his upload has been generated using the putString method! Check the metadata too!';
+                      'This upload has been generated using the putString method! Check the metadata too!';
 
                   // Create a Reference to the file
                   Reference ref = FirebaseStorage.instance
@@ -115,21 +115,16 @@ class _MyHomePageState extends State<MyHomePage> {
                           .create();
                   await file.writeAsString('This is a file upload test');
 
-                  Reference ref =
-                      FirebaseStorage.instance.ref('/file-upload-test.txt');
+                  // Create a Reference to the file
+                  Reference ref = FirebaseStorage.instance
+                      .ref()
+                      .child('playground')
+                      .child('/file-upload-test.txt');
 
                   UploadTask task = ref.putFile(file);
 
-                  task.snapshotEvents.listen((TaskSnapshot snapshot) {
-                    print('Snapshot state: ${snapshot.state}');
-                    print(
-                        'Progress: ${(snapshot.totalBytes / snapshot.bytesTransferred) * 100} %');
-                  }, onError: (Object e) {
-                    print(e);
-                  });
-
-                  task.onComplete.then((TaskSnapshot snapshot) {
-                    print('Upload Complete');
+                  setState(() {
+                    _tasks.add(task);
                   });
                 }),
             ...children
@@ -162,9 +157,36 @@ class UploadTaskListTile extends StatelessWidget {
         builder:
             (BuildContext context, AsyncSnapshot<TaskSnapshot> asyncSnapshot) {
           Widget subtitle;
+          bool isComplete = false;
+          bool isPaused = false;
+          bool isInProgress = true;
+
           if (asyncSnapshot.hasData) {
+            print(asyncSnapshot.data.state);
             subtitle = Text(
                 '${asyncSnapshot.data.state}: ${_bytesTransferred(asyncSnapshot.data)} bytes sent');
+
+            switch(asyncSnapshot.data.state){
+              case TaskState.complete: {
+                isInProgress = false;
+                isComplete = true;
+                isPaused = false;
+              }
+              break;
+              case TaskState.paused: {
+                isInProgress = false;
+                isComplete = false;
+                isPaused = true;
+              }
+              break;
+              default: {
+                // TaskState.running
+                isInProgress = true;
+                isComplete = false;
+                isPaused = false;
+              }
+              break;
+            }
           } else {
             subtitle = Text('Starting...');
           }
@@ -179,28 +201,28 @@ class UploadTaskListTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Offstage(
-                    offstage: false,
+                    offstage: isComplete,
                     child: IconButton(
                       icon: Icon(Icons.pause),
                       onPressed: () => task.pause(),
                     ),
                   ),
                   Offstage(
-                    offstage: false,
+                    offstage: !isPaused,
                     child: IconButton(
                       icon: Icon(Icons.file_upload),
                       onPressed: () => task.resume(),
                     ),
                   ),
                   Offstage(
-                    offstage: false,
+                    offstage: isComplete,
                     child: IconButton(
                       icon: Icon(Icons.cancel),
                       onPressed: () => task.cancel(),
                     ),
                   ),
                   Offstage(
-                    offstage: false,
+                    offstage: !isComplete,
                     child: IconButton(
                       icon: Icon(Icons.file_download),
                       onPressed: () => onDownload(),
