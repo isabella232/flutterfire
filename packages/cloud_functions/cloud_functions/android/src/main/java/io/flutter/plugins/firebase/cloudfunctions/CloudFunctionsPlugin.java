@@ -5,85 +5,150 @@
 package io.flutter.plugins.firebase.cloudfunctions;
 
 import androidx.annotation.NonNull;
-import com.google.android.gms.tasks.OnCompleteListener;
+import androidx.annotation.Nullable;
+
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.functions.FirebaseFunctionsException;
 import com.google.firebase.functions.HttpsCallableReference;
 import com.google.firebase.functions.HttpsCallableResult;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 
-/** CloudFunctionsPlugin */
-public class CloudFunctionsPlugin implements MethodCallHandler {
-  /** Plugin registration. */
+public class CloudFunctionsPlugin implements FlutterFirebasePlugin, MethodCallHandler {
+
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel =
         new MethodChannel(registrar.messenger(), "plugins.flutter.io/cloud_functions");
     channel.setMethodCallHandler(new CloudFunctionsPlugin());
   }
 
+  private FirebaseFunctions getFunctions(Map<String, Object> arguments) {
+    String appName = (String) Objects.requireNonNull(arguments.get("appName"));
+    String region = (String) arguments.get("region");
+
+    FirebaseApp app = FirebaseApp.getInstance(appName);
+
+    if (region == null) {
+      return FirebaseFunctions.getInstance(app);
+    } else {
+      return FirebaseFunctions.getInstance(app, region);
+    }
+  }
+
+  private Task<Object> callHttpsFunction(Map<String, Object> arguments) {
+    return Tasks.call(
+        cachedThreadPool,
+        () -> {
+          FirebaseFunctions firebaseFunctions = getFunctions(arguments);
+
+          String functionName = (String) Objects.requireNonNull(arguments.get("functionName"));
+          String origin = (String) arguments.get("origin");
+          Integer timeout = (Integer) arguments.get("timeout");
+          Object parameters = arguments.get("parameters");
+
+          if (origin != null) {
+            firebaseFunctions.useFunctionsEmulator(origin);
+          }
+
+          HttpsCallableReference httpsCallableReference =
+              firebaseFunctions.getHttpsCallable(functionName);
+
+          if (timeout != null) {
+            httpsCallableReference =
+                httpsCallableReference.withTimeout(timeout.longValue(), TimeUnit.MILLISECONDS);
+          }
+
+          HttpsCallableResult result = Tasks.await(httpsCallableReference.call(parameters));
+          return result.getData();
+        });
+  }
+
   @Override
-  public void onMethodCall(MethodCall call, final Result result) {
+  public void onMethodCall(MethodCall call, @NonNull final Result result) {
+    Task<?> methodCallTask;
+
+    //noinspection SwitchStatementWithTooFewBranches
     switch (call.method) {
       case "CloudFunctions#call":
-        String functionName = call.argument("functionName");
-        Object parameters = call.argument("parameters");
-        String appName = call.argument("app");
-        FirebaseApp app = FirebaseApp.getInstance(appName);
-        String region = call.argument("region");
-        String origin = call.argument("origin");
-        FirebaseFunctions functions;
-        if (region != null) {
-          functions = FirebaseFunctions.getInstance(app, region);
-        } else {
-          functions = FirebaseFunctions.getInstance(app);
-        }
-        if (origin != null) {
-          functions.useFunctionsEmulator(origin);
-        }
-        HttpsCallableReference httpsCallableReference = functions.getHttpsCallable(functionName);
-        Number timeoutMicroseconds = call.argument("timeoutMicroseconds");
-        if (timeoutMicroseconds != null) {
-          httpsCallableReference.setTimeout(timeoutMicroseconds.longValue(), TimeUnit.MICROSECONDS);
-        }
-        httpsCallableReference
-            .call(parameters)
-            .addOnCompleteListener(
-                new OnCompleteListener<HttpsCallableResult>() {
-                  @Override
-                  public void onComplete(@NonNull Task<HttpsCallableResult> task) {
-                    if (task.isSuccessful()) {
-                      result.success(task.getResult().getData());
-                    } else {
-                      if (task.getException() instanceof FirebaseFunctionsException) {
-                        FirebaseFunctionsException exception =
-                            (FirebaseFunctionsException) task.getException();
-                        Map<String, Object> exceptionMap = new HashMap<>();
-                        exceptionMap.put("code", exception.getCode().name());
-                        exceptionMap.put("message", exception.getMessage());
-                        exceptionMap.put("details", exception.getDetails());
-                        result.error(
-                            "functionsError",
-                            "Cloud function failed with exception.",
-                            exceptionMap);
-                      } else {
-                        Exception exception = task.getException();
-                        result.error(null, exception.getMessage(), null);
-                      }
-                    }
-                  }
-                });
+        methodCallTask = callHttpsFunction(call.arguments());
         break;
       default:
         result.notImplemented();
+        return;
     }
+
+    methodCallTask.addOnCompleteListener(
+        task -> {
+          if (task.isSuccessful()) {
+            result.success(task.getResult());
+          } else {
+            Exception exception = task.getException();
+            result.error(
+                "cloud_functions",
+                exception != null ? exception.getMessage() : null,
+                getExceptionDetails(exception));
+          }
+        });
+  }
+
+  private Map<String, Object> getExceptionDetails(@Nullable Exception exception) {
+    Map<String, Object> details = new HashMap<>();
+
+    if (exception == null) {
+      return details;
+    }
+
+    String code = "UNKNOWN";
+    String message = exception.getMessage();
+    Object additionalData = null;
+
+    if (exception.getCause() instanceof FirebaseFunctionsException) {
+      FirebaseFunctionsException functionsException =
+          (FirebaseFunctionsException) exception.getCause();
+      code = functionsException.getCode().name();
+      message = functionsException.getMessage();
+      additionalData = functionsException.getDetails();
+
+      boolean isTimeout = code.contains(FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name());
+
+      if (functionsException.getCause() instanceof IOException && !isTimeout) {
+        // return UNAVAILABLE for network io errors, to match iOS
+        code = FirebaseFunctionsException.Code.UNAVAILABLE.name();
+        message = FirebaseFunctionsException.Code.UNAVAILABLE.name();
+      }
+    }
+
+    details.put("code", code.replace("_", "-").toLowerCase());
+    details.put("message", message);
+
+    if (additionalData != null) {
+      details.put("additionalData", additionalData);
+    }
+
+    return details;
+  }
+
+  @Override
+  public Task<Map<String, Object>> getPluginConstantsForFirebaseApp(FirebaseApp firebaseApp) {
+    return Tasks.call(() -> null);
+  }
+
+  @Override
+  public Task<Void> didReinitializeFirebaseCore() {
+    return Tasks.call(() -> null);
   }
 }

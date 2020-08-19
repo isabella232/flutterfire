@@ -4,20 +4,12 @@
 
 part of cloud_functions;
 
-class CloudFunctionsException implements Exception {
-  CloudFunctionsException._(this.code, this.message, this.details);
-
-  final String code;
-  final String message;
-  final dynamic details;
-}
-
 /// The entry point for accessing a CloudFunctions.
 ///
 /// You can get an instance by calling [CloudFunctions.instance].
 class CloudFunctions extends FirebasePluginPlatform {
-  // Cached and lazily loaded instance of [FirestorePlatform] to avoid
-  // creating a [MethodChannelFirestore] when not needed or creating an
+  // Cached and lazily loaded instance of [CloudFunctionsPlatform] to avoid
+  // creating a [MethodChannelCloudFunctions] when not needed or creating an
   // instance with the default app before a user specifies an app.
   CloudFunctionsPlatform _delegatePackingProperty;
 
@@ -29,50 +21,61 @@ class CloudFunctions extends FirebasePluginPlatform {
     return _delegatePackingProperty;
   }
 
-  /// The [FirebaseApp] for this current [CloudFunctions] instance.
-  FirebaseApp app;
-
-  String _region;
-
-  String _origin;
+  /// The [FirebaseApp] for this current [FirebaseFirestore] instance.
+  final FirebaseApp app;
 
   CloudFunctions._({this.app, String region})
       : _region = region,
         super(app.name, 'plugins.flutter.io/cloud_functions');
 
-  @Deprecated(
-      "Constructing Storage is deprecated, use 'CloudFunctions.instance' or 'CloudFunctions.instanceFor' instead")
-  factory CloudFunctions({FirebaseApp app, String region}) {
-    return CloudFunctions.instanceFor(app: app, region: region);
-  }
-
+  /// Returns an instance using the default [FirebaseApp].
   static CloudFunctions get instance {
     return CloudFunctions.instanceFor(
       app: Firebase.app(),
     );
   }
 
-  static CloudFunctions instanceFor({
-    FirebaseApp app,
-    String region,
-  }) {
+  /// Returns an instance using a specified [FirebaseApp] & region.
+  static CloudFunctions instanceFor({FirebaseApp app, String region}) {
     app ??= Firebase.app();
     return CloudFunctions._(app: app, region: region);
   }
 
-  /// Gets an instance of a Callable HTTPS trigger in Cloud Functions.
-  ///
-  /// Can then be executed by calling `call()` on it.
-  ///
-  /// @param functionName The name of the callable function.
+  // ignore: public_member_api_docs
+  @Deprecated(
+      "Constructing CloudFunctions is deprecated, use 'CloudFunctions.instance' or 'CloudFunctions.instanceFor' instead")
+  factory CloudFunctions({FirebaseApp app, String region}) {
+    return CloudFunctions.instanceFor(app: app, region: region);
+  }
+
+  final String _region;
+
+  String _origin;
+
+  HttpsCallable httpsCallable(String name, [HttpsCallableOptions options]) {
+    assert(name != null);
+    assert(name.isNotEmpty);
+
+    options ??= HttpsCallableOptions();
+
+    return HttpsCallable._(_delegate.httpsCallable(name, _origin, options));
+  }
+
+  @Deprecated("Deprecated in favor of httpsCallable()")
+  // ignore: public_member_api_docs
   HttpsCallable getHttpsCallable({@required String functionName}) {
-    return HttpsCallable._(this, functionName);
+    return httpsCallable(functionName);
   }
 
   /// Changes this instance to point to a Cloud Functions emulator running locally.
   ///
-  /// @param origin The origin of the local emulator, such as "//10.0.2.2:5005".
+  /// Set the [origin] of the local emulator, such as "//10.0.2.2:5005", or `null`
+  /// to remove.
   CloudFunctions useFunctionsEmulator({@required String origin}) {
+    if (origin != null) {
+      assert(origin.isNotEmpty);
+    }
+
     _origin = origin;
     return this;
   }
