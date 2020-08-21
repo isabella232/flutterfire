@@ -155,10 +155,11 @@ class FlutterFirebaseFirestoreMessageCodec extends StandardMessageCodec {
     Map<String, Object> snapshotMap = new HashMap<>();
 
     snapshotMap.put("path", value.getReference().getPath());
-
+    Map<String, Object> foo;
     if (value.exists()) {
+      foo = value.getData();
       // noinspection ConstantConditions
-      snapshotMap.put("data", value.getData());
+      snapshotMap.put("data", foo);
     } else {
       // noinspection ConstantConditions
       snapshotMap.put("data", null);

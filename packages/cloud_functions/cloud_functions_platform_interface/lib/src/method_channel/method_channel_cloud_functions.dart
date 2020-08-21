@@ -35,7 +35,7 @@ class MethodChannelCloudFunctions extends CloudFunctionsPlatform {
   }
 
   @override
-  httpsCallable(String name, String origin, HttpsCallableOptions options) {
+  httpsCallable(String origin, String name, HttpsCallableOptions options) {
     return MethodChannelHttpsCallable(this, origin, name, options);
   }
 }

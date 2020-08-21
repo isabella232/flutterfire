@@ -61,7 +61,7 @@ abstract class CloudFunctionsPlatform extends PlatformInterface {
   }
 
   HttpsCallablePlatform httpsCallable(
-      String name, String origin, HttpsCallableOptions options) {
+      String origin, String name, HttpsCallableOptions options) {
     throw UnimplementedError('httpsCallable() is not implemented');
   }
 }

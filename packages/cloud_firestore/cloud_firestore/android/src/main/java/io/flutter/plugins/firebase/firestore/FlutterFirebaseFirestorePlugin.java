@@ -7,7 +7,9 @@ package io.flutter.plugins.firebase.firestore;
 import android.app.Activity;
 import android.util.Log;
 import android.util.SparseArray;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
@@ -23,6 +25,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.Source;
 import com.google.firebase.firestore.WriteBatch;
+
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.WeakHashMap;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -34,12 +44,6 @@ import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.StandardMethodCodec;
 import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 import io.flutter.plugins.firebase.core.FlutterFirebasePluginRegistry;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.WeakHashMap;
 
 public class FlutterFirebaseFirestorePlugin
     implements FlutterFirebasePlugin, MethodCallHandler, FlutterPlugin, ActivityAware {
@@ -493,8 +497,10 @@ public class FlutterFirebaseFirestorePlugin
     switch (call.method) {
       case "Firestore#removeListener":
         int handle = Objects.requireNonNull(call.argument("handle"));
-        listenerRegistrations.get(handle).remove();
-        listenerRegistrations.remove(handle);
+        if (listenerRegistrations.get(handle) != null) {
+          listenerRegistrations.get(handle).remove();
+          listenerRegistrations.remove(handle);
+        }
         result.success(null);
         return;
       case "Firestore#disableNetwork":

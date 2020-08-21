@@ -58,7 +58,7 @@ class CloudFunctions extends FirebasePluginPlatform {
 
     options ??= HttpsCallableOptions();
 
-    return HttpsCallable._(_delegate.httpsCallable(name, _origin, options));
+    return HttpsCallable._(_delegate.httpsCallable(_origin, name, options));
   }
 
   @Deprecated("Deprecated in favor of httpsCallable()")
@@ -74,6 +74,15 @@ class CloudFunctions extends FirebasePluginPlatform {
   CloudFunctions useFunctionsEmulator({@required String origin}) {
     if (origin != null) {
       assert(origin.isNotEmpty);
+
+      // Android considers localhost as 10.0.2.2 - handle this for users 
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        if (origin.startsWith('http://localhost')) {
+          origin = origin.replaceFirst('http://localhost', 'http://10.0.2.2');
+        } else if (origin.startsWith('http://127.0.0.1')) {
+          origin = origin.replaceFirst('http://127.0.0.1', 'http://10.0.2.2');
+        }
+      }
     }
 
     _origin = origin;

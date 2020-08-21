@@ -20,12 +20,16 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    HttpsCallable callable = CloudFunctions.instanceFor(region: 'us-central1')
-        // .useFunctionsEmulator(origin: 'http://api.rnfirebase.io')
-        .httpsCallable('testFunctionDefaultRegion',
-            HttpsCallableOptions(timeout: Duration(seconds: 10)));
+    HttpsCallable callable = CloudFunctions.instance
+        // .useFunctionsEmulator(origin: 'https://api.rnfirebase.io')
+        .httpsCallable('testFunctionDefaultRegion');
 
-    callable(true).then(print).catchError(print);
+    callable().then((v) => print('success ${v.data}')).catchError((e) {
+      print('ERROR: $e');
+      // print(e.code);
+      // print(e.message);
+      // print(e.details);
+    });
 
     return MaterialApp(
       home: Scaffold(

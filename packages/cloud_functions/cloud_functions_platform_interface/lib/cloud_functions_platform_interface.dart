@@ -7,3 +7,4 @@ library cloud_functions_platform_interface;
 export 'src/platform_interface/platform_interface_cloud_functions.dart';
 export 'src/platform_interface/platform_interface_https_callable.dart';
 export 'src/https_callable_options.dart';
+export 'src/cloud_functions_exception.dart';

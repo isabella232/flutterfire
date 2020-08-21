@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
 import 'package:cloud_functions_platform_interface/src/method_channel/method_channel_cloud_functions.dart';
 
+import 'utils/exception.dart';
+
 class MethodChannelHttpsCallable extends HttpsCallablePlatform {
   MethodChannelHttpsCallable(CloudFunctionsPlatform functions, String origin,
       String name, HttpsCallableOptions options)
@@ -14,7 +16,6 @@ class MethodChannelHttpsCallable extends HttpsCallablePlatform {
 
   @override
   Future<dynamic> call([dynamic parameters]) {
-    // TODO catch error!
     return MethodChannelCloudFunctions.channel
         .invokeMethod('CloudFunctions#call', <String, dynamic>{
       'appName': functions.app.name,
@@ -23,6 +24,6 @@ class MethodChannelHttpsCallable extends HttpsCallablePlatform {
       'region': functions.region,
       'timeout': options.timeout.inMilliseconds,
       'parameters': parameters,
-    });
+    }).catchError(catchPlatformException);
   }
 }

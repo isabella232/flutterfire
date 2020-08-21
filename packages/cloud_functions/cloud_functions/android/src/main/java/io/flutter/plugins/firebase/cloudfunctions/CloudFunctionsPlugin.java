@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import io.flutter.Log;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -68,8 +69,7 @@ public class CloudFunctionsPlugin implements FlutterFirebasePlugin, MethodCallHa
               firebaseFunctions.getHttpsCallable(functionName);
 
           if (timeout != null) {
-            httpsCallableReference =
-                httpsCallableReference.withTimeout(timeout.longValue(), TimeUnit.MILLISECONDS);
+            httpsCallableReference.setTimeout(timeout.longValue(), TimeUnit.MILLISECONDS);
           }
 
           HttpsCallableResult result = Tasks.await(httpsCallableReference.call(parameters));
@@ -123,9 +123,11 @@ public class CloudFunctionsPlugin implements FlutterFirebasePlugin, MethodCallHa
       message = functionsException.getMessage();
       additionalData = functionsException.getDetails();
 
-      boolean isTimeout = code.contains(FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name());
-
-      if (functionsException.getCause() instanceof IOException && !isTimeout) {
+      if (functionsException.getCause() instanceof IOException
+          && functionsException.getCause().getMessage().equals("Canceled")) {
+        code = FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name();
+        message = FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name();
+      } else if (functionsException.getCause() instanceof IOException) {
         // return UNAVAILABLE for network io errors, to match iOS
         code = FirebaseFunctionsException.Code.UNAVAILABLE.name();
         message = FirebaseFunctionsException.Code.UNAVAILABLE.name();

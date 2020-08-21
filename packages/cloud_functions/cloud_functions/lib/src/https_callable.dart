@@ -1,4 +1,4 @@
-// Copyright 2019, the Chromium project authors.  Please see the AUTHORS file
+// Copyright 2020, the Chromium project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -26,25 +26,27 @@ class HttpsCallable {
   /// automatically includes a Firebase Instance ID token to identify the app
   /// instance. If a user is logged in with Firebase Auth, an auth ID token for
   /// the user is also automatically included.
-  Future<HttpsCallableResult> call([dynamic parameters]) async {
+  Future<HttpsCallableResult<T>> call<T>([dynamic parameters]) async {
     _assertValidParameterType(parameters);
-    return HttpsCallableResult._(await _delegate.call(parameters));
+    return HttpsCallableResult<T>._(await _delegate.call(parameters));
   }
 
   @Deprecated(
       "Setting the timeout is deprecated in favor of using [HttpsCallableOptions]")
+  // ignore: public_member_api_docs
   set timeout(Duration duration) {
     _delegate.timeout = duration;
   }
 }
 
+/// Asserts whether a given call parameter is a valid type.
 void _assertValidParameterType(dynamic parameter, [bool isRoot = true]) {
-  if (isRoot && parameter is List) {
+  if (parameter is List) {
     return parameter
         .forEach((element) => _assertValidParameterType(element, false));
   }
 
-  if (isRoot && parameter is Map) {
+  if (parameter is Map) {
     return parameter
         .forEach((_, value) => _assertValidParameterType(value, false));
   }
