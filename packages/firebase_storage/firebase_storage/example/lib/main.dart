@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Container(
         alignment: Alignment.center,
         child: ListView(
+          padding: const EdgeInsets.only(left: 16, right: 16),
           children: [
             RaisedButton(
                 child: Text('Upload from a String'),
@@ -109,11 +112,12 @@ class _MyHomePageState extends State<MyHomePage> {
             RaisedButton(
                 child: Text('Upload from a File'),
                 onPressed: () async {
-                  final Directory systemTempDir = Directory.systemTemp;
-                  final File file =
-                      await File('${systemTempDir.path}/temp-file.txt')
-                          .create();
-                  await file.writeAsString('This is a file upload test');
+                  File file = await FilePicker.getFile();
+
+//                  final Directory systemTempDir = Directory.systemTemp;
+//                  final File file =
+//                      await File('${systemTempDir.path}/temp-file.txt')
+//                          .create();
 
                   // Create a Reference to the file
                   Reference ref = FirebaseStorage.instance
@@ -131,8 +135,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {}, tooltip: 'Upload', child: Icon(Icons.file_upload)),
     );
   }
 }
@@ -160,9 +162,9 @@ class UploadTaskListTile extends StatelessWidget {
           bool isComplete = false;
           bool isPaused = false;
           bool isInProgress = true;
+          bool isCancelled = false;
 
           if (asyncSnapshot.hasData) {
-            print(asyncSnapshot.data.state);
             subtitle = Text(
                 '${asyncSnapshot.data.state}: ${_bytesTransferred(asyncSnapshot.data)} bytes sent');
 
@@ -187,8 +189,22 @@ class UploadTaskListTile extends StatelessWidget {
               }
               break;
             }
-          } else {
-            subtitle = Text('Starting...');
+          }
+
+          else if(asyncSnapshot.hasError) {
+            if(asyncSnapshot.error is FirebaseException) {
+              FirebaseException error = asyncSnapshot.error as FirebaseException;
+              if(error.code == "canceled") {
+                subtitle = const Text("Upload Cancelled");
+                isCancelled = true;
+              }
+            } else {
+              isCancelled = true;
+              subtitle = const Text("Something went wrong");
+            }
+          }
+          else {
+            subtitle = Text("---");
           }
 
           return Dismissible(
@@ -201,28 +217,28 @@ class UploadTaskListTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Offstage(
-                    offstage: isComplete,
+                    offstage: isComplete || isCancelled || isPaused,
                     child: IconButton(
                       icon: Icon(Icons.pause),
                       onPressed: () => task.pause(),
                     ),
                   ),
                   Offstage(
-                    offstage: !isPaused,
+                    offstage: !isPaused || isCancelled,
                     child: IconButton(
                       icon: Icon(Icons.file_upload),
                       onPressed: () => task.resume(),
                     ),
                   ),
                   Offstage(
-                    offstage: isComplete,
+                    offstage: isComplete || isCancelled,
                     child: IconButton(
                       icon: Icon(Icons.cancel),
                       onPressed: () => task.cancel(),
                     ),
                   ),
                   Offstage(
-                    offstage: !isComplete,
+                    offstage: !isComplete || isCancelled,
                     child: IconButton(
                       icon: Icon(Icons.file_download),
                       onPressed: () => onDownload(),
