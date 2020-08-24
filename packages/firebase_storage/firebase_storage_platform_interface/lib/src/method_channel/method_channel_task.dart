@@ -118,7 +118,7 @@ abstract class MethodChannelTask extends TaskPlatform {
       Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
           .invokeMapMethod<String, dynamic>('Task#pause', <String, dynamic>{
         'handle': _handle,
-      }).catchError(catchPlatformException);
+      });
 
       return data['status'];
     } catch (e) {

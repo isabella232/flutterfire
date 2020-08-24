@@ -15,7 +15,9 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.flutter.plugin.common.MethodChannel;
 
@@ -24,6 +26,7 @@ import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.p
 import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.parseUploadTaskSnapshot;
 
 class FlutterFirebaseStorageTask {
+  private static Executor _taskExecutor = Executors.newSingleThreadExecutor();
   private final FlutterFirebaseStorageTaskType type;
   private final int handle;
   private final StorageReference reference;
@@ -98,31 +101,32 @@ class FlutterFirebaseStorageTask {
     arguments.put("bucket", reference.getBucket());
 
     task.addOnProgressListener(
-        executor,
+        _taskExecutor,
         taskSnapshot -> {
           arguments.put("snapshot", parseTaskSnapshot(taskSnapshot));
           activity.runOnUiThread(() -> channel.invokeMethod("Task#onProgress", arguments));
         });
 
     task.addOnPausedListener(
-        executor,
+        _taskExecutor,
         taskSnapshot -> {
           arguments.put("snapshot", parseTaskSnapshot(taskSnapshot));
           activity.runOnUiThread(() -> channel.invokeMethod("Task#onPaused", arguments));
         });
 
     task.addOnSuccessListener(
-        executor,
+        _taskExecutor,
         taskSnapshot -> {
           arguments.put("snapshot", parseTaskSnapshot(taskSnapshot));
           activity.runOnUiThread(() -> channel.invokeMethod("Task#onComplete", arguments));
         });
 
     task.addOnCanceledListener(
+        _taskExecutor,
         () -> activity.runOnUiThread(() -> channel.invokeMethod("Task#onCancel", arguments)));
 
     task.addOnFailureListener(
-        executor,
+        _taskExecutor,
         exception -> {
           arguments.put("error", getExceptionDetails(exception));
           activity.runOnUiThread(() -> channel.invokeMethod("Task#onError", arguments));
