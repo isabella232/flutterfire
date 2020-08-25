@@ -31,6 +31,7 @@ module.exports = {
     ],
     "Cloud Functions": [
       "functions/overview",
+      "functions/usage",
       toReferenceAPI("cloud_functions")],
     // "Cloud Messaging": ["messaging/usage", toReferenceAPI("firebase_messaging")],
     Core: [
