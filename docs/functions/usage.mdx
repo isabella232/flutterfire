@@ -50,6 +50,19 @@ Future<void> getFruit() async {
 }
 ```
 
+### Specifying regions
+
+If you wish to specify a region for a Cloud Function that runs in any region other than `us-central1`, you can do this
+by passing the region to the CloudFunctions instance, using `instanceFor`:
+
+```dart highlight={2}
+HttpsCallableResult callable = await CloudFunctions
+  .instanceFor(region: 'europe-west1')
+  .httpsCallable('getName');
+```
+
+
+
 ## Emulator Usage
 
 If you are using the local Cloud Functions emulators, then it is possible to connect to these using the `useFunctionsEmulator` method.
