@@ -9,7 +9,7 @@ Crashlytics helps you to collect analytics and details about crashes and errors 
 
 - **Logs**: Log events in your app to be sent with the crash report for context if your app crashes.
 - **Crash reports**: Every crash is automatically turned into a crash report and sent when the application next opens.
-- **Stack traces**: Even when an error is caught and your app recovers, the JavaScript stack trace can still be sent.
+- **Stack traces**: Even when an error is caught and your app recovers, the Dart stack trace can still be sent.
 
 <YouTube id="k_mdNRZzd30"/>
 
@@ -33,7 +33,7 @@ $ flutter pub get
 
 ### 3. Platform Integration
 
-If you are migrating from a previous version of Crashlytics that used Fabric, please follow this [upgrade guide](https://firebase.google.com/docs/crashlytics/upgrade-sdk?platform=android)
+If you are migrating from a previous version of Crashlytics that used Fabric, please follow this [upgrade guide](https://firebase.google.com/docs/crashlytics/upgrade-sdk?platform=android).
 
 #### a. Android
 
@@ -46,30 +46,30 @@ dependencies {
 }
 ```
 
-3. Apply the following plugins to the `/android/app/build.gradle` file.
+2. Apply the following plugins to the `/android/app/build.gradle` file.
 
 ```dart
-apply plugin: 'com.google.firebase.crashlytics'
-
 dependencies {
   // ... other dependencies
-  implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
+  // Optional but recommended: Add the Firebase SDK for Google Analytics.
+  implementation 'com.google.firebase:firebase-analytics:17.5.0'
 
-  // Recommended: Add the Google Analytics SDK.
-  implementation 'com.google.firebase:firebase-analytics:17.4.4'
+  // Add the Firebase Crashlytics SDK.
+  implementation 'com.google.firebase:firebase-crashlytics:17.2.1'
 }
+
+apply plugin: 'com.google.firebase.crashlytics'
 ```
 
 #### b. iOS
 
 1. From Xcode select `Runner` from the project navigation.
-2. Select the `Build Phases` tab.
-3. Click `+ Add a new build phase`, and select `New Run Script Phase`.
-4. Add `${PODS_ROOT}/Fabric/run` to the `Type a script...` text box.
-5. If you are using Xcode 10, add the location of `Info.plist`, built by your app, to the `Build Phase's Input Files` field.
-E.g.: `$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)`
+2. Select the `Build Phases` tab, then click `+ > New Run Script Phase`.
+3. Add `${PODS_ROOT}/FirebaseCrashlytics/run` to the `Type a script...` text box.
+4. You can also provide your app's built `Info.plist` location to the build phase's Input Files field:
+For example: `$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)`
 
-### 3. Rebuild your app
+### 4. Rebuild your app
 
 Once complete, rebuild your Flutter application:
 
