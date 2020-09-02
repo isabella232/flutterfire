@@ -9,8 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'instance_e2e.dart';
 import 'list_result_e2e.dart';
 import 'reference_e2e.dart';
-// import 'task_e2e.dart';
-// import 'task_snapshot_e2e.dart';
+import 'task_e2e.dart';
 
 // Requires that an emulator is running locally
 bool USE_EMULATOR = false;
@@ -23,8 +22,7 @@ void testsMain() {
   runInstanceTests();
   runListResultTests();
   runReferenceTests();
-  // runTaskTests();
-  // runTaskSnapshotTests();
+  runTaskTests();
 }
 
 void main() => drive.main(testsMain);

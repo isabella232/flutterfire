@@ -11,7 +11,7 @@ String bucketFromGoogleStorageUrl(String url) {
 }
 
 /// Returns a path from a given `gs://` URL.
-/// 
+///
 /// If no path exists, the root path will be returned.
 String pathFromGoogleStorageUrl(String url) {
   assert(url.startsWith('gs://'));

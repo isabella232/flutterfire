@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -7,19 +6,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:uuid/uuid.dart';
+import './test_utils.dart';
 
 void runReferenceTests() {
-  final String kTestString = 'hello world';
-  final String id = Uuid().v1();
-  createFile(name) async {
-    final Directory systemTempDir = Directory.systemTemp;
-    final File file = await File('${systemTempDir.path}/$name').create();
-    await file.writeAsString(kTestString);
-    return file;
-  }
-
   group('$Reference', () {
     FirebaseStorage storage;
 
@@ -110,6 +99,7 @@ void runReferenceTests() {
           expect(error.message, 'No object exists at the desired reference.');
           return;
         }
+
         fail('Did not throw');
       });
 
@@ -125,6 +115,7 @@ void runReferenceTests() {
 
           return;
         }
+
         fail('Did not throw');
       });
     });
@@ -160,6 +151,7 @@ void runReferenceTests() {
 
       test('throws error if file does not exist', () async {
         Reference ref = storage.ref('/iDoNotExist.jpeg');
+
         try {
           await ref.getDownloadURL();
           // TODO: failing, returning Future.error
@@ -288,6 +280,7 @@ void runReferenceTests() {
             customMetadata: <String, String>{'activity': 'test'},
           ),
         );
+
         final TaskSnapshot complete = await uploadTask.onComplete;
         expect(complete.metadata.size, kTestString.length);
         expect(complete.metadata.contentLanguage, 'en');
@@ -362,6 +355,7 @@ void runReferenceTests() {
           print('not a firebase exp $e');
           fail('should have thrown an [FirebaseException] error');
         }
+
         fail('should have thrown an error');
       });
 
@@ -380,6 +374,7 @@ void runReferenceTests() {
         } catch (_) {
           fail('Should have thrown an [FirebaseException] error');
         }
+
         fail('Should have thrown an error');
       });
     });

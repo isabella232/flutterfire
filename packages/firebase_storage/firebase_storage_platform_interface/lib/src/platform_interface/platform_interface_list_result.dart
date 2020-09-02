@@ -34,9 +34,9 @@ abstract class ListResultPlatform extends PlatformInterface {
   final String nextPageToken;
 
   /// References to prefixes (sub-folders). You can call [list] on them to get its contents.
-  /// 
-  /// Folders are implicit based on '/' in the object paths. For example, if a 
-  /// bucket has two objects '/a/b/1' and '/a/b/2', list('/a') will 
+  ///
+  /// Folders are implicit based on '/' in the object paths. For example, if a
+  /// bucket has two objects '/a/b/1' and '/a/b/2', list('/a') will
   /// return '/a/b' as a prefix.
   List<ReferencePlatform> get prefixes {
     throw UnimplementedError('prefixes is not implemented');

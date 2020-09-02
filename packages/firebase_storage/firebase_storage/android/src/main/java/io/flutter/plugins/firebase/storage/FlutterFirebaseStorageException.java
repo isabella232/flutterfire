@@ -1,7 +1,6 @@
 package io.flutter.plugins.firebase.storage;
 
 import androidx.annotation.NonNull;
-
 import com.google.firebase.storage.StorageException;
 
 class FlutterFirebaseStorageException extends Exception {
@@ -46,9 +45,10 @@ class FlutterFirebaseStorageException extends Exception {
       case StorageException.ERROR_CANCELED:
         return "canceled";
       case StorageException.ERROR_UNKNOWN:
-      default: {
-        return "unknown";
-      }
+      default:
+        {
+          return "unknown";
+        }
     }
   }
 
@@ -70,13 +70,14 @@ class FlutterFirebaseStorageException extends Exception {
       case StorageException.ERROR_RETRY_LIMIT_EXCEEDED:
         return "The maximum time limit on an operation (upload, download, delete, etc.) has been exceeded.";
       case StorageException.ERROR_INVALID_CHECKSUM:
-        return  "File on the client does not match the checksum of the file received by the server.";
+        return "File on the client does not match the checksum of the file received by the server.";
       case StorageException.ERROR_CANCELED:
         return "User cancelled the operation.";
       case StorageException.ERROR_UNKNOWN:
-      default: {
-        return "An unknown error occurred";
-      }
+      default:
+        {
+          return "An unknown error occurred";
+        }
     }
   }
 }

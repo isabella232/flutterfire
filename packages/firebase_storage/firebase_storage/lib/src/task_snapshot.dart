@@ -19,7 +19,7 @@ class TaskSnapshot {
   int get bytesTransferred => _delegate.bytesTransferred;
 
   /// The [FullMetadata] associated with this task.
-  /// 
+  ///
   /// May be `null` if no metadata exists.
   FullMetadata get metadata => _delegate.metadata;
 
@@ -29,7 +29,7 @@ class TaskSnapshot {
   }
 
   /// The current task snapshot state.
-  /// 
+  ///
   /// The state indicates the current progress of the task, such as whether it
   /// is running, paused or completed.
   TaskState get state => _delegate.state;

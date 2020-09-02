@@ -1,29 +1,25 @@
 package io.flutter.plugins.firebase.storage;
 
+import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.getExceptionDetails;
+import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.parseDownloadTaskSnapshot;
+import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.parseUploadTaskSnapshot;
+
 import android.app.Activity;
 import android.net.Uri;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
-
+import io.flutter.plugin.common.MethodChannel;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import io.flutter.plugin.common.MethodChannel;
-
-import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.getExceptionDetails;
-import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.parseDownloadTaskSnapshot;
-import static io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin.parseUploadTaskSnapshot;
 
 class FlutterFirebaseStorageTask {
   private static Executor _taskExecutor = Executors.newSingleThreadExecutor();

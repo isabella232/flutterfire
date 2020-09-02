@@ -17,28 +17,30 @@ class ListResult {
   }
 
   /// Objects in this directory.
-  /// 
+  ///
   /// Returns a [List] of [Reference] instances.
   List<Reference> get items {
     return _delegate.items
-        .map<Reference>((referencePlatform) => Reference._(storage, referencePlatform))
+        .map<Reference>(
+            (referencePlatform) => Reference._(storage, referencePlatform))
         .toList();
   }
 
-  /// If set, there might be more results for this list. 
-  /// 
+  /// If set, there might be more results for this list.
+  ///
   /// Use this token to resume the list with [ListOptions].
   String get nextPageToken => _delegate.nextPageToken;
 
-  /// References to prefixes (sub-folders). You can call list() on them to get 
+  /// References to prefixes (sub-folders). You can call list() on them to get
   /// its contents.
-  /// 
-  /// Folders are implicit based on '/' in the object paths. For example, if a 
+  ///
+  /// Folders are implicit based on '/' in the object paths. For example, if a
   /// bucket has two objects '/a/b/1' and '/a/b/2', list('/a') will return '/a/b'
   /// as a prefix.
   List<Reference> get prefixes {
     return _delegate.prefixes
-        .map<Reference>((referencePlatform) => Reference._(storage, referencePlatform))
+        .map<Reference>(
+            (referencePlatform) => Reference._(storage, referencePlatform))
         .toList();
   }
 }

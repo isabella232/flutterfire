@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 /// Represents the state of an on-going [Task].
-/// 
+///
 /// The state can be accessed direclty via a [TaskSnapshot].
 enum TaskState {
   /// Indicates the task has been paused by the user.
   paused,
+
   /// Indicates the task is currently in-progress.
   running,
+
   /// Indicates the task has successfully completed.
   complete,
 }

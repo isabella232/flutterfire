@@ -6,7 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -53,8 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
     _scaffoldKey.currentState.showSnackBar(SnackBar(
       content: Text(
         'Success!\n Downloaded ${ref.name} \n from bucket: ${ref.bucket}\n '
-            'at path: ${ref.fullPath} \n'
-            'Wrote "${ref.fullPath}" to tmp-${ref.name}.txt',
+        'at path: ${ref.fullPath} \n'
+        'Wrote "${ref.fullPath}" to tmp-${ref.name}.txt',
         style: const TextStyle(color: Color.fromARGB(255, 0, 155, 0)),
       ),
     ));
@@ -77,7 +76,8 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(title: Text(widget.title), actions: <Widget>[
         IconButton(
           icon: Icon(Icons.clear_all),
-          onPressed: _tasks.isNotEmpty ? () => setState(() => _tasks.clear()) : null,
+          onPressed:
+              _tasks.isNotEmpty ? () => setState(() => _tasks.clear()) : null,
         )
       ]),
       body: Container(
@@ -168,33 +168,35 @@ class UploadTaskListTile extends StatelessWidget {
             subtitle = Text(
                 '${asyncSnapshot.data.state}: ${_bytesTransferred(asyncSnapshot.data)} bytes sent');
 
-            switch(asyncSnapshot.data.state){
-              case TaskState.complete: {
-                isInProgress = false;
-                isComplete = true;
-                isPaused = false;
-              }
-              break;
-              case TaskState.paused: {
-                isInProgress = false;
-                isComplete = false;
-                isPaused = true;
-              }
-              break;
-              default: {
-                // TaskState.running
-                isInProgress = true;
-                isComplete = false;
-                isPaused = false;
-              }
-              break;
+            switch (asyncSnapshot.data.state) {
+              case TaskState.complete:
+                {
+                  isInProgress = false;
+                  isComplete = true;
+                  isPaused = false;
+                }
+                break;
+              case TaskState.paused:
+                {
+                  isInProgress = false;
+                  isComplete = false;
+                  isPaused = true;
+                }
+                break;
+              default:
+                {
+                  // TaskState.running
+                  isInProgress = true;
+                  isComplete = false;
+                  isPaused = false;
+                }
+                break;
             }
-          }
-
-          else if(asyncSnapshot.hasError) {
-            if(asyncSnapshot.error is FirebaseException) {
-              FirebaseException error = asyncSnapshot.error as FirebaseException;
-              if(error.code == "canceled") {
+          } else if (asyncSnapshot.hasError) {
+            if (asyncSnapshot.error is FirebaseException) {
+              FirebaseException error =
+                  asyncSnapshot.error as FirebaseException;
+              if (error.code == "canceled") {
                 subtitle = const Text("Upload Cancelled");
                 isCancelled = true;
               }
@@ -202,8 +204,7 @@ class UploadTaskListTile extends StatelessWidget {
               isCancelled = true;
               subtitle = const Text("Something went wrong");
             }
-          }
-          else {
+          } else {
             subtitle = Text("---");
           }
 

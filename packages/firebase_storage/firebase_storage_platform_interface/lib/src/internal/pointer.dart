@@ -38,14 +38,14 @@ class Pointer {
   }
 
   /// Returns the name of the path.
-  /// 
+  ///
   /// For example, a paths "foo/bar.jpg" name is "bar.jpg".
   String get name {
     return path.split('/').last;
   }
 
   /// Returns the parent path.
-  /// 
+  ///
   /// If the current path is root, `null` wil be returned.
   String get parent {
     if (isRoot) {

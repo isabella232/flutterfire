@@ -22,10 +22,10 @@ abstract class Task {
   }
 
   /// Returns a [Stream] of [TaskSnapshot] events.
-  /// 
+  ///
   /// If the task is canceled or fails, the stream will send an error event.
   /// See [TaskState] for more information of the different event types.
-  /// 
+  ///
   /// If you do not need to know about on-going stream events, you can instead
   /// wait for the stream to complete via [onComplete].
   Stream<TaskSnapshot> get snapshotEvents {
@@ -37,31 +37,31 @@ abstract class Task {
   // ignore: public_member_api_docs
   TaskSnapshot get lastSnapshot => snapshot;
 
-  /// The lastest [TaskSnapshot] for this task.
+  /// The latest [TaskSnapshot] for this task.
   TaskSnapshot get snapshot => TaskSnapshot._(storage, _delegate.snapshot);
 
-  /// Returns a [Future] once the task has completed. 
-  /// 
-  /// Waiting for the future is not required, instead you can wait for a 
+  /// Returns a [Future] once the task has completed.
+  ///
+  /// Waiting for the future is not required, instead you can wait for a
   /// completion event via [snapshotEvents].
   Future<TaskSnapshot> get onComplete async {
     return TaskSnapshot._(storage, await _delegate.onComplete);
   }
 
   /// Pauses the current task.
-  /// 
+  ///
   /// Calling this method will trigger a snapshot event with a [TaskState.paused]
   /// state.
   Future<bool> pause() => _delegate.pause();
 
   /// Resumes the current task.
-  /// 
+  ///
   /// Calling this method will trigger a snapshot event with a [TaskState.running]
   /// state.
   Future<bool> resume() => _delegate.resume();
 
   /// Cancels the current task.
-  /// 
+  ///
   /// Calling this method will cause the task to fail. Both the Future ([onComplete])
   /// and stream ([streamEvents]) will trigger an error with a [FirebaseException].
   Future<bool> cancel() => _delegate.cancel();
