@@ -52,9 +52,9 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
 
   static FirebaseStoragePlatform _instance;
 
-  /// The current default [FirebaseFirestorePlatform] instance.
+  /// The current default [FirebaseStoragePlatform] instance.
   ///
-  /// It will always default to [MethodChannelFirebaseFirestore]
+  /// It will always default to [MethodChannelFirebaseStorage]
   /// if no other implementation was provided.
   static FirebaseStoragePlatform get instance {
     if (_instance == null) {

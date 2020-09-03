@@ -41,7 +41,7 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
 
   static int _methodChannelHandleId = 0;
 
-  /// Increments and returns the next channel ID handler for Firestore.
+  /// Increments and returns the next channel ID handler for Storage.
   static int get nextMethodChannelHandleId => _methodChannelHandleId++;
 
   /// A map containing all Task stream observers, keyed by their handle.
