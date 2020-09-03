@@ -6,8 +6,8 @@ part of firebase_storage;
 
 /// The entrypoint for [FirebaseStorage].
 class FirebaseStorage extends FirebasePluginPlatform {
-  // Cached and lazily loaded instance of [FirestorePlatform] to avoid
-  // creating a [MethodChannelFirestore] when not needed or creating an
+  // Cached and lazily loaded instance of [FirebaseStoragePlatform] to avoid
+  // creating a [MethodChannelStorage] when not needed or creating an
   // instance with the default app before a user specifies an app.
   FirebaseStoragePlatform _delegatePackingProperty;
 
@@ -22,7 +22,7 @@ class FirebaseStorage extends FirebasePluginPlatform {
     return _delegatePackingProperty;
   }
 
-  /// The [FirebaseApp] for this current [FirebaseFirestore] instance.
+  /// The [FirebaseApp] for this current [FirebaseStorage] instance.
   FirebaseApp app;
 
   /// The storage bucket of this instance.
