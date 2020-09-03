@@ -1,6 +1,10 @@
-## 4.0.0-dev.1
+## 5.0.0-dev.1
 
-* Depend on `firebase_core` pre-release versions.
+TODO
+
+## 4.0.0
+
+* Depend on `firebase_core`.
 * Firebase iOS SDK versions are now locked to use the same version defined in `firebase_core`.
 * Firebase Android SDK versions are now using the Firebase Bill of Materials (BoM) to specify individual SDK versions. BoM version is also sourced from `firebase_core`.
 * Allow iOS & MacOS plugins to be imported as modules.
@@ -31,8 +35,8 @@
 
 ## 3.1.0
 
-* Added error handling to `StorageFileDownloadTask` and added propagation of errors to the Future returned by the `writeToFile` method in `StorageReference`. 
-* Added unit tests for writeToFile. 
+* Added error handling to `StorageFileDownloadTask` and added propagation of errors to the Future returned by the `writeToFile` method in `StorageReference`.
+* Added unit tests for writeToFile.
 * Updated integration test in example to use proper error handling.
 
 ## 3.0.11
