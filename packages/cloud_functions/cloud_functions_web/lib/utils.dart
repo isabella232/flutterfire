@@ -2,31 +2,27 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:js_util' as util;
+
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
 import 'package:firebase/firebase.dart' as firebase;
-import 'package:firebase/src/interop/functions_interop.dart'
-    show HttpsErrorJsImpl;
 
 /// Given a web error, a [FirebaseFunctionsException] is returned.
 ///
 /// The firebase-dart wrapper exposes a [firebase.FirebaseError], allowing us to
 /// use the code and message and convert it into an expected [FirebaseFunctionsException].
 ///
-FirebaseFunctionsException throwFirebaseAuthException(Object exception,
+FirebaseFunctionsException throwFirebaseFunctionsException(Object exception,
     [StackTrace stackTrace]) {
-  if (exception is! firebase.FirebaseError) {
-    return FirebaseFunctionsException(
-        code: 'unknown', message: exception, stackTrace: stackTrace);
-  }
-  HttpsErrorJsImpl firebaseError = exception as HttpsErrorJsImpl;
-
-  String code = firebaseError.code.replaceFirst('functions/', '');
-  String message =
-      firebaseError.message.replaceFirst('(${firebaseError.code})', '');
+  String originalCode = util.getProperty(exception, "code");
+  String code = originalCode.replaceFirst('functions/', '');
+  String message = util
+      .getProperty(exception, "message")
+      .replaceFirst('($originalCode)', '');
 
   return FirebaseFunctionsException(
       code: code,
       message: message,
       stackTrace: stackTrace,
-      details: firebaseError.details);
+      details: util.getProperty(exception, "details"));
 }

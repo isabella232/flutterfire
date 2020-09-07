@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:js_util' as util;
 
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
 import 'package:cloud_functions_web/utils.dart';
@@ -23,12 +24,15 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
     firebase.HttpsCallable callable =
         _webFunctions.httpsCallable(name, callableOptions);
 
-    return callable(parameters).then((result) {
-      // TODO(ehesp): firebase.HttpsCallableResult types `data` as a Map (should be dynamic)
-      return result.data;
-      // return result.data as dynamic;
-    }).catchError((e, s) {
-      throw throwFirebaseAuthException(e, s);
-    });
+    var value;
+    var promise = callable.jsObject
+        .call(parameters == null ? null : util.jsify(parameters));
+    try {
+      value = await util.promiseToFuture(promise);
+    } catch (e, s) {
+      throw throwFirebaseFunctionsException(e, s);
+    }
+
+    return firebase.HttpsCallableResult.getInstance(value);
   }
 }
