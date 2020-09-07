@@ -109,14 +109,12 @@ void testsMain() {
             e.message,
             equals(
                 'Response data was requested to be sent as part of an Error payload, so here we are!'));
-        print(e.details);
-        print(e.details);
-        print(e.details);
-        print(e.details);
-        print(e.details);
-        print(e.details);
         // TODO(ehesp): firebase-dart does not provide `details` from HTTP errors.
 //        if (!kIsWeb) {
+        print(e.details);
+        print(e.details);
+        print(e.details);
+        print(e.details);
         expect(e.details, equals(data.deepMap));
 //        }
       } catch (e) {
@@ -155,11 +153,6 @@ void testsMain() {
         });
         fail('Should have thrown');
       } on FirebaseFunctionsException catch (e) {
-        print(e.message);
-        print(e.message);
-        print(e.message);
-        print(e.message);
-        print(e.message);
         expect(e.code, equals('deadline-exceeded'));
       } catch (e) {
         fail(e);
