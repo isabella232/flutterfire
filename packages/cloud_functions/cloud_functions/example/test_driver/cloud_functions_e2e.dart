@@ -23,7 +23,7 @@ void testsMain() {
         FirebaseFunctions.instance.httpsCallable(kTestFunctionDefaultRegion);
   });
 
-  group('$HttpsCallable', () {
+  group('HttpsCallable', () {
     test('returns a [HttpsCallableResult]', () async {
       var result = await callable();
       expect(result, isA<HttpsCallableResult>());
@@ -80,8 +80,8 @@ void testsMain() {
     });
   });
 
-  group('$FirebaseFunctionsException', () {
-    test('$HttpsCallable returns a $FirebaseFunctionsException on error',
+  group('FirebaseFunctionsException', () {
+    test('HttpsCallable returns a FirebaseFunctionsException on error',
         () async {
       try {
         await callable({});
@@ -109,14 +109,7 @@ void testsMain() {
             e.message,
             equals(
                 'Response data was requested to be sent as part of an Error payload, so here we are!'));
-        // TODO(ehesp): firebase-dart does not provide `details` from HTTP errors.
-//        if (!kIsWeb) {
-        print(e.details);
-        print(e.details);
-        print(e.details);
-        print(e.details);
         expect(e.details, equals(data.deepMap));
-//        }
       } catch (e) {
         fail(e);
       }
@@ -137,7 +130,7 @@ void testsMain() {
     });
   });
 
-  group('$HttpsCallableOptions', () {
+  group('HttpsCallableOptions', () {
     HttpsCallable timeoutCallable;
 
     setUpAll(() async {

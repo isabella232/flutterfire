@@ -34,6 +34,6 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
       throw throwFirebaseFunctionsException(e, s);
     }
 
-    return dartify(value);
+    return dartify(value.data);
   }
 }
