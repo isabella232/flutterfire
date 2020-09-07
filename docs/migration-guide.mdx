@@ -15,6 +15,7 @@ The table below shows the recommended package versions for each plugin this migr
 | Plugin                  | Version                               |
 | ----------------------: | ------------------------------------: |
 | `cloud_firestore`       | `^{{ plugins.cloud_firestore }}`      |
+| `cloud_functions`       | `^{{ plugins.cloud_functions }}`      |
 | `firebase_auth`         | `^{{ plugins.firebase_auth }}`        |
 | `firebase_core`         | `^{{ plugins.firebase_core }}`        |
 | `firebase_crashlytics`  | `^{{ plugins.firebase_crashlytics }}` |
@@ -47,7 +48,7 @@ Update the Firebase plugins you use in your project to versions that are compati
 
 Edit the plugin versions in your `pubspec.yaml` file within your project to match the versions below:
 
-```yaml {6,7,8} title="pubspec.yaml"
+```yaml {6,7,8,9} title="pubspec.yaml"
 dependencies:
   flutter:
     sdk: flutter
@@ -56,8 +57,8 @@ dependencies:
   firebase_auth: "^{{ plugins.firebase_auth }}"
   firebase_crashlytics: "^{{ plugins.firebase_crashlytics }}"
   cloud_firestore: "^{{ plugins.cloud_firestore }}"
-  # Updated to work with new core only plugins (no new changes):
   cloud_functions: "^{{ plugins.cloud_functions }}"
+  # Updated to work with new core only plugins (no new changes):
   firebase_admob: "^{{ plugins.firebase_admob }}"
   firebase_analytics: "^{{ plugins.firebase_analytics }}"
   firebase_database: "^{{ plugins.firebase_database }}"
@@ -299,6 +300,11 @@ Any Firestore specific errors now return a `FirebaseException` (see Core changes
 
 - **`GeoPoint`**:
   - **BREAKING**: Added latitude and longitude validation when constructing a new `GeoPoint` instance.
+
+
+### Functions
+
+> TODO
 
 ### Authentication
 
