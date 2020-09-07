@@ -32,7 +32,7 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
-  if ([@"CloudFunctions#call" isEqualToString:call.method]) {
+  if ([@"FirebaseFunctions#call" isEqualToString:call.method]) {
     NSString *functionName = call.arguments[@"functionName"];
     NSObject *parameters = call.arguments[@"parameters"];
     NSString *appName = call.arguments[@"app"];
