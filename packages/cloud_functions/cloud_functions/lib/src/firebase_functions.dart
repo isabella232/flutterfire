@@ -4,12 +4,12 @@
 
 part of cloud_functions;
 
-/// The entry point for accessing a CloudFunctions.
+/// The entry point for accessing FirebaseFunctions.
 ///
 /// You can get an instance by calling [FirebaseFunctions.instance].
 class FirebaseFunctions extends FirebasePluginPlatform {
   // Cached and lazily loaded instance of [FirebaseFunctionsPlatform] to avoid
-  // creating a [MethodChannelCloudFunctions] when not needed or creating an
+  // creating a [MethodChannelFirebaseFunctions] when not needed or creating an
   // instance with the default app before a user specifies an app.
   FirebaseFunctionsPlatform _delegatePackingProperty;
 
@@ -21,14 +21,16 @@ class FirebaseFunctions extends FirebasePluginPlatform {
     return _delegatePackingProperty;
   }
 
-  /// The [FirebaseApp] for this current [FirebaseFirestore] instance.
+  /// The [FirebaseApp] for this current [FirebaseFunctions] instance.
   final FirebaseApp app;
 
   FirebaseFunctions._({this.app, String region})
-      : _region = region,
-        super(app.name, 'plugins.flutter.io/cloud_functions');
+      : _region = region ??= 'us-central1',
+        super(app.name, 'plugins.flutter.io/firebase_functions');
 
-  /// Returns an instance using the default [FirebaseApp].
+  static final Map<String, FirebaseFunctions> _cachedInstances = {};
+
+  /// Returns an instance using the default [FirebaseApp] and region.
   static FirebaseFunctions get instance {
     return FirebaseFunctions.instanceFor(
       app: Firebase.app(),
@@ -38,7 +40,18 @@ class FirebaseFunctions extends FirebasePluginPlatform {
   /// Returns an instance using a specified [FirebaseApp] & region.
   static FirebaseFunctions instanceFor({FirebaseApp app, String region}) {
     app ??= Firebase.app();
-    return FirebaseFunctions._(app: app, region: region);
+    region ??= 'us-central1';
+    String cachedKey = '${app.name}_$region';
+
+    if (_cachedInstances.containsKey(cachedKey)) {
+      return _cachedInstances[cachedKey];
+    }
+
+    FirebaseFunctions newInstance =
+        FirebaseFunctions._(app: app, region: region);
+    _cachedInstances[cachedKey] = newInstance;
+
+    return newInstance;
   }
 
   // ignore: public_member_api_docs
@@ -67,13 +80,13 @@ class FirebaseFunctions extends FirebasePluginPlatform {
 
   /// Changes this instance to point to a Cloud Functions emulator running locally.
   ///
-  /// Set the [origin] of the local emulator, such as "//10.0.2.2:5005", or `null`
+  /// Set the [origin] of the local emulator, such as "http://localhost:5001", or `null`
   /// to remove.
-  FirebaseFunctions useFunctionsEmulator({@required String origin}) {
+  void useFunctionsEmulator({@required String origin}) {
     if (origin != null) {
       assert(origin.isNotEmpty);
 
-      // Android considers localhost as 10.0.2.2 - handle this for users
+      // Android considers localhost as 10.0.2.2 - automatically handle this for users.
       if (defaultTargetPlatform == TargetPlatform.android) {
         if (origin.startsWith('http://localhost')) {
           origin = origin.replaceFirst('http://localhost', 'http://10.0.2.2');
@@ -84,7 +97,6 @@ class FirebaseFunctions extends FirebasePluginPlatform {
     }
 
     _origin = origin;
-    return this;
   }
 }
 
