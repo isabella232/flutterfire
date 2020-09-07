@@ -8,6 +8,7 @@ import 'dart:js_util' as util;
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
 import 'package:cloud_functions_web/utils.dart';
 import 'package:firebase/firebase.dart' as firebase;
+import 'package:firebase/src/utils.dart' show dartify;
 
 class HttpsCallableWeb extends HttpsCallablePlatform {
   HttpsCallableWeb(FirebaseFunctionsPlatform functions, this._webFunctions,
@@ -33,6 +34,6 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
       throw throwFirebaseFunctionsException(e, s);
     }
 
-    return firebase.HttpsCallableResult.getInstance(value);
+    return dartify(value);
   }
 }

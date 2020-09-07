@@ -5,14 +5,9 @@
 import 'dart:js_util' as util;
 
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
-import 'package:firebase/firebase.dart' as firebase;
 import 'package:firebase/src/utils.dart' show dartify;
 
 /// Given a web error, a [FirebaseFunctionsException] is returned.
-///
-/// The firebase-dart wrapper exposes a [firebase.FirebaseError], allowing us to
-/// use the code and message and convert it into an expected [FirebaseFunctionsException].
-///
 FirebaseFunctionsException throwFirebaseFunctionsException(Object exception,
     [StackTrace stackTrace]) {
   String originalCode = util.getProperty(exception, 'code');
