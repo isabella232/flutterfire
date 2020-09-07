@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
+import 'package:cloud_functions_platform_interface/src/method_channel/method_channel_firebase_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +13,7 @@ import 'test_common.dart';
 void main() {
   initializeMethodChannel();
 
-  group('$CloudFunctions', () {
+  group('$FirebaseFunctions', () {
     final List<MethodCall> log = <MethodCall>[];
 
     setUp(() async {
@@ -23,7 +23,7 @@ void main() {
         options: Firebase.app().options,
       );
 
-      MethodChannelCloudFunctions.channel
+      MethodChannelFirebaseFunctions.channel
           .setMockMethodCallHandler((MethodCall methodCall) async {
         log.add(methodCall);
         switch (methodCall.method) {
@@ -39,17 +39,17 @@ void main() {
     });
 
     test('call', () async {
-      await CloudFunctions.instance
+      await FirebaseFunctions.instance
           .getHttpsCallable(functionName: 'baz')
           .call();
       final HttpsCallable callable =
-          CloudFunctions(app: Firebase.app('1337'), region: 'space')
+          FirebaseFunctions(app: Firebase.app('1337'), region: 'space')
               .getHttpsCallable(functionName: 'qux')
                 ..timeout = const Duration(days: 300);
       await callable.call(<String, dynamic>{
         'quux': 'quuz',
       });
-      await CloudFunctions.instance
+      await FirebaseFunctions.instance
           .useFunctionsEmulator(origin: 'http://localhost:5001')
           .getHttpsCallable(functionName: 'bez')
           .call();
