@@ -87,7 +87,7 @@ NSString *const kFLTFirebaseFunctionsChannelName = @"plugins.flutter.io/firebase
 
   FIRHTTPSCallable *function = [functions HTTPSCallableWithName:functionName];
   if (timeout != nil && ![timeout isEqual:[NSNull null]]) {
-    function.timeoutInterval = timeout.doubleValue;
+    function.timeoutInterval = timeout.doubleValue / 1000;
   }
 
   [function callWithObject:parameters
