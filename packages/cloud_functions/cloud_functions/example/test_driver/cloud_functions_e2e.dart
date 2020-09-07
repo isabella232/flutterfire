@@ -10,22 +10,21 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'sample.dart' as data;
 
-String kDefaultCallable = 'testFunctionDefaultRegion';
-String kCallableRegion = 'testFunctionCustomRegion';
-String kOriginCallable = 'FlutterFireFunctionsEmulator';
+String kTestFunctionDefaultRegion = 'testFunctionDefaultRegion';
+String kTestFunctionCustomRegion = 'testFunctionCustomRegion';
+String kTestFunctionTimeout = 'testFunctionTimeout';
 
 void testsMain() {
+  HttpsCallable callable;
   setUpAll(() async {
     await Firebase.initializeApp();
+    FirebaseFunctions.instance
+        .useFunctionsEmulator(origin: 'http://localhost:5001');
+    callable =
+        FirebaseFunctions.instance.httpsCallable(kTestFunctionDefaultRegion);
   });
 
-  group('httpsCallable', () {
-    HttpsCallable callable;
-
-    setUpAll(() async {
-      callable = FirebaseFunctions.instance.httpsCallable(kDefaultCallable);
-    });
-
+  group('$HttpsCallable', () {
     test('returns a [HttpsCallableResult]', () async {
       var result = await callable();
       expect(result, isA<HttpsCallableResult>());
@@ -41,19 +40,19 @@ void testsMain() {
       expect(result.data, equals('null'));
     });
 
-    test('accepts string primitive', () async {
+    test('accepts a string value', () async {
       HttpsCallableResult result = await callable('foo');
       expect(result.data, equals('string'));
     });
 
-    test('accepts number primitive', () async {
+    test('accepts a number value', () async {
       HttpsCallableResult result = await callable(123);
       expect(result.data, equals('number'));
       HttpsCallableResult result2 = await callable(12.3);
       expect(result2.data, equals('number'));
     });
 
-    test('accepts boolean primitive', () async {
+    test('accepts a boolean value', () async {
       HttpsCallableResult result = await callable(true);
       expect(result.data, equals('boolean'));
       HttpsCallableResult result2 = await callable(false);
@@ -65,7 +64,7 @@ void testsMain() {
       expect(result.data, equals('array'));
     });
 
-    test('accepts a deep [Map]', () async {
+    test('accepts a deeply nested [Map]', () async {
       HttpsCallableResult result = await callable({
         'type': 'deepMap',
         'inputData': data.deepMap,
@@ -73,7 +72,7 @@ void testsMain() {
       expect(result.data, equals(data.deepMap));
     });
 
-    test('accepts a deep [List]', () async {
+    test('accepts a deeply nested [List]', () async {
       HttpsCallableResult result = await callable({
         'type': 'deepList',
         'inputData': data.deepList,
@@ -82,14 +81,9 @@ void testsMain() {
     });
   });
 
-  group('CloudFunctionsException', () {
-    HttpsCallable callable;
-
-    setUpAll(() async {
-      callable = FirebaseFunctions.instance.httpsCallable(kDefaultCallable);
-    });
-
-    test('it returns a correct instance', () async {
+  group('$FirebaseFunctionsException', () {
+    test('$HttpsCallable returns a $FirebaseFunctionsException on error',
+        () async {
       try {
         await callable({});
         fail('Should have thrown');
@@ -102,7 +96,7 @@ void testsMain() {
       }
     });
 
-    test('it returns details of complex data', () async {
+    test('it returns "details" value as part of the exception', () async {
       try {
         await callable({
           'type': 'deepMap',
@@ -128,33 +122,32 @@ void testsMain() {
   });
 
   group('region', () {
-    HttpsCallable callable;
-
+    HttpsCallable customRegionCallable;
     setUpAll(() async {
-      callable = FirebaseFunctions.instanceFor(region: 'europe-west1')
-          .httpsCallable(kCallableRegion);
+      customRegionCallable =
+          FirebaseFunctions.instanceFor(region: 'europe-west1')
+              .httpsCallable(kTestFunctionCustomRegion);
     });
 
     test('uses a non-default region', () async {
-      HttpsCallableResult result = await callable();
+      HttpsCallableResult result = await customRegionCallable();
       expect(result.data, equals('europe-west1'));
     });
   });
 
-  group('HttpsCallableOptions', () {
-    HttpsCallable callable;
+  group('$HttpsCallableOptions', () {
+    HttpsCallable timeoutCallable;
 
     setUpAll(() async {
-      callable = FirebaseFunctions.instanceFor(region: 'europe-west2')
-          .useFunctionsEmulator(origin: 'https://api.rnfirebase.io')
-          .httpsCallable(kOriginCallable,
-              options: HttpsCallableOptions(timeout: Duration(seconds: 5)));
+      timeoutCallable = FirebaseFunctions.instance.httpsCallable(
+          kTestFunctionTimeout,
+          options: HttpsCallableOptions(timeout: Duration(seconds: 3)));
     });
 
     test('times out when the provided timeout is exceeded', () async {
       try {
-        await callable({
-          'testTimeout': '10000',
+        await timeoutCallable({
+          'testTimeout': Duration(seconds: 6).inMilliseconds.toString(),
         });
         fail('Should have thrown');
       } on FirebaseFunctionsException catch (e) {
@@ -162,23 +155,6 @@ void testsMain() {
       } catch (e) {
         fail(e);
       }
-    });
-  });
-
-  group('useFunctionsEmulator', () {
-    HttpsCallable callable;
-
-    setUpAll(() async {
-      callable = FirebaseFunctions.instanceFor(region: 'europe-west2')
-          .useFunctionsEmulator(origin: 'https://api.rnfirebase.io')
-          .httpsCallable(kOriginCallable);
-    });
-
-    test('uses a provided emulator origin', () async {
-      HttpsCallableResult result = await callable();
-      expect(result.data, isNotNull);
-      expect(result.data['region'], equals('europe-west2'));
-      expect(result.data['fnName'], equals(kOriginCallable));
     });
   });
 }
