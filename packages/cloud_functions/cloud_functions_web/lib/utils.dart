@@ -4,12 +4,8 @@
 
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
 import 'package:firebase/firebase.dart' as firebase;
-
-
-
-abstract class HttpsError extends firebase.FirebaseError {
-  external Object get details;
-}
+import 'package:firebase/src/interop/functions_interop.dart'
+    show HttpsErrorJsImpl;
 
 /// Given a web error, a [FirebaseFunctionsException] is returned.
 ///
@@ -22,13 +18,15 @@ FirebaseFunctionsException throwFirebaseAuthException(Object exception,
     return FirebaseFunctionsException(
         code: 'unknown', message: exception, stackTrace: stackTrace);
   }
-  HttpsError firebaseError = exception as HttpsError;
+  HttpsErrorJsImpl firebaseError = exception as HttpsErrorJsImpl;
 
   String code = firebaseError.code.replaceFirst('functions/', '');
   String message =
       firebaseError.message.replaceFirst('(${firebaseError.code})', '');
 
-  // TODO(ehesp): firebase-dart does not provide `details` from HTTP errors.
   return FirebaseFunctionsException(
-      code: code, message: message, stackTrace: stackTrace, details: firebaseError.details);
+      code: code,
+      message: message,
+      stackTrace: stackTrace,
+      details: firebaseError.details);
 }
