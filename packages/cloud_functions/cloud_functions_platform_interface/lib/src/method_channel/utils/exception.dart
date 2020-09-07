@@ -39,7 +39,7 @@ FirebaseException platformExceptionToCloudFunctionsException(
     code = details['code'] ?? code;
     message = details['message'] ?? message;
   }
-  
+
   return CloudFunctionsException(
       code: code, message: message, details: details['additionalData']);
 }

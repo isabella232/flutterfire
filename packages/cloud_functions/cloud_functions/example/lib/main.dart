@@ -44,11 +44,9 @@ class _MyAppState extends State<MyApp> {
                   return ListTile(
                     title: Text("${fruit[index]}"),
                   );
-                })
-        ),
+                })),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-
             // See index.js in the functions folder for the example function we
             // are using for this example
 
@@ -56,13 +54,12 @@ class _MyAppState extends State<MyApp> {
                 .useFunctionsEmulator(origin: 'http://10.0.2.2:5001')
                 .httpsCallable('listFruit');
 
-            await callable()
-                .then((v) {
+            await callable().then((v) {
               v.data.forEach((f) => {
-                setState(() {
-                  fruit.add(f);
-                })
-              });
+                    setState(() {
+                      fruit.add(f);
+                    })
+                  });
             }).catchError((e) {
               _scaffoldKey.currentState.showSnackBar(SnackBar(
                 content: Text("ERROR: $e"),
