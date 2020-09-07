@@ -23,7 +23,7 @@ abstract class HttpsCallablePlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
   }
 
-  final CloudFunctionsPlatform functions;
+  final FirebaseFunctionsPlatform functions;
 
   final String origin;
 

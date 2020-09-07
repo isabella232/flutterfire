@@ -8,7 +8,7 @@ import 'package:cloud_functions_platform_interface/cloud_functions_platform_inte
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 
-/// Catches a [PlatformException] and converts it into a [CloudFunctionsException]
+/// Catches a [PlatformException] and converts it into a [FirebaseFunctionsException]
 /// if it was intentionally caught on the native platform.
 FutureOr<Map<String, dynamic>> catchPlatformException(Object exception,
     [StackTrace stackTrace]) async {
@@ -16,16 +16,16 @@ FutureOr<Map<String, dynamic>> catchPlatformException(Object exception,
     throw exception;
   }
 
-  throw platformExceptionToCloudFunctionsException(
+  throw platformExceptionToFirebaseFunctionsException(
       exception as PlatformException, stackTrace);
 }
 
-/// Converts a [PlatformException] into a [CloudFunctionsException].
+/// Converts a [PlatformException] into a [FirebaseFunctionsException].
 ///
-/// A [PlatformException] can only be converted to a [CloudFunctionsException] if
+/// A [PlatformException] can only be converted to a [FirebaseFunctionsException] if
 /// the `details` of the exception exist. Firebase returns specific codes and
 /// messages which can be converted into user friendly exceptions.
-FirebaseException platformExceptionToCloudFunctionsException(
+FirebaseException platformExceptionToFirebaseFunctionsException(
     PlatformException platformException,
     [StackTrace stackTrace]) {
   Map<String, dynamic> details = platformException.details != null
@@ -40,6 +40,6 @@ FirebaseException platformExceptionToCloudFunctionsException(
     message = details['message'] ?? message;
   }
 
-  return CloudFunctionsException(
+  return FirebaseFunctionsException(
       code: code, message: message, details: details['additionalData']);
 }

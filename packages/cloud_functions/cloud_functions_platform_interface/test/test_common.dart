@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
+import 'package:cloud_functions_platform_interface/src/method_channel/method_channel_firebase_functions.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
@@ -38,6 +38,7 @@ void initializeMethodChannel() {
 }
 
 void handleMethodCall(MethodCallCallback methodCallCallback) =>
-    MethodChannelCloudFunctions.channel.setMockMethodCallHandler((call) async {
+    MethodChannelFirebaseFunctions.channel
+        .setMockMethodCallHandler((call) async {
       return await methodCallCallback(call);
     });

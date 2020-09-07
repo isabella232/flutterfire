@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
-import 'package:cloud_functions_platform_interface/src/method_channel/method_channel_cloud_functions.dart';
+import 'package:cloud_functions_platform_interface/src/method_channel/method_channel_firebase_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:meta/meta.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -15,48 +15,49 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 /// changes. Extending this class (using `extends`) ensures that the subclass
 /// will get the default implementation, while platform implementations that
 /// `implements` this interface will be broken by newly added
-/// [CloudFunctionsPlatform] methods.
-abstract class CloudFunctionsPlatform extends PlatformInterface {
+/// [FirebaseFunctionsPlatform] methods.
+abstract class FirebaseFunctionsPlatform extends PlatformInterface {
   static final Object _token = Object();
 
   /// Constructs a CloudFunctionsPlatform.
-  CloudFunctionsPlatform(this.app, this.region) : super(token: _token);
+  FirebaseFunctionsPlatform(this.app, this.region) : super(token: _token);
 
-  static CloudFunctionsPlatform _instance;
+  static FirebaseFunctionsPlatform _instance;
 
   final FirebaseApp app;
 
   final String region;
 
-  /// The current default [CloudFunctionsPlatform] instance.
+  /// The current default [FirebaseFunctionsPlatform] instance.
   ///
-  /// It will always default to [MethodChannelCloudFunctions]
+  /// It will always default to [MethodChannelFirebaseFunctions]
   /// if no other implementation was provided.
-  static CloudFunctionsPlatform get instance {
+  static FirebaseFunctionsPlatform get instance {
     if (_instance == null) {
-      _instance = MethodChannelCloudFunctions.instance;
+      _instance = MethodChannelFirebaseFunctions.instance;
     }
 
     return _instance;
   }
 
-  /// Sets the [CloudFunctionsPlatform.instance]
-  static set instance(CloudFunctionsPlatform instance) {
+  /// Sets the [FirebaseFunctionsPlatform.instance]
+  static set instance(FirebaseFunctionsPlatform instance) {
     assert(instance != null);
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
 
   /// Create an instance using [app] using the existing implementation
-  factory CloudFunctionsPlatform.instanceFor({FirebaseApp app, String region}) {
-    return CloudFunctionsPlatform.instance
+  factory FirebaseFunctionsPlatform.instanceFor(
+      {FirebaseApp app, String region}) {
+    return FirebaseFunctionsPlatform.instance
         .delegateFor(app: app, region: region);
   }
 
   /// Enables delegates to create new instances of themselves if a none default
   /// [FirebaseApp] instance or region is required by the user.
   @protected
-  CloudFunctionsPlatform delegateFor({FirebaseApp app, String region}) {
+  FirebaseFunctionsPlatform delegateFor({FirebaseApp app, String region}) {
     throw UnimplementedError('delegateFor() is not implemented');
   }
 

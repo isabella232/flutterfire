@@ -8,12 +8,12 @@ import 'package:flutter/services.dart';
 
 import 'method_channel_https_callable.dart';
 
-/// Method Channel delegate for [CloudFunctionsPlatform].
-class MethodChannelCloudFunctions extends CloudFunctionsPlatform {
+/// Method Channel delegate for [FirebaseFunctionsPlatform].
+class MethodChannelFirebaseFunctions extends FirebaseFunctionsPlatform {
   /// Returns a stub instance to allow the platform interface to access
   /// the class instance statically.
-  static MethodChannelCloudFunctions get instance {
-    return MethodChannelCloudFunctions._();
+  static MethodChannelFirebaseFunctions get instance {
+    return MethodChannelFirebaseFunctions._();
   }
 
   /// The [MethodChannelFirebaseAuth] method channel.
@@ -25,13 +25,13 @@ class MethodChannelCloudFunctions extends CloudFunctionsPlatform {
   ///
   /// When the user code calls an storage method, the real instance is
   /// then initialized via the [delegateFor] method.
-  MethodChannelCloudFunctions._() : super(null, null);
+  MethodChannelFirebaseFunctions._() : super(null, null);
 
-  MethodChannelCloudFunctions({FirebaseApp app, String region})
+  MethodChannelFirebaseFunctions({FirebaseApp app, String region})
       : super(app, region);
 
-  CloudFunctionsPlatform delegateFor({FirebaseApp app, String region}) {
-    return MethodChannelCloudFunctions(app: app, region: region);
+  FirebaseFunctionsPlatform delegateFor({FirebaseApp app, String region}) {
+    return MethodChannelFirebaseFunctions(app: app, region: region);
   }
 
   @override

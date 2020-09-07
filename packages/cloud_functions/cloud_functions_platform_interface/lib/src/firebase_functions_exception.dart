@@ -7,10 +7,11 @@ import 'package:meta/meta.dart';
 
 /// Generic exception related to Cloud Functions. Check the error code
 /// and message for more details.
-class CloudFunctionsException extends FirebaseException implements Exception {
+class FirebaseFunctionsException extends FirebaseException
+    implements Exception {
   // ignore: public_member_api_docs
   @protected
-  CloudFunctionsException({
+  FirebaseFunctionsException({
     @required String message,
     String code,
     StackTrace stackTrace,
@@ -20,3 +21,7 @@ class CloudFunctionsException extends FirebaseException implements Exception {
   /// Additional data provided with the exception.
   final dynamic details;
 }
+
+@Deprecated("Deprecated in favor of FirebaseFunctionsException")
+// ignore: public_member_api_docs
+class CloudFunctionsException extends FirebaseFunctionsException {}

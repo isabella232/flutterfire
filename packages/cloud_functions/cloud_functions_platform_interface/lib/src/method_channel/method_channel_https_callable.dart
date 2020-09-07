@@ -5,18 +5,18 @@
 import 'dart:async';
 
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
-import 'package:cloud_functions_platform_interface/src/method_channel/method_channel_cloud_functions.dart';
+import 'package:cloud_functions_platform_interface/src/method_channel/method_channel_firebase_functions.dart';
 
 import 'utils/exception.dart';
 
 class MethodChannelHttpsCallable extends HttpsCallablePlatform {
-  MethodChannelHttpsCallable(CloudFunctionsPlatform functions, String origin,
+  MethodChannelHttpsCallable(FirebaseFunctionsPlatform functions, String origin,
       String name, HttpsCallableOptions options)
       : super(functions, origin, name, options);
 
   @override
   Future<dynamic> call([dynamic parameters]) {
-    return MethodChannelCloudFunctions.channel
+    return MethodChannelFirebaseFunctions.channel
         .invokeMethod('CloudFunctions#call', <String, dynamic>{
       'appName': functions.app.name,
       'functionName': name,
