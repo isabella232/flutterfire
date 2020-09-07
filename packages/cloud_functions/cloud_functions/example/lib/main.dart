@@ -50,7 +50,7 @@ class _MyAppState extends State<MyApp> {
             // See index.js in the functions folder for the example function we
             // are using for this example
 
-            HttpsCallable callable = CloudFunctions.instance
+            HttpsCallable callable = FirebaseFunctions.instance
                 .useFunctionsEmulator(origin: 'http://10.0.2.2:5001')
                 .httpsCallable('listFruit');
 

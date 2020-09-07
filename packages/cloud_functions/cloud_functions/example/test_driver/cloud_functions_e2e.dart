@@ -23,7 +23,7 @@ void testsMain() {
     HttpsCallable callable;
 
     setUpAll(() async {
-      callable = CloudFunctions.instance.httpsCallable(kDefaultCallable);
+      callable = FirebaseFunctions.instance.httpsCallable(kDefaultCallable);
     });
 
     test('returns a [HttpsCallableResult]', () async {
@@ -86,14 +86,14 @@ void testsMain() {
     HttpsCallable callable;
 
     setUpAll(() async {
-      callable = CloudFunctions.instance.httpsCallable(kDefaultCallable);
+      callable = FirebaseFunctions.instance.httpsCallable(kDefaultCallable);
     });
 
     test('it returns a correct instance', () async {
       try {
         await callable({});
         fail('Should have thrown');
-      } on CloudFunctionsException catch (e) {
+      } on FirebaseFunctionsException catch (e) {
         expect(e.code, equals('invalid-argument'));
         expect(e.message, equals('Invalid test requested.'));
         return;
@@ -110,7 +110,7 @@ void testsMain() {
           'asError': true,
         });
         fail('Should have thrown');
-      } on CloudFunctionsException catch (e) {
+      } on FirebaseFunctionsException catch (e) {
         expect(e.code, equals('cancelled'));
         expect(
             e.message,
@@ -131,7 +131,7 @@ void testsMain() {
     HttpsCallable callable;
 
     setUpAll(() async {
-      callable = CloudFunctions.instanceFor(region: 'europe-west1')
+      callable = FirebaseFunctions.instanceFor(region: 'europe-west1')
           .httpsCallable(kCallableRegion);
     });
 
@@ -145,20 +145,19 @@ void testsMain() {
     HttpsCallable callable;
 
     setUpAll(() async {
-      callable = CloudFunctions.instanceFor(region: 'europe-west2')
+      callable = FirebaseFunctions.instanceFor(region: 'europe-west2')
           .useFunctionsEmulator(origin: 'https://api.rnfirebase.io')
-          // .httpsCallable(kOriginCallable);
           .httpsCallable(kOriginCallable,
-              HttpsCallableOptions(timeout: Duration(seconds: 5)));
+              options: HttpsCallableOptions(timeout: Duration(seconds: 5)));
     });
 
-    test('timesout when the provided timeout is exceeded', () async {
+    test('times out when the provided timeout is exceeded', () async {
       try {
         await callable({
           'testTimeout': '10000',
         });
         fail('Should have thrown');
-      } on CloudFunctionsException catch (e) {
+      } on FirebaseFunctionsException catch (e) {
         expect(e.code, equals('deadline-exceeded'));
       } catch (e) {
         fail(e);
@@ -170,7 +169,7 @@ void testsMain() {
     HttpsCallable callable;
 
     setUpAll(() async {
-      callable = CloudFunctions.instanceFor(region: 'europe-west2')
+      callable = FirebaseFunctions.instanceFor(region: 'europe-west2')
           .useFunctionsEmulator(origin: 'https://api.rnfirebase.io')
           .httpsCallable(kOriginCallable);
     });
