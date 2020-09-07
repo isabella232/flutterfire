@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "CloudFunctionsPlugin.h"
+#import "FLTFirebaseFunctionsPlugin.h"
 
 #import <firebase_core/FLTFirebasePlugin.h>
 #import "Firebase/Firebase.h"
 
-@interface CloudFunctionsPlugin ()
+@interface FLTFirebaseFunctionsPlugin ()
 @property(nonatomic, retain) FlutterMethodChannel *_channel;
 @end
 
-@implementation CloudFunctionsPlugin
+@implementation FLTFirebaseFunctionsPlugin
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   FlutterMethodChannel *channel =
-      [FlutterMethodChannel methodChannelWithName:@"plugins.flutter.io/cloud_functions"
+      [FlutterMethodChannel methodChannelWithName:@"plugins.flutter.io/firebase_functions"
                                   binaryMessenger:[registrar messenger]];
-  CloudFunctionsPlugin *instance = [[CloudFunctionsPlugin alloc] init];
+  FLTFirebaseFunctionsPlugin *instance = [[FLTFirebaseFunctionsPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
 
   SEL sel = NSSelectorFromString(@"registerLibrary:withVersion:");
