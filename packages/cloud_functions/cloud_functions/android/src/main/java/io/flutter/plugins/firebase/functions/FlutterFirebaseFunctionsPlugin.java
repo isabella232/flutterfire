@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package io.flutter.plugins.firebase.cloudfunctions;
+package io.flutter.plugins.firebase.functions;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,33 +20,29 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-public class CloudFunctionsPlugin implements FlutterFirebasePlugin, MethodCallHandler {
+public class FlutterFirebaseFunctionsPlugin implements FlutterFirebasePlugin, MethodCallHandler {
 
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel =
-        new MethodChannel(registrar.messenger(), "plugins.flutter.io/cloud_functions");
-    channel.setMethodCallHandler(new CloudFunctionsPlugin());
+        new MethodChannel(registrar.messenger(), "plugins.flutter.io/firebase_functions");
+    channel.setMethodCallHandler(
+        new io.flutter.plugins.firebase.functions.FlutterFirebaseFunctionsPlugin());
   }
 
   private FirebaseFunctions getFunctions(Map<String, Object> arguments) {
     String appName = (String) Objects.requireNonNull(arguments.get("appName"));
-    String region = (String) arguments.get("region");
-
+    String region = (String) Objects.requireNonNull(arguments.get("region"));
     FirebaseApp app = FirebaseApp.getInstance(appName);
-
-    if (region == null) {
-      return FirebaseFunctions.getInstance(app);
-    } else {
-      return FirebaseFunctions.getInstance(app, region);
-    }
+    return FirebaseFunctions.getInstance(app, region);
   }
 
-  private Task<Object> callHttpsFunction(Map<String, Object> arguments) {
+  private Task<Object> httpsFunctionCall(Map<String, Object> arguments) {
     return Tasks.call(
         cachedThreadPool,
         () -> {
@@ -75,30 +71,24 @@ public class CloudFunctionsPlugin implements FlutterFirebasePlugin, MethodCallHa
 
   @Override
   public void onMethodCall(MethodCall call, @NonNull final Result result) {
-    Task<?> methodCallTask;
-
-    //noinspection SwitchStatementWithTooFewBranches
-    switch (call.method) {
-      case "CloudFunctions#call":
-        methodCallTask = callHttpsFunction(call.arguments());
-        break;
-      default:
-        result.notImplemented();
-        return;
+    if (!call.method.equals("FirebaseFunctions#call")) {
+      result.notImplemented();
+      return;
     }
 
-    methodCallTask.addOnCompleteListener(
-        task -> {
-          if (task.isSuccessful()) {
-            result.success(task.getResult());
-          } else {
-            Exception exception = task.getException();
-            result.error(
-                "cloud_functions",
-                exception != null ? exception.getMessage() : null,
-                getExceptionDetails(exception));
-          }
-        });
+    httpsFunctionCall(call.arguments())
+        .addOnCompleteListener(
+            task -> {
+              if (task.isSuccessful()) {
+                result.success(task.getResult());
+              } else {
+                Exception exception = task.getException();
+                result.error(
+                    "firebase_functions",
+                    exception != null ? exception.getMessage() : null,
+                    getExceptionDetails(exception));
+              }
+            });
   }
 
   private Map<String, Object> getExceptionDetails(@Nullable Exception exception) {
@@ -121,10 +111,16 @@ public class CloudFunctionsPlugin implements FlutterFirebasePlugin, MethodCallHa
 
       if (functionsException.getCause() instanceof IOException
           && functionsException.getCause().getMessage().equals("Canceled")) {
+        // return DEADLINE_EXCEEDED for IOException cancel errors, to match iOS & Web
+        code = FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name();
+        message = FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name();
+      } else if (functionsException.getCause() instanceof InterruptedIOException
+          // return DEADLINE_EXCEEDED for InterruptedIOException errors, to match iOS & Web
+          && functionsException.getCause().getMessage().equals("timeout")) {
         code = FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name();
         message = FirebaseFunctionsException.Code.DEADLINE_EXCEEDED.name();
       } else if (functionsException.getCause() instanceof IOException) {
-        // return UNAVAILABLE for network io errors, to match iOS
+        // return UNAVAILABLE for network io errors, to match iOS & Web
         code = FirebaseFunctionsException.Code.UNAVAILABLE.name();
         message = FirebaseFunctionsException.Code.UNAVAILABLE.name();
       }
