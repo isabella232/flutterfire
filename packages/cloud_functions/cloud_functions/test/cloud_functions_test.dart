@@ -49,15 +49,16 @@ void main() {
       await callable.call(<String, dynamic>{
         'quux': 'quuz',
       });
+      FirebaseFunctions.instance
+          .useFunctionsEmulator(origin: 'http://localhost:5001');
       await FirebaseFunctions.instance
-          .useFunctionsEmulator(origin: 'http://localhost:5001')
           .getHttpsCallable(functionName: 'bez')
           .call();
       expect(
         log,
         <Matcher>[
           isMethodCall(
-            'CloudFunctions#call',
+            'FirebaseFunctions#call',
             arguments: <String, dynamic>{
               'app': '[DEFAULT]',
               'region': null,
@@ -68,7 +69,7 @@ void main() {
             },
           ),
           isMethodCall(
-            'CloudFunctions#call',
+            'FirebaseFunctions#call',
             arguments: <String, dynamic>{
               'app': '1337',
               'region': 'space',
@@ -79,7 +80,7 @@ void main() {
             },
           ),
           isMethodCall(
-            'CloudFunctions#call',
+            'FirebaseFunctions#call',
             arguments: <String, dynamic>{
               'app': '[DEFAULT]',
               'region': null,

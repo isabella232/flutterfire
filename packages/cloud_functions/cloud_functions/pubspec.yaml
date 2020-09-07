@@ -7,12 +7,12 @@ flutter:
   plugin:
     platforms:
       android:
-        package: io.flutter.plugins.firebase.cloudfunctions
-        pluginClass: CloudFunctionsPlugin
+        package: io.flutter.plugins.firebase.functions
+        pluginClass: FlutterFirebaseFunctionsPlugin
       ios:
-        pluginClass: CloudFunctionsPlugin
+        pluginClass: FLTFirebaseFunctionsPlugin
       macos:
-        pluginClass: CloudFunctionsPlugin
+        pluginClass: FLTFirebaseFunctionsPlugin
       web:
         default_package: cloud_functions_web
 

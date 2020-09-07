@@ -17,7 +17,7 @@ class MethodChannelHttpsCallable extends HttpsCallablePlatform {
   @override
   Future<dynamic> call([dynamic parameters]) {
     return MethodChannelFirebaseFunctions.channel
-        .invokeMethod('CloudFunctions#call', <String, dynamic>{
+        .invokeMethod('FirebaseFunctions#call', <String, dynamic>{
       'appName': functions.app.name,
       'functionName': name,
       'origin': origin,
