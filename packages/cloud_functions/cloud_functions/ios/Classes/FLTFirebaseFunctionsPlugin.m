@@ -1,131 +1,166 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "FLTFirebaseFunctionsPlugin.h"
 
-#import <firebase_core/FLTFirebasePlugin.h>
-#import "Firebase/Firebase.h"
+#import <Firebase/Firebase.h>
+#import <firebase_core/FLTFirebasePluginRegistry.h>
+
+NSString *const kFLTFirebaseFunctionsChannelName = @"plugins.flutter.io/firebase_functions";
 
 @interface FLTFirebaseFunctionsPlugin ()
-@property(nonatomic, retain) FlutterMethodChannel *_channel;
 @end
 
 @implementation FLTFirebaseFunctionsPlugin
 
+#pragma mark - FlutterPlugin
+
+// Returns a singleton instance of the Firebase Functions plugin.
++ (instancetype)sharedInstance {
+  static dispatch_once_t onceToken;
+  static FLTFirebaseFunctionsPlugin *instance;
+
+  dispatch_once(&onceToken, ^{
+    instance = [[FLTFirebaseFunctionsPlugin alloc] init];
+    // Register with the Flutter Firebase plugin registry.
+    [[FLTFirebasePluginRegistry sharedInstance] registerFirebasePlugin:instance];
+  });
+
+  return instance;
+}
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   FlutterMethodChannel *channel =
-      [FlutterMethodChannel methodChannelWithName:@"plugins.flutter.io/firebase_functions"
+      [FlutterMethodChannel methodChannelWithName:kFLTFirebaseFunctionsChannelName
                                   binaryMessenger:[registrar messenger]];
-  FLTFirebaseFunctionsPlugin *instance = [[FLTFirebaseFunctionsPlugin alloc] init];
+  FLTFirebaseFunctionsPlugin *instance = [FLTFirebaseFunctionsPlugin sharedInstance];
   [registrar addMethodCallDelegate:instance channel:channel];
+}
 
-  SEL sel = NSSelectorFromString(@"registerLibrary:withVersion:");
-  if ([FIRApp respondsToSelector:sel]) {
-    [FIRApp performSelector:sel withObject:LIBRARY_NAME withObject:LIBRARY_VERSION];
+- (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)flutterResult {
+  if (![@"FirebaseFunctions#call" isEqualToString:call.method]) {
+    flutterResult(FlutterMethodNotImplemented);
+    return;
   }
+
+  FLTFirebaseMethodCallErrorBlock errorBlock =
+      ^(NSString *_Nullable code, NSString *_Nullable message, NSDictionary *_Nullable details,
+        NSError *_Nullable error) {
+        NSMutableDictionary *httpsErrorDetails = [NSMutableDictionary dictionary];
+        NSString *httpsErrorCode = [NSString stringWithFormat:@"%ld", error.code];
+        NSString *httpsErrorMessage = error.localizedDescription;
+        if (error.domain == FIRFunctionsErrorDomain) {
+          httpsErrorCode = [self mapFunctionsErrorCodes:error.code];
+          if (error.userInfo[FIRFunctionsErrorDetailsKey] != nil) {
+            httpsErrorDetails[@"additionalData"] = error.userInfo[FIRFunctionsErrorDetailsKey];
+          }
+        }
+        httpsErrorDetails[@"code"] = httpsErrorCode;
+        httpsErrorDetails[@"message"] = httpsErrorMessage;
+        flutterResult([FlutterError errorWithCode:httpsErrorCode
+                                          message:httpsErrorMessage
+                                          details:httpsErrorDetails]);
+      };
+
+  FLTFirebaseMethodCallResult *methodCallResult =
+      [FLTFirebaseMethodCallResult createWithSuccess:flutterResult andErrorBlock:errorBlock];
+
+  [self httpsFunctionCall:call.arguments withMethodCallResult:methodCallResult];
 }
 
-- (instancetype)init {
-  self = [super init];
-  return self;
-}
+#pragma mark - Firebase Functions API
 
-- (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
-  if ([@"FirebaseFunctions#call" isEqualToString:call.method]) {
-    NSString *functionName = call.arguments[@"functionName"];
-    NSObject *parameters = call.arguments[@"parameters"];
-    NSString *appName = call.arguments[@"app"];
-    NSString *region = call.arguments[@"region"];
-    NSString *origin = call.arguments[@"origin"];
-    NSNumber *timeoutMicroseconds = call.arguments[@"timeoutMicroseconds"];
+- (void)httpsFunctionCall:(id)arguments withMethodCallResult:(FLTFirebaseMethodCallResult *)result {
+  NSString *appName = arguments[@"appName"];
+  NSString *functionName = arguments[@"functionName"];
+  NSString *origin = arguments[@"origin"];
+  NSString *region = arguments[@"region"];
+  NSNumber *timeout = arguments[@"timeout"];
+  NSObject *parameters = arguments[@"parameters"];
 
-    FIRApp *app = [FLTFirebasePlugin firebaseAppNamed:appName];
-    FIRFunctions *functions;
-    if (region != nil && region != (id)[NSNull null]) {
-      functions = [FIRFunctions functionsForApp:app region:region];
-    } else {
-      functions = [FIRFunctions functionsForApp:app];
-    }
-    if (origin != nil && origin != (id)[NSNull null]) {
-      [functions useFunctionsEmulatorOrigin:origin];
-    }
-    FIRHTTPSCallable *function = [functions HTTPSCallableWithName:functionName];
-    if (timeoutMicroseconds != nil && timeoutMicroseconds != [NSNull null]) {
-      [function setTimeoutInterval:(NSTimeInterval)timeoutMicroseconds.doubleValue / 1000000];
-    }
-    [function callWithObject:parameters
-                  completion:^(FIRHTTPSCallableResult *callableResult, NSError *error) {
-                    if (error) {
-                      FlutterError *flutterError;
-                      if (error.domain == FIRFunctionsErrorDomain) {
-                        NSDictionary *details = [NSMutableDictionary dictionary];
-                        [details setValue:[self mapFunctionsErrorCodes:error.code] forKey:@"code"];
-                        if (error.localizedDescription != nil) {
-                          [details setValue:error.localizedDescription forKey:@"message"];
-                        }
-                        if (error.userInfo[FIRFunctionsErrorDetailsKey] != nil) {
-                          [details setValue:error.userInfo[FIRFunctionsErrorDetailsKey]
-                                     forKey:@"details"];
-                        }
-
-                        flutterError =
-                            [FlutterError errorWithCode:@"functionsError"
-                                                message:@"Firebase function failed with exception."
-                                                details:details];
-                      } else {
-                        flutterError = [FlutterError
-                            errorWithCode:[NSString stringWithFormat:@"%ld", error.code]
-                                  message:error.localizedDescription
-                                  details:nil];
-                      }
-                      result(flutterError);
-                    } else {
-                      result(callableResult.data);
-                    }
-                  }];
-  } else {
-    result(FlutterMethodNotImplemented);
+  FIRApp *app = [FLTFirebasePlugin firebaseAppNamed:appName];
+  FIRFunctions *functions = [FIRFunctions functionsForApp:app region:region];
+  if (origin != nil && origin != (id)[NSNull null]) {
+    [functions useFunctionsEmulatorOrigin:origin];
   }
+
+  FIRHTTPSCallable *function = [functions HTTPSCallableWithName:functionName];
+  if (timeout != nil && ![timeout isEqual:[NSNull null]]) {
+    function.timeoutInterval = timeout.doubleValue;
+  }
+
+  [function callWithObject:parameters
+                completion:^(FIRHTTPSCallableResult *callableResult, NSError *error) {
+                  if (error) {
+                    result.error(nil, nil, nil, error);
+                  } else {
+                    result.success(callableResult.data);
+                  }
+                }];
 }
+
+#pragma mark - Utilities
 
 // Map function error code objects to Strings that match error names on Android.
 - (NSString *)mapFunctionsErrorCodes:(FIRFunctionsErrorCode)code {
   if (code == FIRFunctionsErrorCodeAborted) {
-    return @"ABORTED";
+    return @"aborted";
   } else if (code == FIRFunctionsErrorCodeAlreadyExists) {
-    return @"ALREADY_EXISTS";
+    return @"already-exists";
   } else if (code == FIRFunctionsErrorCodeCancelled) {
-    return @"CANCELLED";
+    return @"cancelled";
   } else if (code == FIRFunctionsErrorCodeDataLoss) {
-    return @"DATA_LOSS";
+    return @"data-loss";
   } else if (code == FIRFunctionsErrorCodeDeadlineExceeded) {
-    return @"DEADLINE_EXCEEDED";
+    return @"deadline-exceeded";
   } else if (code == FIRFunctionsErrorCodeFailedPrecondition) {
-    return @"FAILED_PRECONDITION";
+    return @"failed-precondition";
   } else if (code == FIRFunctionsErrorCodeInternal) {
-    return @"INTERNAL";
+    return @"internal";
   } else if (code == FIRFunctionsErrorCodeInvalidArgument) {
-    return @"INVALID_ARGUMENT";
+    return @"invalid-argument";
   } else if (code == FIRFunctionsErrorCodeNotFound) {
-    return @"NOT_FOUND";
+    return @"not-found";
   } else if (code == FIRFunctionsErrorCodeOK) {
-    return @"OK";
+    return @"ok";
   } else if (code == FIRFunctionsErrorCodeOutOfRange) {
-    return @"OUT_OF_RANGE";
+    return @"out-of-range";
   } else if (code == FIRFunctionsErrorCodePermissionDenied) {
-    return @"PERMISSION_DENIED";
+    return @"permission-denied";
   } else if (code == FIRFunctionsErrorCodeResourceExhausted) {
-    return @"RESOURCE_EXHAUSTED";
+    return @"resource-exhausted";
   } else if (code == FIRFunctionsErrorCodeUnauthenticated) {
-    return @"UNAUTHENTICATED";
+    return @"unauthenticated";
   } else if (code == FIRFunctionsErrorCodeUnavailable) {
-    return @"UNAVAILABLE";
+    return @"unavailable";
   } else if (code == FIRFunctionsErrorCodeUnimplemented) {
-    return @"UNIMPLEMENTED";
+    return @"unimplemented";
   } else {
-    return @"UNKNOWN";
+    return @"unknown";
   }
+}
+
+#pragma mark - FLTFirebasePlugin
+
+- (void)didReinitializeFirebaseCore:(void (^)(void))completion {
+  completion();
+}
+
+- (NSDictionary *_Nonnull)pluginConstantsForFIRApp:(FIRApp *)firebase_app {
+  return @{};
+}
+
+- (NSString *_Nonnull)firebaseLibraryName {
+  return LIBRARY_NAME;
+}
+
+- (NSString *_Nonnull)firebaseLibraryVersion {
+  return LIBRARY_VERSION;
+}
+
+- (NSString *_Nonnull)flutterChannelName {
+  return kFLTFirebaseFunctionsChannelName;
 }
 
 @end
