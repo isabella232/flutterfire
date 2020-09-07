@@ -155,6 +155,11 @@ void testsMain() {
         });
         fail('Should have thrown');
       } on FirebaseFunctionsException catch (e) {
+        print(e.message);
+        print(e.message);
+        print(e.message);
+        print(e.message);
+        print(e.message);
         expect(e.code, equals('deadline-exceeded'));
       } catch (e) {
         fail(e);
