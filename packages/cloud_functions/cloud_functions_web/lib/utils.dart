@@ -6,6 +6,7 @@ import 'dart:js_util' as util;
 
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
 import 'package:firebase/firebase.dart' as firebase;
+import 'package:firebase/src/utils.dart' show dartify;
 
 /// Given a web error, a [FirebaseFunctionsException] is returned.
 ///
@@ -14,15 +15,15 @@ import 'package:firebase/firebase.dart' as firebase;
 ///
 FirebaseFunctionsException throwFirebaseFunctionsException(Object exception,
     [StackTrace stackTrace]) {
-  String originalCode = util.getProperty(exception, "code");
+  String originalCode = util.getProperty(exception, 'code');
   String code = originalCode.replaceFirst('functions/', '');
   String message = util
-      .getProperty(exception, "message")
+      .getProperty(exception, 'message')
       .replaceFirst('($originalCode)', '');
 
   return FirebaseFunctionsException(
       code: code,
       message: message,
       stackTrace: stackTrace,
-      details: util.getProperty(exception, "details"));
+      details: dartify(util.getProperty(exception, 'details')));
 }
