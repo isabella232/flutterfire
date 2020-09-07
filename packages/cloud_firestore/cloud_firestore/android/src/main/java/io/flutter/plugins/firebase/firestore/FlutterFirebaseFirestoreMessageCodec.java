@@ -151,17 +151,15 @@ class FlutterFirebaseFirestoreMessageCodec extends StandardMessageCodec {
     writeValue(stream, querySnapshotMap);
   }
 
+  @SuppressWarnings("ConstantConditions")
   private void writeDocumentSnapshot(ByteArrayOutputStream stream, DocumentSnapshot value) {
     Map<String, Object> snapshotMap = new HashMap<>();
 
     snapshotMap.put("path", value.getReference().getPath());
-    Map<String, Object> foo;
+
     if (value.exists()) {
-      foo = value.getData();
-      // noinspection ConstantConditions
-      snapshotMap.put("data", foo);
+      snapshotMap.put("data", value.getData());
     } else {
-      // noinspection ConstantConditions
       snapshotMap.put("data", null);
     }
 
