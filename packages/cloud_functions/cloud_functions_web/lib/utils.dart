@@ -25,5 +25,5 @@ FirebaseFunctionsException throwFirebaseAuthException(Object exception,
 
   // TODO(ehesp): firebase-dart does not provide `details` from HTTP errors.
   return FirebaseFunctionsException(
-      code: code, message: message, stackTrace: stackTrace);
+      code: code, message: message, stackTrace: stackTrace, details: firebaseError.serverResponse);
 }

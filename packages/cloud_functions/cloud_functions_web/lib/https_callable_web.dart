@@ -18,7 +18,7 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
   @override
   Future<dynamic> call([parameters]) async {
     firebase.HttpsCallableOptions callableOptions =
-        firebase.HttpsCallableOptions(timeout: options.timeout.inMicroseconds);
+        firebase.HttpsCallableOptions(timeout: options.timeout.inMilliseconds);
 
     firebase.HttpsCallable callable =
         _webFunctions.httpsCallable(name, callableOptions);

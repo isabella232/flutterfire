@@ -5,7 +5,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:drive/drive.dart' as drive;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'sample.dart' as data;
@@ -112,9 +111,9 @@ void testsMain() {
                 'Response data was requested to be sent as part of an Error payload, so here we are!'));
 
         // TODO(ehesp): firebase-dart does not provide `details` from HTTP errors.
-        if (!kIsWeb) {
-          expect(e.details, equals(data.deepMap));
-        }
+//        if (!kIsWeb) {
+        expect(e.details, equals(data.deepMap));
+//        }
       } catch (e) {
         fail(e);
       }
