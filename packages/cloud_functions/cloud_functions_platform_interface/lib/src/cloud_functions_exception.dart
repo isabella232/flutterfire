@@ -17,6 +17,6 @@ class CloudFunctionsException extends FirebaseException implements Exception {
     this.details,
   }) : super(plugin: 'cloud_functions', message: message, code: code);
 
-  /// Additional data provided with the exeption.
+  /// Additional data provided with the exception.
   final dynamic details;
 }
