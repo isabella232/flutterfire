@@ -18,7 +18,7 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
   final firebase.Functions _webFunctions;
 
   @override
-  Future<dynamic> call([parameters]) async {
+  Future<dynamic> call([dynamic parameters]) async {
     firebase.HttpsCallableOptions callableOptions =
         firebase.HttpsCallableOptions(timeout: options.timeout.inMilliseconds);
 
@@ -26,10 +26,10 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
         _webFunctions.httpsCallable(name, callableOptions);
 
     var value;
-    var promise = callable.jsObject
+    var jsPromise = callable.jsObject
         .call(parameters == null ? null : util.jsify(parameters));
     try {
-      value = await util.promiseToFuture(promise);
+      value = await util.promiseToFuture(jsPromise);
     } catch (e, s) {
       throw throwFirebaseFunctionsException(e, s);
     }
