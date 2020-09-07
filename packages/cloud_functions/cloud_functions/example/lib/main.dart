@@ -4,13 +4,16 @@
 
 import 'dart:async';
 import 'dart:core';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseFunctions.instance
+      .useFunctionsEmulator(origin: 'http://localhost:5001');
   runApp(MyApp());
 }
 
@@ -35,7 +38,7 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          title: const Text('Cloud Functions Example'),
+          title: const Text('Firebase Functions Example'),
         ),
         body: Center(
             child: ListView.builder(
@@ -49,17 +52,17 @@ class _MyAppState extends State<MyApp> {
           onPressed: () async {
             // See index.js in the functions folder for the example function we
             // are using for this example
-
-            HttpsCallable callable = FirebaseFunctions.instance
-                .useFunctionsEmulator(origin: 'http://10.0.2.2:5001')
-                .httpsCallable('listFruit');
+            HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(
+                'listFruit',
+                options: HttpsCallableOptions(timeout: Duration(seconds: 5)));
 
             await callable().then((v) {
-              v.data.forEach((f) => {
-                    setState(() {
-                      fruit.add(f);
-                    })
-                  });
+              setState(() {
+                fruit.clear();
+                v.data.forEach((f) {
+                  fruit.add(f);
+                });
+              });
             }).catchError((e) {
               _scaffoldKey.currentState.showSnackBar(SnackBar(
                 content: Text("ERROR: $e"),

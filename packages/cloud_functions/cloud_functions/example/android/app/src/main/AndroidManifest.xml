@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.flutter.plugins.firebase.cloudfunctions.cloudfunctionsexample">
+    package="io.flutter.plugins.firebase.functions.example">
 
     <!-- The INTERNET permission is required for development. Specifically,
          flutter needs it to communicate with the running application
@@ -15,7 +15,6 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="cloud_functions_example"
-        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".EmbeddingV1Activity"

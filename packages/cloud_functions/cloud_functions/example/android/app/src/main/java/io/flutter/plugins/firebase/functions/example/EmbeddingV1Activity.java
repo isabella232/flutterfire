@@ -1,10 +1,10 @@
-package io.flutter.plugins.firebasestorageexample;
+package io.flutter.plugins.firebase.functions.example;
 
 import android.os.Bundle;
 import dev.flutter.plugins.e2e.E2EPlugin;
 import io.flutter.app.FlutterActivity;
-import io.flutter.plugins.firebase.cloudfunctions.CloudFunctionsPlugin;
 import io.flutter.plugins.firebase.core.FlutterFirebaseCorePlugin;
+import io.flutter.plugins.firebase.functions.FlutterFirebaseFunctionsPlugin;
 
 public class EmbeddingV1Activity extends FlutterActivity {
   @Override
@@ -12,9 +12,9 @@ public class EmbeddingV1Activity extends FlutterActivity {
     super.onCreate(savedInstanceState);
     FlutterFirebaseCorePlugin.registerWith(
         registrarFor("io.flutter.plugins.firebase.core.FlutterFirebaseCorePlugin"));
-    // TODO(Salakar) rename as part of re-work CloudFunctionsPlugin -> FlutterFirebaseFunctionsPlugin
-    CloudFunctionsPlugin.registerWith(
-        registrarFor("io.flutter.plugins.firebase.cloudfunctions.CloudFunctionsPlugin"));
+    // TODO(Salakar) rename as part of re-work FlutterFirebaseFunctionsPlugin -> FlutterFirebaseFunctionsPlugin
+    FlutterFirebaseFunctionsPlugin.registerWith(
+        registrarFor("io.flutter.plugins.firebase.functions.FlutterFirebaseFunctionsPlugin"));
     E2EPlugin.registerWith(registrarFor("dev.flutter.plugins.e2e.E2EPlugin"));
   }
 }
