@@ -7,7 +7,7 @@ flutter:
   plugin:
     platforms:
       web:
-        pluginClass: CloudFunctionsWeb
+        pluginClass: FirebaseFunctionsWeb
         fileName: cloud_functions_web.dart
 
 dependencies:
