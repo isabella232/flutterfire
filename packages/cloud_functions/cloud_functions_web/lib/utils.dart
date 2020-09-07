@@ -5,15 +5,15 @@
 import 'package:cloud_functions_platform_interface/cloud_functions_platform_interface.dart';
 import 'package:firebase/firebase.dart' as firebase;
 
-/// Given a web error, a [CloudFunctionsException] is returned.
+/// Given a web error, a [FirebaseFunctionsException] is returned.
 ///
 /// The firebase-dart wrapper exposes a [firebase.FirebaseError], allowing us to
-/// use the code and message and convert it into an expected [CloudFunctionsException].
+/// use the code and message and convert it into an expected [FirebaseFunctionsException].
 ///
-CloudFunctionsException throwFirebaseAuthException(Object exception,
+FirebaseFunctionsException throwFirebaseAuthException(Object exception,
     [StackTrace stackTrace]) {
   if (exception is! firebase.FirebaseError) {
-    return CloudFunctionsException(
+    return FirebaseFunctionsException(
         code: 'unknown', message: exception, stackTrace: stackTrace);
   }
 
@@ -24,6 +24,6 @@ CloudFunctionsException throwFirebaseAuthException(Object exception,
       firebaseError.message.replaceFirst('(${firebaseError.code})', '');
 
   // TODO(ehesp): firebase-dart does not provide `details` from HTTP errors.
-  return CloudFunctionsException(
+  return FirebaseFunctionsException(
       code: code, message: message, stackTrace: stackTrace);
 }

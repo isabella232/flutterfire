@@ -9,7 +9,7 @@ import 'package:cloud_functions_web/utils.dart';
 import 'package:firebase/firebase.dart' as firebase;
 
 class HttpsCallableWeb extends HttpsCallablePlatform {
-  HttpsCallableWeb(CloudFunctionsPlatform functions, this._webFunctions,
+  HttpsCallableWeb(FirebaseFunctionsPlatform functions, this._webFunctions,
       String origin, String name, HttpsCallableOptions options)
       : super(functions, origin, name, options);
 
