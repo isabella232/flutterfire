@@ -38,6 +38,8 @@ jobs:
         with:
           api-level: 28
           arch: x86_64
+          # Firebase Functions works without Google Play Services, so we don't use the `googleapis`
+          # emulator target as it's considerably slower on CI.
           target: default
           profile: Nexus 5X
           script: ./.github/workflows/scripts/drive-example.sh android
@@ -63,6 +65,8 @@ jobs:
         run: ./.github/workflows/scripts/drive-example.sh ios
 
   web:
+    # Using macos instead of ubuntu as Web app can't connect to Firebase Functions emulator
+    # when running on ubuntu.
     runs-on: macos-latest
     timeout-minutes: 15
     steps:
