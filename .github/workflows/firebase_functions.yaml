@@ -63,7 +63,7 @@ jobs:
         run: ./.github/workflows/scripts/drive-example.sh ios
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v1
