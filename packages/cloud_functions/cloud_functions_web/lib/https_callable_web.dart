@@ -19,6 +19,10 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
 
   @override
   Future<dynamic> call([dynamic parameters]) async {
+    if (origin != null) {
+      _webFunctions.useFunctionsEmulator(origin);
+    }
+
     firebase.HttpsCallableOptions callableOptions =
         firebase.HttpsCallableOptions(timeout: options.timeout.inMilliseconds);
 
@@ -34,6 +38,6 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
       throw throwFirebaseFunctionsException(e, s);
     }
 
-    return dartify(value.data);
+    return dartify(util.getProperty(value, 'data'));
   }
 }
