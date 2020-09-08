@@ -29,15 +29,18 @@ class HttpsCallableWeb extends HttpsCallablePlatform {
     firebase.HttpsCallable callable =
         _webFunctions.httpsCallable(name, callableOptions);
 
-    var value;
-    var jsPromise = callable.jsObject
-        .call(parameters == null ? null : util.jsify(parameters));
+    var response;
+    var input = parameters;
+    if ((input is Map) || (input is Iterable)) {
+      input = util.jsify(parameters);
+    }
+    var jsPromise = callable.jsObject.call(input);
     try {
-      value = await util.promiseToFuture(jsPromise);
+      response = await util.promiseToFuture(jsPromise);
     } catch (e, s) {
       throw throwFirebaseFunctionsException(e, s);
     }
 
-    return dartify(util.getProperty(value, 'data'));
+    return dartify(util.getProperty(response, 'data'));
   }
 }
