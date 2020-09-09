@@ -18,7 +18,6 @@ void runReferenceTests() {
 
     group('bucket', () {
       test('returns the storage bucket as a string', () async {
-        // TODO: failing, bucket is null
         expect(
             storage.ref('/ok.jpeg').bucket, storage.app.options.storageBucket);
       });
@@ -80,7 +79,6 @@ void runReferenceTests() {
 
         try {
           await ref.getMetadata();
-          // TODO: failing, returning Future.error
         } on FirebaseException catch (error) {
           expect(error.code, 'object-not-found');
           expect(error.message, 'No object exists at the desired reference.');
@@ -135,7 +133,6 @@ void runReferenceTests() {
         try {
           String downloadUrl = await ref.getDownloadURL();
           expect(downloadUrl, isA<String>());
-          // TODO: failing, returning Future.error
         } on FirebaseException catch (error) {
           expect(error.plugin, 'firebase_storage');
           expect(error.code, 'permission-denied');
@@ -345,7 +342,6 @@ void runReferenceTests() {
         Reference ref = storage.ref('/not.jpeg');
         try {
           await ref.updateMetadata(SettableMetadata(contentType: 'unknown'));
-          // TODO: failing, returning Future.error
         } on FirebaseException catch (e) {
           expect(e.code, 'object-not-found');
           expect(e.message, 'No object exists at the desired reference.');
@@ -363,7 +359,6 @@ void runReferenceTests() {
           Reference ref = storage.ref('/ok.jpeg');
 
           await ref.updateMetadata(SettableMetadata(contentType: 'jpeg'));
-          // TODO: failing, returning Future.error
         } on FirebaseException catch (error) {
           expect(error.plugin, 'firebase_storage');
           expect(error.code, 'permission-denied');

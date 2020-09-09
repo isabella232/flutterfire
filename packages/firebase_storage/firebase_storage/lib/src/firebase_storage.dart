@@ -110,7 +110,7 @@ class FirebaseStorage extends FirebasePluginPlatform {
   /// Returns a new [Reference] from a given URL.
   ///
   /// The [url] can either be a HTTP or Google Storage URL pointing to an object.
-  /// If the URL contains a storage bucket which is differen to the current
+  /// If the URL contains a storage bucket which is different to the current
   /// [FirebaseStorage.bucket], a new [FirebaseStorage] instance for the
   /// [Reference] will be used instead.
   Reference refFromURL(String url) {
