@@ -5,7 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 final String kTestString = 'Hello world';
 final String kTestStorageBucket = 'react-native-firebase-testing.appspot.com';
 
-// create file
+// Creates a test file with a specified name to
+// a locally directory
 Future<File> createFile(name) async {
   final Directory systemTempDir = Directory.systemTemp;
   final File file = await File('${systemTempDir.path}/$name').create();
@@ -13,11 +14,12 @@ Future<File> createFile(name) async {
   return file;
 }
 
+// Initializes a secondary app with or without a
+// default storageBucket value in FirebaseOptions for testing
 Future<FirebaseApp> testInitializeSecondaryApp(
     {bool withDefaultBucket = true}) async {
   final String testAppName =
       withDefaultBucket ? 'testapp' : 'testapp-no-bucket';
-  print('withDefaultBucket $withDefaultBucket');
 
   FirebaseOptions testAppOptions;
   if (Platform.isIOS || Platform.isMacOS) {
