@@ -81,22 +81,34 @@ void runTaskTests() {
       });
     });
 
-    // TODO(ehesp): look into .snapshot with error ‘_instanceToken’ was called on null.
-    // group('snapshot', () {
-    //   test('returns the latest snapshot for download task', () async {
-    //     final downloadTask = downloadRef.writeToFile(file);
-    //     final snapshot = downloadTask.snapshot;
-    //     expect(snapshot, isA<TaskSnapshot>());
-    //     expect(snapshot.state, TaskState.running);
-    //   });
+    group('snapshot', () {
+      test('returns the latest snapshot for download task', () async {
+        final downloadTask = downloadRef.writeToFile(file);
 
-    //   test('returns the latest snapshot for upload task', () async {
-    //     final uploadTask = uploadRef.putFile(file);
-    //     final snapshot = uploadTask.snapshot;
-    //     expect(snapshot, isA<TaskSnapshot>());
-    //     expect(snapshot.state, TaskState.running);
-    //   });
-    // });
+        expect(downloadTask.snapshot, isNull);
+
+        TaskSnapshot completedSnapshot = await downloadTask.onComplete;
+        final snapshot = downloadTask.snapshot;
+
+        expect(snapshot, isA<TaskSnapshot>());
+        expect(snapshot.state, TaskState.complete);
+        expect(snapshot.bytesTransferred, completedSnapshot.bytesTransferred);
+        expect(snapshot.totalBytes, completedSnapshot.totalBytes);
+        expect(snapshot.metadata, isNull);
+      });
+
+      test('returns the latest snapshot for upload task', () async {
+        final uploadTask = uploadRef.putFile(file);
+        expect(uploadTask.snapshot, isNull);
+
+        TaskSnapshot completedSnapshot = await uploadTask.onComplete;
+        final snapshot = uploadTask.snapshot;
+        expect(snapshot, isA<TaskSnapshot>());
+        expect(snapshot.bytesTransferred, completedSnapshot.bytesTransferred);
+        expect(snapshot.totalBytes, completedSnapshot.totalBytes);
+        expect(snapshot.metadata, isA<FullMetadata>());
+      });
+    });
 
     group('cancel()', () {
       Task task;
@@ -126,7 +138,7 @@ void runTaskTests() {
         await task.onComplete.then((snapshot) {
           fail('$type task did not cancel!');
         }).catchError((error) {
-          // TODO: when error is thrown correctly check the output
+          // TODO(helenaford): when error is thrown correctly check the output
           // expect(error.code, "canceled");
           // expect(error.message, "User canceled the upload/download.");
           expect(isCancelled, isTrue);

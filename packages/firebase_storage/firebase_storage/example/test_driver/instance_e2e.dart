@@ -2,26 +2,47 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'test_utils.dart';
+
 void runInstanceTests() {
-  group('$FirebaseStorage.instance', () {
+  group('$FirebaseStorage', () {
     FirebaseStorage storage;
     FirebaseApp secondaryApp;
+    FirebaseApp secondaryAppWithoutBucket;
 
     setUpAll(() async {
+      await Firebase.initializeApp();
       storage = FirebaseStorage.instance;
-      secondaryApp = Firebase.app('testapp');
+      secondaryApp = await testInitializeSecondaryApp(withDefaultBucket: true);
     });
 
     test('instance', () {
       expect(storage, isA<FirebaseStorage>());
+      expect(storage.app, isA<FirebaseApp>());
+      expect(storage.app.name, defaultFirebaseAppName);
     });
 
     test('instanceFor', () {
-      FirebaseStorage secondaryStorage = FirebaseStorage.instanceFor(
-        app: secondaryApp,
-      );
+      FirebaseStorage secondaryStorage =
+          FirebaseStorage.instanceFor(app: secondaryApp, bucket: 'test');
+      expect(storage.app, isA<FirebaseApp>());
       expect(secondaryStorage, isA<FirebaseStorage>());
       expect(secondaryStorage.app.name, 'testapp');
+    });
+
+    test('default bucket cannot be null', () async {
+      try {
+        secondaryAppWithoutBucket =
+            await testInitializeSecondaryApp(withDefaultBucket: false);
+
+        FirebaseStorage.instanceFor(
+          app: secondaryAppWithoutBucket,
+        );
+        fail('should have thrown an error');
+      } on AssertionError catch (e) {
+        expect(e.message,
+            'no default bucket found. Did you configure Firebase Storage properly?');
+      }
     });
 
     group('ref', () {
@@ -45,27 +66,26 @@ void runInstanceTests() {
       test('accepts a gs url', () async {
         const url = 'gs://foo/bar/baz.png';
         Reference ref = storage.refFromURL(url);
-        expect(ref.toString(), url);
+        expect(ref.fullPath, "bar/baz.png");
+        expect(ref.bucket, "foo");
       });
 
       test('accepts a https url', () async {
         const url =
             'https://firebasestorage.googleapis.com/v0/b/react-native-firebase-testing.appspot.com/o/1mbTestFile.gif?alt=media';
         Reference ref = storage.refFromURL(url);
-        expect(ref.bucket, 'react-native-firebase-testing');
+        expect(ref.bucket, 'react-native-firebase-testing.appspot.com');
         expect(ref.name, '1mbTestFile.gif');
-        expect(ref.toString(),
-            'gs://react-native-firebase-testing/1mbTestFile.gif');
+        expect(ref.fullPath, "1mbTestFile.gif");
       });
 
       test('accepts a https encoded url', () async {
         const url =
             'https%3A%2F%2Ffirebasestorage.googleapis.com%2Fv0%2Fb%2Freact-native-firebase-testing.appspot.com%2Fo%2F1mbTestFile.gif%3Falt%3Dmedia';
         Reference ref = storage.refFromURL(url);
-        expect(ref.bucket, 'react-native-firebase-testing');
+        expect(ref.bucket, 'react-native-firebase-testing.appspot.com');
         expect(ref.name, '1mbTestFile.gif');
-        expect(ref.toString(),
-            'gs://react-native-firebase-testing/1mbTestFile.gif');
+        expect(ref.fullPath, "1mbTestFile.gif");
       });
 
       test('throws an error if https url could not be parsed', () async {
@@ -73,7 +93,10 @@ void runInstanceTests() {
           storage.refFromURL('https://invertase.io');
           fail('Did not throw an Error.');
         } catch (error) {
-          expect(error.message, contains("unable to parse 'url'"));
+          expect(
+              error.message,
+              contains(
+                  "url could not be parsed, ensure it's a valid storage url"));
           return;
         }
       });
@@ -81,7 +104,8 @@ void runInstanceTests() {
       test('accepts a gs url without a fullPath', () async {
         const url = 'gs://some-bucket';
         Reference ref = storage.refFromURL(url);
-        expect(ref.toString(), url);
+        expect(ref.bucket, url.replaceFirst("gs://", ""));
+        expect(ref.fullPath, "/");
       });
 
       test('throws an error if url does not start with gs:// or https://',
@@ -89,9 +113,9 @@ void runInstanceTests() {
         try {
           storage.refFromURL('bs://foo/bar/cat.gif');
           fail('Did not throw an Error.');
-        } catch (error) {
-          expect(error.message, contains("begin with 'gs://'"));
-          return;
+        } on AssertionError catch (error) {
+          expect(error.message,
+              contains("a url must start with 'gs://' or 'https://'"));
         }
       });
     });
@@ -121,7 +145,8 @@ void runInstanceTests() {
     });
 
     test('toString', () {
-      expect(storage.toString(), '');
+      expect(storage.toString(),
+          'FirebaseStorage(app: [DEFAULT], bucket: react-native-firebase-testing.appspot.com)');
     });
   });
 }

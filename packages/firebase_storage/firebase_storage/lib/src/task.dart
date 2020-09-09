@@ -38,7 +38,10 @@ abstract class Task {
   TaskSnapshot get lastSnapshot => snapshot;
 
   /// The latest [TaskSnapshot] for this task.
-  TaskSnapshot get snapshot => TaskSnapshot._(storage, _delegate.snapshot);
+  TaskSnapshot get snapshot {
+    if (_delegate.snapshot == null) return null;
+    return TaskSnapshot._(storage, _delegate.snapshot);
+  }
 
   /// Returns a [Future] once the task has completed.
   ///

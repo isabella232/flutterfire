@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,7 +58,6 @@ void main() {
 
         try {
           await ref.updateMetadata(SettableMetadata(contentType: 'jpeg'));
-          // TODO: failing, returning Future.error
         } on FirebaseException catch (error) {
           expect(error.plugin, 'firebase_storage');
           return;

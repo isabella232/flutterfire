@@ -33,7 +33,7 @@ abstract class MethodChannelTask extends TaskPlatform {
       _exception = e;
       _stackTrace = stackTrace;
       if (_completer != null) {
-        catchPlatformException(e, stackTrace)
+        catchFuturePlatformException(e, stackTrace)
             .catchError(_completer.completeError);
       }
     });
@@ -58,7 +58,7 @@ abstract class MethodChannelTask extends TaskPlatform {
       _exception = e;
       _stackTrace = stackTrace;
       if (_completer != null) {
-        catchPlatformException(e, stackTrace)
+        catchFuturePlatformException(e, stackTrace)
             .catchError(_completer.completeError);
       }
     }, cancelOnError: true);
@@ -98,7 +98,7 @@ abstract class MethodChannelTask extends TaskPlatform {
     if (_didComplete && _exception == null) {
       return Future.value(snapshot);
     } else if (_didComplete && _exception != null) {
-      return catchPlatformException(_exception, _stackTrace);
+      return catchFuturePlatformException(_exception, _stackTrace);
     } else {
       if (_completer == null) {
         _completer = Completer<TaskSnapshotPlatform>();
@@ -122,7 +122,7 @@ abstract class MethodChannelTask extends TaskPlatform {
 
       return data['status'];
     } catch (e) {
-      return catchPlatformException(e);
+      return catchFuturePlatformException(e);
     }
   }
 
@@ -140,7 +140,7 @@ abstract class MethodChannelTask extends TaskPlatform {
 
       return data['status'];
     } catch (e) {
-      return catchPlatformException(e);
+      return catchFuturePlatformException(e);
     }
   }
 
@@ -158,7 +158,7 @@ abstract class MethodChannelTask extends TaskPlatform {
 
       return data['status'];
     } catch (e) {
-      return catchPlatformException(e);
+      return catchFuturePlatformException(e);
     }
   }
 }

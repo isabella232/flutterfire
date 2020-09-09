@@ -12,6 +12,7 @@ class TaskSnapshot {
   final FirebaseStorage storage;
 
   TaskSnapshot._(this.storage, this._delegate) {
+    assert(_delegate != null);
     TaskSnapshotPlatform.verifyExtends(_delegate);
   }
 

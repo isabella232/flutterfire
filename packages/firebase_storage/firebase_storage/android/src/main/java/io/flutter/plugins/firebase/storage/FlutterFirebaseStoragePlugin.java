@@ -82,8 +82,6 @@ public class FlutterFirebaseStoragePlugin
     if (storageMetadata.getBucket() != null) out.put("bucket", storageMetadata.getBucket());
     if (storageMetadata.getGeneration() != null)
       out.put("generation", storageMetadata.getGeneration());
-    if (storageMetadata.getGeneration() != null)
-      out.put("generation", storageMetadata.getGeneration());
     out.put("fullPath", storageMetadata.getPath());
     out.put("size", storageMetadata.getSizeBytes());
     out.put("creationTimeMillis", storageMetadata.getCreationTimeMillis());

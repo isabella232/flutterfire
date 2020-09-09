@@ -64,7 +64,12 @@ class FirebaseStorage extends FirebasePluginPlatform {
     String bucket,
   }) {
     app ??= Firebase.app();
+    assert(app != null);
+
     bucket ??= app.options.storageBucket;
+    // TODO(helenaford): confirm error message
+    assert(bucket != null,
+        "no default bucket found. Did you configure Firebase Storage properly?");
 
     // Previous versions allow storage buckets starting with "gs://".
     // Since we need to create a key using the bucket, it must not include "gs://"
@@ -110,13 +115,20 @@ class FirebaseStorage extends FirebasePluginPlatform {
   /// [Reference] will be used instead.
   Reference refFromURL(String url) {
     assert(url != null);
-    assert(url.startsWith('gs://') || url.startsWith('http'));
+    assert(url.startsWith('gs://') || url.startsWith('http'),
+        "'a url must start with 'gs://' or 'https://'");
 
     String bucket;
     String path;
 
     if (url.startsWith('http')) {
-      // TODO REGEX https://regex101.com/r/ZimjV0/1
+      final parts = partsFromHttpUrl(url);
+
+      assert(parts != null,
+          "url could not be parsed, ensure it's a valid storage url");
+
+      bucket = parts['bucket'];
+      path = parts['path'];
     } else {
       bucket = bucketFromGoogleStorageUrl(url);
       path = pathFromGoogleStorageUrl(url);

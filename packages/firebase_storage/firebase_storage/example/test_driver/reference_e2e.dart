@@ -154,7 +154,6 @@ void runReferenceTests() {
 
         try {
           await ref.getDownloadURL();
-          // TODO: failing, returning Future.error
         } on FirebaseException catch (error) {
           expect(error.plugin, 'firebase_storage');
           expect(error.code, 'object-not-found');
