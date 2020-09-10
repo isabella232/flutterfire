@@ -21,6 +21,7 @@ abstract class TaskPlatform extends PlatformInterface {
   /// the object in which it's going to delegate calls has been
   /// constructed properly.
   static verifyExtends(TaskPlatform instance) {
+    assert(instance != null);
     PlatformInterface.verifyToken(instance, _token);
   }
 

@@ -24,7 +24,7 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
     return '${appName}|${bucket ?? ''}';
   }
 
-  /// The [MethodChannelFirebaseAuth] method channel.
+  /// The [MethodChannelFirebaseStorage] method channel.
   static const MethodChannel channel = MethodChannel(
     'plugins.flutter.io/firebase_storage',
   );
@@ -152,8 +152,8 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
 
   @override
   Future<void> setMaxOperationRetryTime(int time) async {
-    await channel
-        .invokeMethod('Storage#setMaxOperationRetryTime', <String, dynamic>{
+    await channel.invokeMethod<void>(
+        'Storage#setMaxOperationRetryTime', <String, dynamic>{
       'appName': app.name,
       'bucket': bucket,
       'time': time,
@@ -165,7 +165,7 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
   @override
   Future<void> setMaxUploadRetryTime(int time) async {
     await channel
-        .invokeMethod('Storage#setMaxUploadRetryTime', <String, dynamic>{
+        .invokeMethod<void>('Storage#setMaxUploadRetryTime', <String, dynamic>{
       'appName': app.name,
       'bucket': bucket,
       'time': time,
@@ -176,8 +176,8 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
 
   @override
   Future<void> setMaxDownloadRetryTime(int time) async {
-    await channel
-        .invokeMethod('Storage#setMaxDownloadRetryTime', <String, dynamic>{
+    await channel.invokeMethod<void>(
+        'Storage#setMaxDownloadRetryTime', <String, dynamic>{
       'appName': app.name,
       'bucket': bucket,
       'time': time,

@@ -19,6 +19,7 @@ abstract class ListResultPlatform extends PlatformInterface {
   /// the object in which it's going to delegate calls has been
   /// constructed properly.
   static verifyExtends(ListResultPlatform instance) {
+    assert(instance != null);
     PlatformInterface.verifyToken(instance, _token);
   }
 

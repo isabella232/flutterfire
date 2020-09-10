@@ -5,6 +5,7 @@
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:firebase_storage_platform_interface/src/method_channel/method_channel_firebase_storage.dart';
 
 typedef MethodCallCallback = dynamic Function(MethodCall methodCall);
@@ -53,28 +54,15 @@ void handleMethodCall(MethodCallCallback methodCallCallback) =>
       return await methodCallCallback(call);
     });
 
-Future<void> simulateEvent(String name, Map<String, dynamic> user) async {
-  await ServicesBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
-    MethodChannelFirebaseStorage.channel.name,
-    MethodChannelFirebaseStorage.channel.codec.encodeMethodCall(
-      MethodCall(
-        name,
-        <String, dynamic>{'user': user, 'appName': defaultFirebaseAppName},
-      ),
-    ),
-    (_) {},
-  );
-}
-
 Future<void> testExceptionHandling(String type, Function testMethod) async {
   try {
     await testMethod();
-  } on MethodChannelFirebaseStorage catch (_) {
+  } on FirebaseException catch (_) {
     if (type == 'PLATFORM' || type == 'EXCEPTION') {
       return;
     }
     fail(
-        'testExceptionHandling: ${testMethod} threw unexpected FirebaseAuthException');
+        'testExceptionHandling: ${testMethod} threw unexpected FirebaseException');
   } catch (e) {
     fail('testExceptionHandling: ${testMethod} threw invalid exception ${e}');
   }
