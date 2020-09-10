@@ -7,8 +7,6 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 
-// TODO(helenaford): look into exception handling for tasks
-
 /// Catches a [PlatformException] and converts it into a [FirebaseException] if
 /// it was intentionally caught on the native platform.
 FutureOr<Map<String, dynamic>> catchPlatformException(Object exception,

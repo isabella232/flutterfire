@@ -67,9 +67,20 @@ class FirebaseStorage extends FirebasePluginPlatform {
     assert(app != null);
 
     bucket ??= app.options.storageBucket;
-    // TODO(helenaford): confirm error message
+
+    // A bucket must exist at this point
+    if (bucket == null) {
+      if (app.name == defaultFirebaseAppName) {
+        _throwNoBucketError(
+            "No default storage bucket could be found. Ensure you have correctly followed the Getting Started guide.");
+      } else {
+        _throwNoBucketError(
+            "No storage bucket could be found for the app '${app.name}'. Ensure you have set the [storageBucket] on [FirebaseOptions] whilst initializing the secondary Firebase app.");
+      }
+    }
+
     assert(bucket != null,
-        "no default bucket found. Did you configure Firebase Storage properly?");
+        "No default storage bucket could be found. Ensure you have correctly followed the Getting Started docu.");
 
     // Previous versions allow storage buckets starting with "gs://".
     // Since we need to create a key using the bucket, it must not include "gs://"
@@ -210,4 +221,9 @@ class FirebaseStorage extends FirebasePluginPlatform {
 
   @override
   String toString() => '$FirebaseStorage(app: ${app.name}, bucket: $bucket)';
+}
+
+_throwNoBucketError(String message) {
+  throw FirebaseException(
+      plugin: "firebase_storage", code: "no-bucket", message: message);
 }

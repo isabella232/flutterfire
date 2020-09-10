@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pedantic/pedantic.dart';
 import 'dart:io';
 import './test_utils.dart';
 
@@ -112,39 +115,35 @@ void runTaskTests() {
 
     group('cancel()', () {
       Task task;
-      bool hadRunningStatus;
-      bool isCancelled;
 
       setUp(() {
         task = null;
-        hadRunningStatus = false;
-        isCancelled = false;
       });
 
       final _testCancelTask = (String type) async {
-        final subscription =
-            task.snapshotEvents.listen((TaskSnapshot snapshot) async {
-          // 1) cancel it when we receive first running event
-          if (snapshot.state == TaskState.running && !hadRunningStatus) {
-            hadRunningStatus = true;
-            isCancelled = await task.cancel();
-            expect(isCancelled, isTrue);
-          }
-          if (snapshot.state == TaskState.complete) {
-            fail('$type task did not cancel!');
-          }
-        });
+        Completer<void> completer = Completer<void>();
 
-        await task.onComplete.then((snapshot) {
-          fail('$type task did not cancel!');
+        unawaited(task.onComplete.then((value) {
+          completer.completeError('$type task did not cancel!');
         }).catchError((error) {
-          // TODO(helenaford): when error is thrown correctly check the output
-          // expect(error.code, "canceled");
-          // expect(error.message, "User canceled the upload/download.");
-          expect(isCancelled, isTrue);
-        });
+          if (error is! FirebaseException) {
+            return completer.completeError(error);
+          }
 
-        await subscription.cancel();
+          if ((error as FirebaseException).code != 'canceled') {
+            completer.completeError('Task errored without a canceled status');
+          } else {
+            completer.complete();
+          }
+        }));
+
+        unawaited(task.cancel().then((value) {
+          if (value == false) {
+            completer.completeError('Task did not cancel');
+          }
+        }).catchError(completer.completeError));
+
+        return completer.future;
       };
 
       test('successfully cancels download task', () async {

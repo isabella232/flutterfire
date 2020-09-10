@@ -36,6 +36,9 @@ class TaskSnapshot {
   TaskState get state => _delegate.state;
 
   /// The total bytes of the task.
+  ///
+  /// Note; when performing a download task, the value of `-1` will be provided
+  /// whilst the total size of the remote file is being determined.
   int get totalBytes => _delegate.totalBytes;
 
   @override
