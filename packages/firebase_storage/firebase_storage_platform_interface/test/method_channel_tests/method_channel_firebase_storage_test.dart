@@ -120,101 +120,10 @@ void main() {
       });
     });
 
-    group('setInitialValues', () {
-      test('should set properties correctly', () {
-        final result = storage.setInitialValues(
-            maxDownloadRetryTime: 10,
-            maxOperationRetryTime: 20,
-            maxUploadRetryTime: 30);
-        expect(result, isInstanceOf<FirebaseStoragePlatform>());
-        expect(storage.maxDownloadRetryTime, equals(10));
-        expect(storage.maxOperationRetryTime, equals(20));
-        expect(storage.maxUploadRetryTime, equals(30));
-      });
-    });
-
     group('ref', () {
       test('should return a [ReferencePlatform]', () {
         final result = storage.ref('foo.bar');
         expect(result, isInstanceOf<ReferencePlatform>());
-      });
-    });
-
-    group('setMaxOperationRetryTime', () {
-      test('should invoke native method with correct args', () async {
-        await storage.setMaxOperationRetryTime(kTime);
-
-        // check native method was called
-        expect(logger, <Matcher>[
-          isMethodCall(
-            'Storage#setMaxOperationRetryTime',
-            arguments: <String, dynamic>{
-              'appName': '[DEFAULT]',
-              'bucket': null,
-              'time': kTime,
-            },
-          ),
-        ]);
-      });
-
-      test(
-          'catch a [PlatformException] error and throws a [FirebaseException] error',
-          () async {
-        mockPlatformExceptionThrown = true;
-        Function callMethod = () => storage.setMaxOperationRetryTime(kTime);
-        await testExceptionHandling('PLATFORM', callMethod);
-      });
-    });
-
-    group('setMaxUploadRetryTime', () {
-      test('should invoke native method with correct args', () async {
-        await storage.setMaxUploadRetryTime(kTime);
-
-        // check native method was called
-        expect(logger, <Matcher>[
-          isMethodCall(
-            'Storage#setMaxUploadRetryTime',
-            arguments: <String, dynamic>{
-              'appName': '[DEFAULT]',
-              'bucket': null,
-              'time': kTime,
-            },
-          ),
-        ]);
-      });
-
-      test(
-          'catch a [PlatformException] error and throws a [FirebaseException] error',
-          () async {
-        mockPlatformExceptionThrown = true;
-        Function callMethod = () => storage.setMaxUploadRetryTime(kTime);
-        await testExceptionHandling('PLATFORM', callMethod);
-      });
-    });
-
-    group('setMaxDownloadRetryTime', () {
-      test('should call native method with correct args', () async {
-        await storage.setMaxDownloadRetryTime(kTime);
-
-        // check native method was called
-        expect(logger, <Matcher>[
-          isMethodCall(
-            'Storage#setMaxDownloadRetryTime',
-            arguments: <String, dynamic>{
-              'appName': '[DEFAULT]',
-              'bucket': null,
-              'time': kTime,
-            },
-          ),
-        ]);
-      });
-
-      test(
-          'catch a [PlatformException] error and throws a [FirebaseException] error',
-          () async {
-        mockPlatformExceptionThrown = true;
-        Function callMethod = () => storage.setMaxDownloadRetryTime(kTime);
-        await testExceptionHandling('PLATFORM', callMethod);
       });
     });
   });

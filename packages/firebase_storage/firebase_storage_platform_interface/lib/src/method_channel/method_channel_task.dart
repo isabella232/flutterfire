@@ -175,6 +175,9 @@ class MethodChannelPutFileTask extends MethodChannelTask {
     return MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#startPutFile', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'handle': handle,
       'path': path,
@@ -208,6 +211,9 @@ class MethodChannelPutStringTask extends MethodChannelTask {
         .invokeMethod('Task#startPutString', <String, dynamic>{
       'appName': storage.app.name,
       'bucket': storage.bucket,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'handle': handle,
       'path': path,
       'data': data,
@@ -231,6 +237,9 @@ class MethodChannelPutTask extends MethodChannelTask {
         .invokeMethod('Task#startPut', <String, dynamic>{
       'appName': storage.app.name,
       'bucket': storage.bucket,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'handle': handle,
       'path': path,
       'data': buffer.asUint8List(),
@@ -251,6 +260,9 @@ class MethodChannelDownloadTask extends MethodChannelTask {
     return MethodChannelFirebaseStorage.channel
         .invokeMethod('Task#writeToFile', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'handle': handle,
       'path': path,

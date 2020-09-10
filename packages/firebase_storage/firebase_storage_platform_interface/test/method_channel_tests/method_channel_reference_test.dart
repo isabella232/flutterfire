@@ -95,6 +95,9 @@ void main() {
             'Reference#delete',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
             },
@@ -121,6 +124,9 @@ void main() {
             'Reference#getDownloadURL',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
             },
@@ -148,6 +154,9 @@ void main() {
             'Reference#getMetadata',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
             },
@@ -175,6 +184,9 @@ void main() {
             'Reference#list',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
               'options': <String, dynamic>{
@@ -206,6 +218,9 @@ void main() {
             'Reference#listAll',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
             },
@@ -236,6 +251,9 @@ void main() {
             'Task#startPut',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
               'handle': 0,
@@ -282,6 +300,9 @@ void main() {
             'Task#startPutFile',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
               'handle': 2,
@@ -320,6 +341,9 @@ void main() {
             'Task#startPutString',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
               'handle': 4,
@@ -375,6 +399,9 @@ void main() {
             'Task#writeToFile',
             arguments: <String, dynamic>{
               'appName': '[DEFAULT]',
+              'maxOperationRetryTime': storage.maxOperationRetryTime,
+              'maxUploadRetryTime': storage.maxUploadRetryTime,
+              'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
               'handle': 6,

@@ -54,6 +54,8 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
   /// then initialized via the [delegateFor] method.
   MethodChannelFirebaseStorage._() : super(appInstance: null);
 
+  /// Creates a new [MethodChannelFirebaseStorage] instance with an [app] and/or
+  /// [bucket].
   MethodChannelFirebaseStorage({FirebaseApp app, String bucket})
       : super(appInstance: app, bucket: bucket) {
     // The channel setMethodCallHandler callback is not app specific, so there
@@ -94,9 +96,9 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
     _initialized = true;
   }
 
-  int maxOperationRetryTime;
-  int maxUploadRetryTime;
-  int maxDownloadRetryTime;
+  int maxOperationRetryTime = 120000; // 2 mins
+  int maxUploadRetryTime = 600000; // 10 mins
+  int maxDownloadRetryTime = 600000; // 10 mins
 
   Future<void> _handleTaskStateChange(
       TaskState taskState, Map<dynamic, dynamic> arguments) async {
@@ -133,56 +135,22 @@ class MethodChannelFirebaseStorage extends FirebaseStoragePlatform {
   }
 
   @override
-  FirebaseStoragePlatform setInitialValues({
-    int maxOperationRetryTime,
-    int maxUploadRetryTime,
-    int maxDownloadRetryTime,
-  }) {
-    this.maxOperationRetryTime = maxOperationRetryTime;
-    this.maxUploadRetryTime = maxUploadRetryTime;
-    this.maxDownloadRetryTime = maxDownloadRetryTime;
-
-    return this;
-  }
-
-  @override
   ReferencePlatform ref(String path) {
     return MethodChannelReference(this, path);
   }
 
   @override
-  Future<void> setMaxOperationRetryTime(int time) async {
-    await channel.invokeMethod<void>(
-        'Storage#setMaxOperationRetryTime', <String, dynamic>{
-      'appName': app.name,
-      'bucket': bucket,
-      'time': time,
-    }).catchError(catchPlatformException);
-
+  void setMaxOperationRetryTime(int time) {
     maxOperationRetryTime = time;
   }
 
   @override
-  Future<void> setMaxUploadRetryTime(int time) async {
-    await channel
-        .invokeMethod<void>('Storage#setMaxUploadRetryTime', <String, dynamic>{
-      'appName': app.name,
-      'bucket': bucket,
-      'time': time,
-    }).catchError(catchPlatformException);
-
+  void setMaxUploadRetryTime(int time) async {
     maxUploadRetryTime = time;
   }
 
   @override
   Future<void> setMaxDownloadRetryTime(int time) async {
-    await channel.invokeMethod<void>(
-        'Storage#setMaxDownloadRetryTime', <String, dynamic>{
-      'appName': app.name,
-      'bucket': bucket,
-      'time': time,
-    }).catchError(catchPlatformException);
-
     maxDownloadRetryTime = time;
   }
 }

@@ -45,17 +45,11 @@ void main() {
     });
 
     test('FirebaseStoragePlatform.instanceFor', () {
-      final result = FirebaseStoragePlatform.instanceFor(
-          app: app,
-          pluginConstants: <dynamic, dynamic>{
-            'MAX_OPERATION_RETRY_TIME': 10,
-            'MAX_UPLOAD_RETRY_TIME': 20,
-            'MAX_DOWNLOAD_RETRY_TIME': 30
-          });
+      final result = FirebaseStoragePlatform.instanceFor(app: app);
       expect(result, isA<FirebaseStoragePlatform>());
-      expect(result.maxDownloadRetryTime, equals(30));
-      expect(result.maxOperationRetryTime, equals(10));
-      expect(result.maxUploadRetryTime, equals(20));
+      expect(result.maxOperationRetryTime, equals(120000));
+      expect(result.maxDownloadRetryTime, equals(600000));
+      expect(result.maxUploadRetryTime, equals(600000));
     });
 
     test('get.instance', () {
@@ -85,16 +79,6 @@ void main() {
         firebaseStoragePlatform.testDelegateFor();
       } on UnimplementedError catch (e) {
         expect(e.message, equals('delegateFor() is not implemented'));
-        return;
-      }
-      fail('Should have thrown an [UnimplementedError]');
-    });
-
-    test('throws if .setInitialValues', () {
-      try {
-        firebaseStoragePlatform.testSetInitialValues();
-      } on UnimplementedError catch (e) {
-        expect(e.message, equals('setInitialValues() is not implemented'));
         return;
       }
       fail('Should have thrown an [UnimplementedError]');
@@ -180,12 +164,5 @@ class TestFirebaseStoragePlatform extends FirebaseStoragePlatform {
   TestFirebaseStoragePlatform(FirebaseApp app) : super(appInstance: app);
   FirebaseStoragePlatform testDelegateFor({FirebaseApp app}) {
     return this.delegateFor();
-  }
-
-  FirebaseStoragePlatform testSetInitialValues() {
-    return this.setInitialValues(
-        maxOperationRetryTime: 0,
-        maxUploadRetryTime: 0,
-        maxDownloadRetryTime: 0);
   }
 }

@@ -14,7 +14,10 @@ import 'method_channel_list_result.dart';
 import 'method_channel_task.dart';
 import 'utils/exception.dart';
 
+/// An implementation of [ReferencePlatform] that uses [MethodChannel] to
+/// communicate with Firebase plugins.
 class MethodChannelReference extends ReferencePlatform {
+  /// Creates a [ReferencePlatform] that is implemented using [MethodChannel].
   MethodChannelReference(FirebaseStoragePlatform storage, String path)
       : super(storage, path);
 
@@ -23,6 +26,9 @@ class MethodChannelReference extends ReferencePlatform {
     await MethodChannelFirebaseStorage.channel
         .invokeMethod('Reference#delete', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
@@ -34,6 +40,9 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#getDownloadURL', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
@@ -47,6 +56,9 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#getMetadata', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
@@ -59,6 +71,9 @@ class MethodChannelReference extends ReferencePlatform {
     Map<String, dynamic> data = await MethodChannelFirebaseStorage.channel
         .invokeMapMethod<String, dynamic>('Reference#list', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'path': fullPath,
       'options': <String, dynamic>{
@@ -81,6 +96,9 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#listAll', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'path': fullPath,
     }).catchError(catchPlatformException);
@@ -129,6 +147,9 @@ class MethodChannelReference extends ReferencePlatform {
         .invokeMapMethod<String, dynamic>(
             'Reference#updateMetadata', <String, dynamic>{
       'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
       'bucket': storage.bucket,
       'path': fullPath,
       'metadata': metadata.asMap(),

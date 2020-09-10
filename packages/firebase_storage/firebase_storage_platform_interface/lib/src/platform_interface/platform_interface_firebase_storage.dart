@@ -31,14 +31,9 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
 
   /// Returns a [FirebaseStoragePlatform] with the provided arguments.
   factory FirebaseStoragePlatform.instanceFor(
-      {FirebaseApp app, String bucket, Map<dynamic, dynamic> pluginConstants}) {
+      {FirebaseApp app, String bucket}) {
     return FirebaseStoragePlatform.instance
-        .delegateFor(app: app, bucket: bucket)
-        .setInitialValues(
-          maxOperationRetryTime: pluginConstants['MAX_OPERATION_RETRY_TIME'],
-          maxUploadRetryTime: pluginConstants['MAX_UPLOAD_RETRY_TIME'],
-          maxDownloadRetryTime: pluginConstants['MAX_DOWNLOAD_RETRY_TIME'],
-        );
+        .delegateFor(app: app, bucket: bucket);
   }
 
   /// Returns the [FirebaseApp] for the current instance.
@@ -92,21 +87,6 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
     throw UnimplementedError('delegateFor() is not implemented');
   }
 
-  /// Sets any initial values on the instance.
-  ///
-  /// Platforms with Method Channels can provide constant values to be available
-  /// before the instance has initialized to prevent any unnecessary async
-  /// calls.
-  @protected
-  @visibleForTesting
-  FirebaseStoragePlatform setInitialValues({
-    int maxOperationRetryTime,
-    int maxUploadRetryTime,
-    int maxDownloadRetryTime,
-  }) {
-    throw UnimplementedError('setInitialValues() is not implemented');
-  }
-
   /// Returns a reference for the given path in the default bucket.
   ///
   /// [path] A relative path to initialize the reference with, for example
@@ -117,17 +97,17 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
   }
 
   /// The new maximum operation retry time in milliseconds.
-  Future<void> setMaxOperationRetryTime(int time) {
+  void setMaxOperationRetryTime(int time) {
     throw UnimplementedError('setMaxOperationRetryTime() is not implemented');
   }
 
   /// The new maximum upload retry time in milliseconds.
-  Future<void> setMaxUploadRetryTime(int time) {
+  void setMaxUploadRetryTime(int time) {
     throw UnimplementedError('setMaxUploadRetryTime() is not implemented');
   }
 
   /// The new maximum download retry time in milliseconds.
-  Future<void> setMaxDownloadRetryTime(int time) {
+  void setMaxDownloadRetryTime(int time) {
     throw UnimplementedError('setMaxDownloadRetryTime() is not implemented');
   }
 }

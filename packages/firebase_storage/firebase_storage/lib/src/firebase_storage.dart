@@ -16,7 +16,6 @@ class FirebaseStorage extends FirebasePluginPlatform {
       _delegatePackingProperty = FirebaseStoragePlatform.instanceFor(
         app: app,
         bucket: bucket,
-        pluginConstants: pluginConstants,
       );
     }
     return _delegatePackingProperty;
@@ -174,7 +173,7 @@ class FirebaseStorage extends FirebasePluginPlatform {
   }
 
   /// The new maximum operation retry time in milliseconds.
-  Future<void> setMaxOperationRetryTime(int time) {
+  void setMaxOperationRetryTime(int time) {
     assert(time != null);
     assert(time > 0);
     return _delegate.setMaxOperationRetryTime(time);
@@ -182,12 +181,12 @@ class FirebaseStorage extends FirebasePluginPlatform {
 
   @Deprecated("Deprecated in favor of setMaxUploadRetryTime()")
   // ignore: public_member_api_docs
-  Future<void> setMaxOperationRetryTimeMillis(int time) {
+  Future<void> setMaxOperationRetryTimeMillis(int time) async {
     return setMaxUploadRetryTime(time);
   }
 
   /// The new maximum upload retry time in milliseconds.
-  Future<void> setMaxUploadRetryTime(int time) {
+  void setMaxUploadRetryTime(int time) {
     assert(time != null);
     assert(time > 0);
     return _delegate.setMaxUploadRetryTime(time);
@@ -195,12 +194,12 @@ class FirebaseStorage extends FirebasePluginPlatform {
 
   @Deprecated("Deprecated in favor of setMaxUploadRetryTime()")
   // ignore: public_member_api_docs
-  Future<void> setMaxUploadRetryTimeMillis(int time) {
+  Future<void> setMaxUploadRetryTimeMillis(int time) async {
     return setMaxUploadRetryTime(time);
   }
 
   /// The new maximum download retry time in milliseconds.
-  Future<void> setMaxDownloadRetryTime(int time) {
+  void setMaxDownloadRetryTime(int time) {
     assert(time != null);
     assert(time > 0);
     return _delegate.setMaxDownloadRetryTime(time);
@@ -208,7 +207,7 @@ class FirebaseStorage extends FirebasePluginPlatform {
 
   @Deprecated("Deprecated in favor of setMaxDownloadRetryTime()")
   // ignore: public_member_api_docs
-  Future<void> setMaxDownloadRetryTimeMillis(int time) {
+  Future<void> setMaxDownloadRetryTimeMillis(int time) async {
     return setMaxDownloadRetryTime(time);
   }
 
