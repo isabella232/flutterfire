@@ -33,7 +33,7 @@ void main() {
   group('$MethodChannelReference', () {
     setUpAll(() async {
       FirebaseApp app = await Firebase.initializeApp();
-      kFile = await File('flt-ok.txt').create();
+      kFile = File('flt-ok.txt');
 
       handleMethodCall((call) async {
         logger.add(call);

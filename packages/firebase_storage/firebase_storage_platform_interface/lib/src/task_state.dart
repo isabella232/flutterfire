@@ -4,7 +4,7 @@
 
 /// Represents the state of an on-going [Task].
 ///
-/// The state can be accessed direclty via a [TaskSnapshot].
+/// The state can be accessed directly via a [TaskSnapshot].
 enum TaskState {
   /// Indicates the task has been paused by the user.
   paused,

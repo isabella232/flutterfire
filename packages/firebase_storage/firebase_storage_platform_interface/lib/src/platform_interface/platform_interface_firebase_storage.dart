@@ -98,6 +98,7 @@ abstract class FirebaseStoragePlatform extends PlatformInterface {
   /// before the instance has initialized to prevent any unnecessary async
   /// calls.
   @protected
+  @visibleForTesting
   FirebaseStoragePlatform setInitialValues({
     int maxOperationRetryTime,
     int maxUploadRetryTime,

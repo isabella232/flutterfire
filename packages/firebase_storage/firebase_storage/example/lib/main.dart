@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +12,7 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
+// ignore: public_member_api_docs
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -25,8 +26,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ignore: public_member_api_docs
 class MyHomePage extends StatefulWidget {
+  // ignore: public_member_api_docs
   MyHomePage({Key key, this.title}) : super(key: key);
+  // ignore: public_member_api_docs
   final String title;
 
   @override
@@ -47,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final File tempFile = File('${systemTempDir.path}/temp-${ref.name}');
     if (tempFile.existsSync()) await tempFile.delete();
 
-    DownloadTask task = await ref.writeToFile(tempFile);
+    await ref.writeToFile(tempFile);
 
     _scaffoldKey.currentState.showSnackBar(SnackBar(
       content: Text(
@@ -114,11 +118,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () async {
                   File file = await FilePicker.getFile();
 
-//                  final Directory systemTempDir = Directory.systemTemp;
-//                  final File file =
-//                      await File('${systemTempDir.path}/temp-file.txt')
-//                          .create();
-
                   // Create a Reference to the file
                   Reference ref = FirebaseStorage.instance
                       .ref()
@@ -139,13 +138,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+// ignore: public_member_api_docs
 class UploadTaskListTile extends StatelessWidget {
+  // ignore: public_member_api_docs
   const UploadTaskListTile(
       {Key key, this.task, this.onDismissed, this.onDownload})
       : super(key: key);
 
+  // ignore: public_member_api_docs
   final UploadTask task;
+  // ignore: public_member_api_docs
   final VoidCallback onDismissed;
+  // ignore: public_member_api_docs
   final VoidCallback onDownload;
 
   String _bytesTransferred(TaskSnapshot snapshot) {
@@ -161,7 +165,6 @@ class UploadTaskListTile extends StatelessWidget {
           Widget subtitle;
           bool isComplete = false;
           bool isPaused = false;
-          bool isInProgress = true;
           bool isCancelled = false;
 
           if (asyncSnapshot.hasData) {
@@ -171,22 +174,18 @@ class UploadTaskListTile extends StatelessWidget {
             switch (asyncSnapshot.data.state) {
               case TaskState.complete:
                 {
-                  isInProgress = false;
                   isComplete = true;
                   isPaused = false;
                 }
                 break;
               case TaskState.paused:
                 {
-                  isInProgress = false;
                   isComplete = false;
                   isPaused = true;
                 }
                 break;
-              default:
+              case TaskState.running:
                 {
-                  // TaskState.running
-                  isInProgress = true;
                   isComplete = false;
                   isPaused = false;
                 }
