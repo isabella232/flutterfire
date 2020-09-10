@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
@@ -12,16 +15,16 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 typedef Callback(MethodCall call);
 
+final String kTestString = 'Hello World';
 final String kBucket = 'gs://fake-storage-bucket-url.com';
 final String kSecondaryBucket = 'gs://fake-storage-bucket-url-2.com';
+final MockFirebaseStorage kMockStoragePlatform = MockFirebaseStorage();
 
-setupFirebaseStorageMocks([Callback customHandlers]) {
+setupFirebaseStorageMocks() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   MethodChannelFirebase.channel.setMockMethodCallHandler((call) async {
-    print('storage bucket ${kBucket}');
     if (call.method == 'Firebase#initializeCore') {
-      print('initializeCore storage bucket ${kBucket}');
       return [
         {
           'name': defaultFirebaseAppName,
@@ -38,7 +41,6 @@ setupFirebaseStorageMocks([Callback customHandlers]) {
     }
 
     if (call.method == 'Firebase#initializeApp') {
-      print('initializeApp storage bucket ${kBucket}');
       return {
         'name': call.arguments['appName'],
         'options': call.arguments['options'],
@@ -46,14 +48,27 @@ setupFirebaseStorageMocks([Callback customHandlers]) {
       };
     }
 
-    if (customHandlers != null) {
-      customHandlers(call);
-    }
-
     return null;
   });
+
+  // Mock Platform Interface Methods
+  when(kMockStoragePlatform.delegateFor(
+          app: anyNamed("app"), bucket: anyNamed("bucket")))
+      .thenReturn(kMockStoragePlatform);
+
+  when(kMockStoragePlatform.setInitialValues(
+          maxDownloadRetryTime: anyNamed("maxDownloadRetryTime"),
+          maxOperationRetryTime: anyNamed("maxOperationRetryTime"),
+          maxUploadRetryTime: anyNamed("maxUploadRetryTime")))
+      .thenReturn(kMockStoragePlatform);
+  when(kMockStoragePlatform.maxOperationRetryTime).thenReturn(0);
+  when(kMockStoragePlatform.maxDownloadRetryTime).thenReturn(0);
+  when(kMockStoragePlatform.maxUploadRetryTime).thenReturn(0);
 }
 
+// Platform Interface Mock Classes
+
+// FirebaseStoragePlatform Mock
 class MockFirebaseStorage extends Mock
     with MockPlatformInterfaceMixin
     implements TestFirebaseStoragePlatform {
@@ -64,12 +79,6 @@ class MockFirebaseStorage extends Mock
 
 class TestFirebaseStoragePlatform extends FirebaseStoragePlatform {
   TestFirebaseStoragePlatform() : super();
-
-  instanceFor({FirebaseApp app, Map<dynamic, dynamic> pluginConstants}) {}
-
-  FirebaseStoragePlatform get instance {
-    return this;
-  }
 
   FirebaseStoragePlatform delegateFor({FirebaseApp app, String bucket}) {
     return this;
@@ -84,18 +93,36 @@ class TestFirebaseStoragePlatform extends FirebaseStoragePlatform {
   }
 }
 
+// ReferencePlatform Mock
 class MockReferencePlatform extends Mock
     with MockPlatformInterfaceMixin
-    implements TestReferencePlatform {
-  String path;
-  FirebaseStoragePlatform storage;
-  MockReferencePlatform(this.storage, this.path) {
-    TestReferencePlatform(storage, path);
-  }
-}
+    implements ReferencePlatform {}
 
-class TestReferencePlatform extends ReferencePlatform {
-  String path;
-  FirebaseStoragePlatform storage;
-  TestReferencePlatform(this.storage, this.path) : super(storage, path);
+// ListResultPlatform Mock
+class MockListResultPlatform extends Mock
+    with MockPlatformInterfaceMixin
+    implements ListResultPlatform {}
+
+// UploadTaskPlatform Mock
+class MockUploadTaskPlatform extends Mock
+    with MockPlatformInterfaceMixin
+    implements TaskPlatform {}
+
+// DownloadTaskPlatform Mock
+class MockDownloadTaskPlatform extends Mock
+    with MockPlatformInterfaceMixin
+    implements TaskPlatform {}
+
+// TaskSnapshotPlatform Mock
+class MockTaskSnapshotPlatform extends Mock
+    with MockPlatformInterfaceMixin
+    implements TaskSnapshotPlatform {}
+
+// Creates a test file with a specified name to
+// a locally directory
+Future<File> createFile(name) async {
+  final Directory systemTempDir = Directory.systemTemp;
+  final File file = await File('${systemTempDir.path}/$name').create();
+  await file.writeAsString(kTestString);
+  return file;
 }

@@ -28,6 +28,7 @@ abstract class ReferencePlatform extends PlatformInterface {
   /// the object in which it's going to delegate calls has been
   /// constructed properly.
   static verifyExtends(ReferencePlatform instance) {
+    assert(instance != null);
     PlatformInterface.verifyToken(instance, _token);
   }
 

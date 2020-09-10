@@ -123,7 +123,6 @@ void runReferenceTests() {
         Reference ref = storage.ref('/ok.jpeg');
         String downloadUrl = await ref.getDownloadURL();
         expect(downloadUrl, isA<String>());
-        print('download url $downloadUrl');
         expect(downloadUrl, contains('/ok.jpeg'));
         expect(downloadUrl, contains(storage.app.options.projectId));
       });
@@ -347,7 +346,6 @@ void runReferenceTests() {
           expect(e.message, 'No object exists at the desired reference.');
           return;
         } catch (e) {
-          print('not a firebase exp $e');
           fail('should have thrown an [FirebaseException] error');
         }
 

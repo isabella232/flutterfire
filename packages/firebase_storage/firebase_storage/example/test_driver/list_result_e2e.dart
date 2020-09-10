@@ -19,7 +19,6 @@ void runListResultTests() {
 
     test('nextPageToken', () async {
       expect(result.nextPageToken, isNotNull);
-      print('next page token ${result.nextPageToken}');
     });
 
     test('prefixes', () async {

@@ -12,8 +12,6 @@ import 'mock.dart';
 
 import 'package:mockito/mockito.dart';
 
-MockFirebaseStorage mockStoragePlatform = MockFirebaseStorage();
-
 void main() {
   setupFirebaseStorageMocks();
   FirebaseApp app;
@@ -21,10 +19,9 @@ void main() {
   FirebaseStorage storageSecondary;
   FirebaseApp secondaryApp;
 
-  print('${MockReferencePlatform(mockStoragePlatform, 'no')}');
   group('$FirebaseStorage', () {
     setUpAll(() async {
-      FirebaseStoragePlatform.instance = mockStoragePlatform;
+      FirebaseStoragePlatform.instance = kMockStoragePlatform;
 
       app = await Firebase.initializeApp();
 
@@ -38,21 +35,8 @@ void main() {
               projectId: '123',
               storageBucket: kSecondaryBucket));
       storageSecondary = FirebaseStorage.instanceFor(app: secondaryApp);
-      when(mockStoragePlatform.delegateFor(
-              app: anyNamed("app"), bucket: anyNamed("bucket")))
-          .thenReturn(mockStoragePlatform);
 
-      when(mockStoragePlatform.setInitialValues(
-              maxDownloadRetryTime: anyNamed("maxDownloadRetryTime"),
-              maxOperationRetryTime: anyNamed("maxOperationRetryTime"),
-              maxUploadRetryTime: anyNamed("maxUploadRetryTime")))
-          .thenReturn(mockStoragePlatform);
-      when(mockStoragePlatform.maxOperationRetryTime).thenReturn(0);
-      when(mockStoragePlatform.maxDownloadRetryTime).thenReturn(0);
-      when(mockStoragePlatform.maxUploadRetryTime).thenReturn(0);
-
-      when(mockStoragePlatform.ref(any))
-          .thenReturn(MockReferencePlatform(mockStoragePlatform, '/'));
+      when(kMockStoragePlatform.ref(any)).thenReturn(MockReferencePlatform());
     });
 
     test('instance', () async {
@@ -81,21 +65,21 @@ void main() {
       test('verify delegate method is called', () {
         expect(storage.maxOperationRetryTime, 0);
 
-        verify(mockStoragePlatform.maxOperationRetryTime);
+        verify(kMockStoragePlatform.maxOperationRetryTime);
       });
     });
 
     group('get.maxUploadRetryTime', () {
       test('verify delegate method is called', () {
         expect(storage.maxUploadRetryTime, 0);
-        verify(mockStoragePlatform.maxUploadRetryTime);
+        verify(kMockStoragePlatform.maxUploadRetryTime);
       });
     });
 
     group('get.maxDownloadRetryTime', () {
       test('verify delegate method is called', () {
         expect(storage.maxDownloadRetryTime, 0);
-        verify(mockStoragePlatform.maxDownloadRetryTime);
+        verify(kMockStoragePlatform.maxDownloadRetryTime);
       });
     });
 
@@ -105,7 +89,7 @@ void main() {
         final reference = storage.ref();
 
         expect(reference, isA<Reference>());
-        verify(mockStoragePlatform.ref('/'));
+        verify(kMockStoragePlatform.ref('/'));
       });
 
       test('accepts an empty string', () {
@@ -113,7 +97,7 @@ void main() {
         final reference = storage.ref('');
 
         expect(reference, isA<Reference>());
-        verify(mockStoragePlatform.ref(testPath));
+        verify(kMockStoragePlatform.ref(testPath));
       });
 
       test('accepts a specified path', () {
@@ -121,7 +105,7 @@ void main() {
         final reference = storage.ref(testPath);
 
         expect(reference, isA<Reference>());
-        verify(mockStoragePlatform.ref(testPath));
+        verify(kMockStoragePlatform.ref(testPath));
       });
     });
 
@@ -151,8 +135,7 @@ void main() {
         final ref = storage.refFromURL(url);
 
         expect(ref, isA<Reference>());
-        print('ref $ref');
-        verify(mockStoragePlatform.ref(testPath));
+        verify(kMockStoragePlatform.ref(testPath));
       });
 
       test("verify delegate method when url starts with 'gs://'", () {
@@ -162,7 +145,7 @@ void main() {
         final ref = storage.refFromURL(url);
 
         expect(ref, isA<Reference>());
-        verify(mockStoragePlatform.ref(testPath));
+        verify(kMockStoragePlatform.ref(testPath));
       });
     });
 
@@ -170,7 +153,7 @@ void main() {
       test('verify delegate method is called', () async {
         await storage.setMaxDownloadRetryTime(200);
 
-        verify(mockStoragePlatform.setMaxDownloadRetryTime(200));
+        verify(kMockStoragePlatform.setMaxDownloadRetryTime(200));
       });
 
       test('throws AssertionError if null', () async {
@@ -185,7 +168,7 @@ void main() {
     group('setMaxOperationRetryTime()', () {
       test('verify delegate method is called', () async {
         await storage.setMaxOperationRetryTime(200);
-        verify(mockStoragePlatform.setMaxOperationRetryTime(200));
+        verify(kMockStoragePlatform.setMaxOperationRetryTime(200));
       });
 
       test('throws AssertionError if null', () async {
@@ -201,7 +184,7 @@ void main() {
     group('setMaxUploadRetryTime()', () {
       test('verify delegate method is called', () async {
         await storage.setMaxUploadRetryTime(200);
-        verify(mockStoragePlatform.setMaxUploadRetryTime(200));
+        verify(kMockStoragePlatform.setMaxUploadRetryTime(200));
       });
 
       test('throws AssertionError if null', () async {
