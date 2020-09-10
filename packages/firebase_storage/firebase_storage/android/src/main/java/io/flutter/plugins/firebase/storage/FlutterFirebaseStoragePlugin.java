@@ -133,7 +133,9 @@ public class FlutterFirebaseStoragePlugin
     for (int i = 0; i < storageTasks.size(); i++) {
       int key = storageTasks.keyAt(i);
       StorageTask<?> task = storageTasks.get(key);
-      task.cancel();
+      if (task != null) {
+        task.cancel();
+      }
     }
 
     storageTasks.clear();
