@@ -28,18 +28,18 @@ class FirebaseStorage extends FirebasePluginPlatform {
   String bucket;
 
   /// The maximum time to retry operations other than uploads or downloads in milliseconds.
-  int get maxOperationRetryTime {
-    return _delegate.maxOperationRetryTime;
+  Duration get maxOperationRetryTime {
+    return Duration(milliseconds: _delegate.maxOperationRetryTime);
   }
 
   /// The maximum time to retry uploads in milliseconds.
-  int get maxUploadRetryTime {
-    return _delegate.maxUploadRetryTime;
+  Duration get maxUploadRetryTime {
+    return Duration(milliseconds: _delegate.maxUploadRetryTime);
   }
 
   /// The maximum time to retry downloads in milliseconds.
-  int get maxDownloadRetryTime {
-    return _delegate.maxDownloadRetryTime;
+  Duration get maxDownloadRetryTime {
+    return Duration(milliseconds: _delegate.maxDownloadRetryTime);
   }
 
   FirebaseStorage._({this.app, this.bucket})
@@ -157,58 +157,58 @@ class FirebaseStorage extends FirebasePluginPlatform {
   @Deprecated("Deprecated in favor of get.maxOperationRetryTime")
   // ignore: public_member_api_docs
   Future<int> getMaxOperationRetryTimeMillis() async {
-    return maxOperationRetryTime;
+    return maxOperationRetryTime.inMilliseconds;
   }
 
   @Deprecated("Deprecated in favor of get.maxUploadRetryTime")
   // ignore: public_member_api_docs
   Future<int> getMaxUploadRetryTimeMillis() async {
-    return maxUploadRetryTime;
+    return maxUploadRetryTime.inMilliseconds;
   }
 
   @Deprecated("Deprecated in favor of get.maxDownloadRetryTime")
   // ignore: public_member_api_docs
   Future<int> getMaxDownloadRetryTimeMillis() async {
-    return maxDownloadRetryTime;
+    return maxDownloadRetryTime.inMilliseconds;
   }
 
-  /// The new maximum operation retry time in milliseconds.
-  void setMaxOperationRetryTime(int time) {
+  /// Sets he new maximum operation retry time.
+  void setMaxOperationRetryTime(Duration time) {
     assert(time != null);
-    assert(time > 0);
-    return _delegate.setMaxOperationRetryTime(time);
+    assert(!time.isNegative);
+    return _delegate.setMaxOperationRetryTime(time.inMilliseconds);
   }
 
+  /// Sets he new maximum operation retry time in milliseconds.
   @Deprecated("Deprecated in favor of setMaxUploadRetryTime()")
-  // ignore: public_member_api_docs
   Future<void> setMaxOperationRetryTimeMillis(int time) async {
-    return setMaxUploadRetryTime(time);
+    return setMaxUploadRetryTime(Duration(milliseconds: time));
   }
 
-  /// The new maximum upload retry time in milliseconds.
-  void setMaxUploadRetryTime(int time) {
+  /// Sets the new maximum upload retry time.
+  void setMaxUploadRetryTime(Duration time) {
     assert(time != null);
-    assert(time > 0);
-    return _delegate.setMaxUploadRetryTime(time);
+    assert(!time.isNegative);
+    return _delegate.setMaxUploadRetryTime(time.inMilliseconds);
   }
 
+  /// Sets the new maximum upload retry time in milliseconds.
   @Deprecated("Deprecated in favor of setMaxUploadRetryTime()")
-  // ignore: public_member_api_docs
   Future<void> setMaxUploadRetryTimeMillis(int time) async {
-    return setMaxUploadRetryTime(time);
+    return setMaxUploadRetryTime(Duration(milliseconds: time));
   }
 
-  /// The new maximum download retry time in milliseconds.
-  void setMaxDownloadRetryTime(int time) {
+  /// Sets the new maximum download retry time.
+  void setMaxDownloadRetryTime(Duration time) {
     assert(time != null);
-    assert(time > 0);
-    return _delegate.setMaxDownloadRetryTime(time);
+    assert(!time.isNegative);
+    return _delegate.setMaxDownloadRetryTime(time.inMilliseconds);
   }
 
+  /// Sets the new maximum download retry time in milliseconds.
   @Deprecated("Deprecated in favor of setMaxDownloadRetryTime()")
-  // ignore: public_member_api_docs
   Future<void> setMaxDownloadRetryTimeMillis(int time) async {
-    return setMaxDownloadRetryTime(time);
+    return setMaxDownloadRetryTime(Duration(milliseconds: time));
   }
 
   @override

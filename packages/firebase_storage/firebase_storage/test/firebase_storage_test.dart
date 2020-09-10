@@ -150,49 +150,36 @@ void main() {
     });
 
     group('setMaxDownloadRetryTime()', () {
-      test('verify delegate method is called', () async {
-        await storage.setMaxDownloadRetryTime(200);
-
-        verify(kMockStoragePlatform.setMaxDownloadRetryTime(200));
-      });
-
       test('throws AssertionError if null', () async {
         expect(
             () => storage.setMaxDownloadRetryTime(null), throwsAssertionError);
       });
-      test('throws AssertionError if 0', () async {
-        expect(() => storage.setMaxDownloadRetryTime(0), throwsAssertionError);
+      test('throws AssertionError if negative', () async {
+        expect(() => storage.setMaxDownloadRetryTime(Duration(seconds: -1)),
+            throwsAssertionError);
       });
     });
 
     group('setMaxOperationRetryTime()', () {
-      test('verify delegate method is called', () async {
-        await storage.setMaxOperationRetryTime(200);
-        verify(kMockStoragePlatform.setMaxOperationRetryTime(200));
-      });
-
       test('throws AssertionError if null', () async {
         expect(
             () => storage.setMaxOperationRetryTime(null), throwsAssertionError);
       });
 
-      test('throws AssertionError if 0', () async {
-        expect(() => storage.setMaxOperationRetryTime(0), throwsAssertionError);
+      test('throws AssertionError if negative', () async {
+        expect(() => storage.setMaxOperationRetryTime(Duration(seconds: -1)),
+            throwsAssertionError);
       });
     });
 
     group('setMaxUploadRetryTime()', () {
-      test('verify delegate method is called', () async {
-        await storage.setMaxUploadRetryTime(200);
-        verify(kMockStoragePlatform.setMaxUploadRetryTime(200));
-      });
-
       test('throws AssertionError if null', () async {
         expect(() => storage.setMaxUploadRetryTime(null), throwsAssertionError);
       });
 
       test('throws AssertionError if 0', () async {
-        expect(() => storage.setMaxUploadRetryTime(0), throwsAssertionError);
+        expect(() => storage.setMaxUploadRetryTime(Duration(seconds: -1)),
+            throwsAssertionError);
       });
     });
 
