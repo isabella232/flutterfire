@@ -57,6 +57,7 @@ void handleMethodCall(MethodCallCallback methodCallCallback) =>
 Future<void> testExceptionHandling(String type, Function testMethod) async {
   try {
     await testMethod();
+    fail('Did not throw anything');
   } on FirebaseException catch (_) {
     if (type == 'PLATFORM' || type == 'EXCEPTION') {
       return;

@@ -37,11 +37,11 @@ void main() {
 
       handleMethodCall((call) async {
         logger.add(call);
-
         if (mockExceptionThrown) {
           throw Exception();
         } else if (mockPlatformExceptionThrown) {
-          throw PlatformException(code: 'UNKNOWN');
+          throw PlatformException(
+              code: 'UNKNOWN', message: "Mock platform exception thrown");
         }
 
         switch (call.method) {
@@ -270,15 +270,6 @@ void main() {
           ),
         ]);
       });
-
-      test(
-          'catch a [PlatformException] error and throws a [FirebaseException] error',
-          () async {
-        mockPlatformExceptionThrown = true;
-
-        Function callMethod = () => ref.put(buffer, kMetadata);
-        await testExceptionHandling('PLATFORM', callMethod);
-      });
     });
 
     group('putBlob', () {
@@ -319,15 +310,6 @@ void main() {
           ),
         ]);
       });
-
-      test(
-          'catch a [PlatformException] error and throws a [FirebaseException] error',
-          () async {
-        mockPlatformExceptionThrown = true;
-
-        Function callMethod = () => ref.putFile(kFile, kMetadata);
-        await testExceptionHandling('PLATFORM', callMethod);
-      });
     });
 
     group('putString', () {
@@ -360,17 +342,6 @@ void main() {
             },
           ),
         ]);
-      });
-
-      test(
-          'catch a [PlatformException] error and throws a [FirebaseException] error',
-          () async {
-        mockPlatformExceptionThrown = true;
-        final String data = 'foo';
-
-        Function callMethod =
-            () => ref.putString(data, PutStringFormat.raw, kMetadata);
-        await testExceptionHandling('PLATFORM', callMethod);
       });
     });
 
@@ -409,15 +380,6 @@ void main() {
             },
           ),
         ]);
-      });
-
-      test(
-          'catch a [PlatformException] error and throws a [FirebaseException] error',
-          () async {
-        mockPlatformExceptionThrown = true;
-
-        Function callMethod = () => ref.writeToFile(kFile);
-        await testExceptionHandling('PLATFORM', callMethod);
       });
     });
   });

@@ -24,7 +24,6 @@ void main() {
   bool mockPlatformExceptionThrown = false;
   bool mockExceptionThrown = false;
 
-  int kTime = 10;
   String kBucket = 'foo';
 
   group('$MethodChannelFirebaseStorage', () {

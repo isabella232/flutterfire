@@ -34,7 +34,6 @@ void main() {
       app = await Firebase.initializeApp();
       storage = MethodChannelFirebaseStorage(app: app);
       ref = MethodChannelReference(storage, '/');
-      kMockTask = ref.putString(kMockData, PutStringFormat.raw);
 
       handleMethodCall((call) {
         logger.add(call);
@@ -44,18 +43,12 @@ void main() {
         } else if (mockPlatformExceptionThrown) {
           throw PlatformException(code: 'UNKNOWN');
         }
-
+        print(call.method);
         switch (call.method) {
           case 'Task#startPutString':
-            return null;
+            return {}; // stub task request
           case 'Task#pause':
-            return {
-              'status': true,
-            };
           case 'Task#resume':
-            return {
-              'status': true,
-            };
           case 'Task#cancel':
             return {
               'status': true,
@@ -64,6 +57,8 @@ void main() {
             return true;
         }
       });
+
+      kMockTask = ref.putString(kMockData, PutStringFormat.raw);
     });
 
     setUp(() {
@@ -75,11 +70,6 @@ void main() {
     test('snapshotEvents should return a stream of snapshots', () {
       final result = kMockTask.snapshotEvents;
       expect(result, isA<Stream<TaskSnapshotPlatform>>());
-    });
-
-    test('onComplete should return snapshot', () async {
-      final result = await kMockTask.onComplete;
-      expect(result, isA<Future<TaskSnapshotPlatform>>());
     });
 
     group('pause', () {
