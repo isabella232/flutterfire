@@ -112,6 +112,20 @@ class MethodChannelReference extends ReferencePlatform {
   }
 
   @override
+  Future<Uint8List> getData(int maxSize) {
+    return MethodChannelFirebaseStorage.channel
+        .invokeMethod<Uint8List>('Reference#getData', <String, dynamic>{
+      'appName': storage.app.name,
+      'maxOperationRetryTime': storage.maxOperationRetryTime,
+      'maxUploadRetryTime': storage.maxUploadRetryTime,
+      'maxDownloadRetryTime': storage.maxDownloadRetryTime,
+      'bucket': storage.bucket,
+      'path': fullPath,
+      'maxSize': maxSize,
+    }).catchError(catchPlatformException);
+  }
+
+  @override
   TaskPlatform putData(Uint8List data, [SettableMetadata metadata]) {
     int handle = MethodChannelFirebaseStorage.nextMethodChannelHandleId;
     MethodChannelFirebaseStorage.taskObservers[handle] =

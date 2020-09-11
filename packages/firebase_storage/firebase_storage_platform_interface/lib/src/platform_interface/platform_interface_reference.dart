@@ -117,6 +117,14 @@ abstract class ReferencePlatform extends PlatformInterface {
     throw UnimplementedError('listAll() is not implemented');
   }
 
+  /// Asynchronously downloads the object at the StorageReference to a list in memory.
+  ///
+  /// Returns a [Uint8List] of the data. If the [maxSize] (in bytes) is exceeded,
+  /// the operation will be canceled.
+  Future<Uint8List> getData(int maxSize) async {
+    throw UnimplementedError('getData() is not implemented');
+  }
+
   /// Uploads data to this reference's location.
   ///
   /// Use this method to upload fixed sized data as a [Uint8List].

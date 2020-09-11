@@ -130,6 +130,18 @@ class Reference {
     return ListResult._(storage, await _delegate.listAll());
   }
 
+  /// Asynchronously downloads the object at the StorageReference to a list in memory.
+  ///
+  /// Returns a [Uint8List] of the data.
+  ///
+  /// If the [maxSize] (in bytes) is exceeded, the operation will be canceled. By
+  /// default the [maxSize] is 10mb (10485760 bytes).
+  Future<Uint8List> getData([int maxSize]) async {
+    maxSize ??= 10485760;
+    assert(maxSize > 0);
+    return _delegate.getData(maxSize);
+  }
+
   /// Uploads data to this reference's location.
   ///
   /// Use this method to upload fixed sized data as a [Uint8List].
