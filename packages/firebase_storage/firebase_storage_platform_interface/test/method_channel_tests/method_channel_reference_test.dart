@@ -240,10 +240,10 @@ void main() {
 
     group('put', () {
       List<int> list = utf8.encode('hello world');
-      ByteBuffer buffer = Uint8List.fromList(list).buffer;
+      Uint8List data = Uint8List.fromList(list);
 
       test('should invoke native method with correct args', () async {
-        await ref.put(buffer, kMetadata);
+        await ref.putData(data, kMetadata);
 
         // check native method was called
         expect(logger, <Matcher>[

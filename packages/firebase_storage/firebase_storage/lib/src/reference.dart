@@ -132,19 +132,12 @@ class Reference {
 
   /// Uploads data to this reference's location.
   ///
-  /// Use this method to upload fixed sized data as a [ByteBuffer].
+  /// Use this method to upload fixed sized data as a [Uint8List].
   ///
   /// Optionally, you can also set metadata onto the uploaded object.
-  UploadTask put(ByteBuffer buffer, [SettableMetadata metadata]) {
-    assert(buffer != null);
-    return UploadTask._(storage, _delegate.put(buffer, metadata));
-  }
-
-  @Deprecated("Deprecated in favor of put()")
-  // ignore: public_member_api_docs
   UploadTask putData(Uint8List data, [SettableMetadata metadata]) {
     assert(data != null);
-    return put(data.buffer, metadata);
+    return UploadTask._(storage, _delegate.putData(data, metadata));
   }
 
   /// Upload a [Blob]. Note; this is only supported on web platforms.

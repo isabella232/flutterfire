@@ -119,11 +119,11 @@ abstract class ReferencePlatform extends PlatformInterface {
 
   /// Uploads data to this reference's location.
   ///
-  /// Use this method to upload fixed sized data as a [ByteBuffer].
+  /// Use this method to upload fixed sized data as a [Uint8List].
   ///
   /// Optionally, you can also set metadata onto the uploaded object.
-  TaskPlatform put(ByteBuffer buffer, [SettableMetadata metadata]) {
-    throw UnimplementedError('put() is not implemented');
+  TaskPlatform putData(Uint8List data, [SettableMetadata metadata]) {
+    throw UnimplementedError('putData() is not implemented');
   }
 
   /// Upload a [Blob]. Note; this is only supported on web platforms.

@@ -177,21 +177,21 @@ try {
 
 To learn more about tasks, view the [Handling Tasks](#handling-tasks) documentataion.
 
-### Uploading buffers
+### Uploading raw data
 
-FlutterFire also supports uploading lowerlevel typed data in the form of a [`ByteBuffer`](https://api.dart.dev/stable/2.9.2/dart-typed_data/ByteBuffer-class.html)
-for those cases where uploading a string or `File` is not practical. In this case, call the [`put`](!firebase_storage.Reference.put)
-method with your buffer:
+FlutterFire also supports uploading lowerlevel typed data in the form of a [`Uint8List`](https://api.dart.dev/stable/2.9.2/dart-typed_data/Uint8List-class.html)
+for those cases where uploading a string or `File` is not practical. In this case, call the [`putData`](!firebase_storage.Reference.putData)
+method with your data:
 
 ```dart
 import 'dart:convert' show utf8;
 
 String text = 'Hello World!';
 List<int> encoded = utf8.encode(text);
-ByteBuffer buffer = Uint8List.fromList(encoded).buffer;
+Uint8List data = Uint8List.fromList(encoded);
 
 UploadTask task = FirebaseStorage.instance.ref('uploads/hello-world.text')
-  .put(buffer);
+  .putData(data);
 
 try {
   await task.onComplete;

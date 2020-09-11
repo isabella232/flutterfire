@@ -229,15 +229,15 @@ class MethodChannelPutStringTask extends MethodChannelTask {
 class MethodChannelPutTask extends MethodChannelTask {
   // ignore: public_member_api_docs
   MethodChannelPutTask(int handle, FirebaseStoragePlatform storage, String path,
-      ByteBuffer buffer, SettableMetadata metadata)
+      Uint8List data, SettableMetadata metadata)
       : super(
-            handle, storage, _getTask(handle, storage, path, buffer, metadata));
+            handle, storage, _getTask(handle, storage, path, data, metadata));
 
   static Future<void> Function() _getTask(
       int handle,
       FirebaseStoragePlatform storage,
       String path,
-      ByteBuffer buffer,
+      Uint8List data,
       SettableMetadata metadata) {
     return () => MethodChannelFirebaseStorage.channel
             .invokeMethod<void>('Task#startPut', <String, dynamic>{
@@ -248,7 +248,7 @@ class MethodChannelPutTask extends MethodChannelTask {
           'maxDownloadRetryTime': storage.maxDownloadRetryTime,
           'handle': handle,
           'path': path,
-          'data': buffer.asUint8List(),
+          'data': data,
           'metadata': metadata?.asMap(),
         });
   }

@@ -140,11 +140,11 @@ void main() {
       fail('Should have thrown an [UnimplementedError]');
     });
 
-    test('throws if put()', () async {
+    test('throws if putData()', () async {
       try {
-        await referencePlatform.put(null);
+        await referencePlatform.putData(null);
       } on UnimplementedError catch (e) {
-        expect(e.message, equals('put() is not implemented'));
+        expect(e.message, equals('putData() is not implemented'));
         return;
       }
       fail('Should have thrown an [UnimplementedError]');

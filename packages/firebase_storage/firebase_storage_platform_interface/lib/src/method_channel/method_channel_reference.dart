@@ -112,11 +112,11 @@ class MethodChannelReference extends ReferencePlatform {
   }
 
   @override
-  TaskPlatform put(ByteBuffer buffer, [SettableMetadata metadata]) {
+  TaskPlatform putData(Uint8List data, [SettableMetadata metadata]) {
     int handle = MethodChannelFirebaseStorage.nextMethodChannelHandleId;
     MethodChannelFirebaseStorage.taskObservers[handle] =
         StreamController<TaskSnapshotPlatform>.broadcast();
-    return MethodChannelPutTask(handle, storage, fullPath, buffer, metadata);
+    return MethodChannelPutTask(handle, storage, fullPath, data, metadata);
   }
 
   @override
