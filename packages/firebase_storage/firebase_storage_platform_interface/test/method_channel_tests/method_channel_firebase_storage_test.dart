@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:firebase_storage_platform_interface/firebase_storage_platform_interface.dart';
@@ -18,11 +17,6 @@ void main() {
   FirebaseStoragePlatform storage;
   FirebaseApp app;
   FirebaseApp secondaryApp;
-  final List<MethodCall> logger = <MethodCall>[];
-
-  // mock props
-  bool mockPlatformExceptionThrown = false;
-  bool mockExceptionThrown = false;
 
   String kBucket = 'foo';
 
@@ -39,28 +33,7 @@ void main() {
         ),
       );
 
-      handleMethodCall((call) async {
-        logger.add(call);
-
-        if (mockExceptionThrown) {
-          throw Exception();
-        } else if (mockPlatformExceptionThrown) {
-          throw PlatformException(code: 'UNKNOWN');
-        }
-
-        switch (call.method) {
-          default:
-            return true;
-        }
-      });
-
       storage = MethodChannelFirebaseStorage(app: app);
-    });
-
-    setUp(() async {
-      mockPlatformExceptionThrown = false;
-      mockExceptionThrown = false;
-      logger.clear();
     });
 
     group('constructor', () {

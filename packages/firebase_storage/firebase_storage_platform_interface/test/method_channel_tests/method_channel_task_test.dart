@@ -20,11 +20,10 @@ void main() {
   FirebaseStoragePlatform storage;
   MethodChannelReference ref;
   FirebaseApp app;
-  final List<MethodCall> logger = <MethodCall>[];
+  final List<MethodCall> log = <MethodCall>[];
 
   // mock props
   bool mockPlatformExceptionThrown = false;
-  bool mockExceptionThrown = false;
 
   final kMockData = 'Hello World';
   MethodChannelPutStringTask kMockTask;
@@ -38,11 +37,9 @@ void main() {
       ref = MethodChannelReference(storage, '/');
 
       handleMethodCall((call) {
-        logger.add(call);
+        log.add(call);
 
-        if (mockExceptionThrown) {
-          throw Exception();
-        } else if (mockPlatformExceptionThrown) {
+        if (mockPlatformExceptionThrown) {
           throw PlatformException(
               code: 'UNKNOWN', message: kMockExceptionMessage);
         }
@@ -66,8 +63,7 @@ void main() {
 
     setUp(() {
       mockPlatformExceptionThrown = false;
-      mockExceptionThrown = false;
-      logger.clear();
+      log.clear();
     });
 
     test('snapshotEvents should return a stream of snapshots', () {
@@ -81,7 +77,7 @@ void main() {
         final result = await kMockTask.pause();
         expect(result, isA<bool>());
         expect(result, isTrue);
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Task#pause',
             arguments: <String, dynamic>{
@@ -95,7 +91,6 @@ void main() {
           'catch a [PlatformException] error and throws a [FirebaseException] error',
           () async {
         mockPlatformExceptionThrown = true;
-
         Function callMethod = () => kMockTask.pause();
         await testExceptionHandling('PLATFORM', callMethod);
       });
@@ -106,7 +101,7 @@ void main() {
         final result = await kMockTask.resume();
         expect(result, isA<bool>());
         expect(result, isTrue);
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Task#resume',
             arguments: <String, dynamic>{
@@ -130,7 +125,7 @@ void main() {
         final result = await kMockTask.cancel();
         expect(result, isA<bool>());
         expect(result, isTrue);
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Task#cancel',
             arguments: <String, dynamic>{

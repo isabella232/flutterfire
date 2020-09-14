@@ -203,15 +203,15 @@ void runReferenceTests() {
       expect(result.prefixes.length, greaterThan(0));
     });
 
-    group('put', () {
+    group('putData', () {
       test('uploads a file with buffer', () async {
         List<int> list = utf8.encode('hello world');
 
-        ByteBuffer buffer = Uint8List.fromList(list).buffer;
+        Uint8List data = Uint8List.fromList(list);
 
         final Reference ref = storage.ref('/playground').child('flt-ok.txt');
-        final UploadTask uploadTask = ref.put(
-            buffer,
+        final UploadTask uploadTask = ref.putData(
+            data,
             SettableMetadata(
               contentLanguage: 'en',
               customMetadata: <String, String>{'activity': 'test'},
@@ -227,9 +227,9 @@ void runReferenceTests() {
         try {
           List<int> list = utf8.encode('hello world');
 
-          ByteBuffer buffer = Uint8List.fromList(list).buffer;
+          Uint8List data = Uint8List.fromList(list);
 
-          UploadTask uploadTask = storage.ref('/uploadNope.jpeg').put(buffer);
+          UploadTask uploadTask = storage.ref('/uploadNope.jpeg').putData(data);
           await uploadTask.onComplete;
           fail('Should have thrown an error');
         } on FirebaseException catch (error) {

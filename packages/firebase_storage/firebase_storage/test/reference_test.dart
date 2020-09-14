@@ -225,19 +225,19 @@ void main() async {
       test('verify delegate method is called', () {
         List<int> list = utf8.encode('hello world');
 
-        ByteBuffer buffer = Uint8List.fromList(list).buffer;
+        Uint8List data = Uint8List.fromList(list);
 
-        when(mockReference.put(buffer)).thenReturn(mockUploadTaskPlatform);
+        when(mockReference.putData(data)).thenReturn(mockUploadTaskPlatform);
 
-        final result = testRef.put(buffer);
+        final result = testRef.putData(data);
 
         expect(result, isA<Task>());
 
-        verify(mockReference.put(buffer));
+        verify(mockReference.putData(data));
       });
 
       test('throws AssertionError if buffer is null', () {
-        expect(() => testRef.put(null), throwsAssertionError);
+        expect(() => testRef.putData(null), throwsAssertionError);
       });
     });
 

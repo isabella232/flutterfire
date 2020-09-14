@@ -39,9 +39,9 @@ void runInstanceTests() {
           app: secondaryAppWithoutBucket,
         );
         fail('should have thrown an error');
-      } on AssertionError catch (e) {
+      } on FirebaseException catch (e) {
         expect(e.message,
-            'no default bucket found. Did you configure Firebase Storage properly?');
+            "No storage bucket could be found for the app 'testapp-no-bucket'. Ensure you have set the [storageBucket] on [FirebaseOptions] whilst initializing the secondary Firebase app.");
       }
     });
 
@@ -122,25 +122,25 @@ void runInstanceTests() {
 
     group('setMaxOperationRetryTime', () {
       test('should set', () async {
-        expect(storage.maxOperationRetryTime, 120000);
-        await storage.setMaxOperationRetryTime(100000);
-        expect(storage.maxOperationRetryTime, 100000);
+        expect(storage.maxOperationRetryTime, Duration(milliseconds: 120000));
+        await storage.setMaxOperationRetryTime(Duration(milliseconds: 100000));
+        expect(storage.maxOperationRetryTime, Duration(milliseconds: 100000));
       });
     });
 
     group('setMaxUploadRetryTime', () {
       test('should set', () async {
-        expect(storage.maxUploadRetryTime, 600000);
-        await storage.setMaxUploadRetryTime(120000);
-        expect(storage.maxUploadRetryTime, 120000);
+        expect(storage.maxUploadRetryTime, Duration(milliseconds: 600000));
+        await storage.setMaxUploadRetryTime(Duration(milliseconds: 120000));
+        expect(storage.maxUploadRetryTime, Duration(milliseconds: 120000));
       });
     });
 
     group('setMaxDownloadRetryTime', () {
       test('should set', () async {
-        expect(storage.maxDownloadRetryTime, 600000);
-        await storage.setMaxDownloadRetryTime(120000);
-        expect(storage.maxDownloadRetryTime, 120000);
+        expect(storage.maxDownloadRetryTime, Duration(milliseconds: 600000));
+        await storage.setMaxDownloadRetryTime(Duration(milliseconds: 120000));
+        expect(storage.maxDownloadRetryTime, Duration(milliseconds: 120000));
       });
     });
 

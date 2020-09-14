@@ -63,7 +63,8 @@ void main() {
 
     group('get.maxOperationRetryTime', () {
       test('verify delegate method is called', () {
-        expect(storage.maxOperationRetryTime, 0);
+        final duration = Duration();
+        expect(storage.maxOperationRetryTime, duration);
 
         verify(kMockStoragePlatform.maxOperationRetryTime);
       });
@@ -71,14 +72,16 @@ void main() {
 
     group('get.maxUploadRetryTime', () {
       test('verify delegate method is called', () {
-        expect(storage.maxUploadRetryTime, 0);
+        final duration = Duration();
+        expect(storage.maxUploadRetryTime, duration);
         verify(kMockStoragePlatform.maxUploadRetryTime);
       });
     });
 
     group('get.maxDownloadRetryTime', () {
       test('verify delegate method is called', () {
-        expect(storage.maxDownloadRetryTime, 0);
+        final duration = Duration();
+        expect(storage.maxDownloadRetryTime, duration);
         verify(kMockStoragePlatform.maxDownloadRetryTime);
       });
     });

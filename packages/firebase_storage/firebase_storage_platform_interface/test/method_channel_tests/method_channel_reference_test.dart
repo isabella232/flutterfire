@@ -19,11 +19,10 @@ void main() {
 
   FirebaseStoragePlatform storage;
   ReferencePlatform ref;
-  final List<MethodCall> logger = <MethodCall>[];
+  final List<MethodCall> log = <MethodCall>[];
 
   // mock props
   bool mockPlatformExceptionThrown = false;
-  bool mockExceptionThrown = false;
   File kFile;
   final kMetadata = SettableMetadata(
       contentLanguage: 'en',
@@ -36,10 +35,8 @@ void main() {
       kFile = File('flt-ok.txt');
 
       handleMethodCall((call) async {
-        logger.add(call);
-        if (mockExceptionThrown) {
-          throw Exception();
-        } else if (mockPlatformExceptionThrown) {
+        log.add(call);
+        if (mockPlatformExceptionThrown) {
           throw PlatformException(
               code: 'UNKNOWN', message: "Mock platform exception thrown");
         }
@@ -74,8 +71,7 @@ void main() {
 
     setUp(() async {
       mockPlatformExceptionThrown = false;
-      mockExceptionThrown = false;
-      logger.clear();
+      log.clear();
     });
 
     group('constructor', () {
@@ -90,7 +86,7 @@ void main() {
         await ref.delete();
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Reference#delete',
             arguments: <String, dynamic>{
@@ -119,7 +115,7 @@ void main() {
         await ref.getDownloadURL();
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Reference#getDownloadURL',
             arguments: <String, dynamic>{
@@ -138,7 +134,6 @@ void main() {
           'catch a [PlatformException] error and throws a [FirebaseException] error',
           () async {
         mockPlatformExceptionThrown = true;
-
         Function callMethod = () => ref.getDownloadURL();
         await testExceptionHandling('PLATFORM', callMethod);
       });
@@ -149,7 +144,7 @@ void main() {
         await ref.getMetadata();
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Reference#getMetadata',
             arguments: <String, dynamic>{
@@ -168,7 +163,6 @@ void main() {
           'catch a [PlatformException] error and throws a [FirebaseStorageException] error',
           () async {
         mockPlatformExceptionThrown = true;
-
         Function callMethod = () => ref.getMetadata();
         await testExceptionHandling('PLATFORM', callMethod);
       });
@@ -179,7 +173,7 @@ void main() {
         await ref.list(kListOptions);
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Reference#list',
             arguments: <String, dynamic>{
@@ -202,7 +196,6 @@ void main() {
           'catch a [PlatformException] error and throws a [FirebaseStorageException] error',
           () async {
         mockPlatformExceptionThrown = true;
-
         Function callMethod = () => ref.list(kListOptions);
         await testExceptionHandling('PLATFORM', callMethod);
       });
@@ -213,7 +206,7 @@ void main() {
         await ref.listAll();
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Reference#listAll',
             arguments: <String, dynamic>{
@@ -232,7 +225,6 @@ void main() {
           'catch a [PlatformException] error and throws a [FirebaseStorageException] error',
           () async {
         mockPlatformExceptionThrown = true;
-
         Function callMethod = () => ref.listAll();
         await testExceptionHandling('PLATFORM', callMethod);
       });
@@ -247,7 +239,7 @@ void main() {
         await ref.putData(data, kMetadata);
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Task#startPut',
             arguments: <String, dynamic>{
@@ -288,7 +280,7 @@ void main() {
         await ref.putFile(kFile, kMetadata);
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Task#startPutFile',
             arguments: <String, dynamic>{
@@ -321,7 +313,7 @@ void main() {
         await ref.putString(data, PutStringFormat.raw, kMetadata);
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Task#startPutString',
             arguments: <String, dynamic>{
@@ -369,7 +361,7 @@ void main() {
         await ref.writeToFile(kFile);
 
         // check native method was called
-        expect(logger, <Matcher>[
+        expect(log, <Matcher>[
           isMethodCall(
             'Task#writeToFile',
             arguments: <String, dynamic>{
