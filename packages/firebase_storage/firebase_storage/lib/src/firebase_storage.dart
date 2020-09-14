@@ -172,14 +172,14 @@ class FirebaseStorage extends FirebasePluginPlatform {
     return maxDownloadRetryTime.inMilliseconds;
   }
 
-  /// Sets he new maximum operation retry time.
+  /// Sets the new maximum operation retry time.
   void setMaxOperationRetryTime(Duration time) {
     assert(time != null);
     assert(!time.isNegative);
     return _delegate.setMaxOperationRetryTime(time.inMilliseconds);
   }
 
-  /// Sets he new maximum operation retry time in milliseconds.
+  /// Sets the new maximum operation retry time in milliseconds.
   @Deprecated("Deprecated in favor of setMaxUploadRetryTime()")
   Future<void> setMaxOperationRetryTimeMillis(int time) async {
     return setMaxUploadRetryTime(Duration(milliseconds: time));

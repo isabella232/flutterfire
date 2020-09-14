@@ -21,7 +21,8 @@ FutureOr<Map<String, dynamic>> catchPlatformException(Object exception,
 
 /// Catches a [PlatformException] and converts it into a [FirebaseException] if
 /// it was intentionally caught on the native platform.
-Future<T> catchFuturePlatformException<T>(Object exception, [StackTrace stackTrace]) {
+Future<T> catchFuturePlatformException<T>(Object exception,
+    [StackTrace stackTrace]) {
   if (exception is! Exception || exception is! PlatformException) {
     return Future.error(exception, stackTrace);
   }

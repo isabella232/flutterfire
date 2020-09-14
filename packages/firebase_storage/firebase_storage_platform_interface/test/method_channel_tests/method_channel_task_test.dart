@@ -29,6 +29,8 @@ void main() {
   final kMockData = 'Hello World';
   MethodChannelPutStringTask kMockTask;
 
+  final kMockExceptionMessage = 'a mock exception message';
+
   group('$MethodChannelTask', () {
     setUpAll(() async {
       app = await Firebase.initializeApp();
@@ -41,7 +43,8 @@ void main() {
         if (mockExceptionThrown) {
           throw Exception();
         } else if (mockPlatformExceptionThrown) {
-          throw PlatformException(code: 'UNKNOWN');
+          throw PlatformException(
+              code: 'UNKNOWN', message: kMockExceptionMessage);
         }
         print(call.method);
         switch (call.method) {
@@ -74,6 +77,7 @@ void main() {
 
     group('pause', () {
       test('should call native method with correct args', () async {
+        int handle = nextMockHandleId;
         final result = await kMockTask.pause();
         expect(result, isA<bool>());
         expect(result, isTrue);
@@ -81,7 +85,7 @@ void main() {
           isMethodCall(
             'Task#pause',
             arguments: <String, dynamic>{
-              'handle': 0,
+              'handle': handle,
             },
           ),
         ]);
@@ -90,6 +94,8 @@ void main() {
       test(
           'catch a [PlatformException] error and throws a [FirebaseException] error',
           () async {
+        mockPlatformExceptionThrown = true;
+
         Function callMethod = () => kMockTask.pause();
         await testExceptionHandling('PLATFORM', callMethod);
       });
