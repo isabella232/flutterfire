@@ -243,6 +243,7 @@ void main() {
       Uint8List data = Uint8List.fromList(list);
 
       test('should invoke native method with correct args', () async {
+        int handle = nextMockHandleId;
         await ref.putData(data, kMetadata);
 
         // check native method was called
@@ -256,7 +257,7 @@ void main() {
               'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
-              'handle': 0,
+              'handle': handle,
               'data': list,
               'metadata': {
                 'cacheControl': null,
@@ -283,6 +284,7 @@ void main() {
 
     group('putFile', () {
       test('should invoke native method with correct args', () async {
+        int handle = nextMockHandleId;
         await ref.putFile(kFile, kMetadata);
 
         // check native method was called
@@ -296,7 +298,7 @@ void main() {
               'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
-              'handle': 2,
+              'handle': handle,
               'filePath': kFile.absolute.path,
               'metadata': {
                 'cacheControl': null,
@@ -315,6 +317,7 @@ void main() {
     group('putString', () {
       test('should invoke native method with correct args', () async {
         final String data = 'foo';
+        int handle = nextMockHandleId;
         await ref.putString(data, PutStringFormat.raw, kMetadata);
 
         // check native method was called
@@ -328,7 +331,7 @@ void main() {
               'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
-              'handle': 4,
+              'handle': handle,
               'data': data,
               'format': PutStringFormat.raw.toString(),
               'metadata': {
@@ -362,6 +365,7 @@ void main() {
 
     group('writeToFile', () {
       test('should invoke native method with correct args', () async {
+        int handle = nextMockHandleId;
         await ref.writeToFile(kFile);
 
         // check native method was called
@@ -375,7 +379,7 @@ void main() {
               'maxDownloadRetryTime': storage.maxDownloadRetryTime,
               'bucket': null,
               'path': '/',
-              'handle': 6,
+              'handle': handle,
               'filePath': kFile.path,
             },
           ),

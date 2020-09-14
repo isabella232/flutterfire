@@ -230,8 +230,7 @@ class MethodChannelPutTask extends MethodChannelTask {
   // ignore: public_member_api_docs
   MethodChannelPutTask(int handle, FirebaseStoragePlatform storage, String path,
       Uint8List data, SettableMetadata metadata)
-      : super(
-            handle, storage, _getTask(handle, storage, path, data, metadata));
+      : super(handle, storage, _getTask(handle, storage, path, data, metadata));
 
   static Future<void> Function() _getTask(
       int handle,
