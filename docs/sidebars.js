@@ -33,7 +33,14 @@ module.exports = {
       "functions/overview",
       "functions/usage",
       toReferenceAPI("cloud_functions")],
-    // "Cloud Messaging": ["messaging/usage", toReferenceAPI("firebase_messaging")],
+    "Cloud Messaging": [
+      "messaging/overview",
+      "messaging/usage",
+      "messaging/ios-permissions",
+      "messaging/notifications",
+      "messaging/ios-notification-images",
+      "messaging/server-integration",
+      toReferenceAPI("firebase_messaging")],
     Core: [
       "core/usage",
       toReferenceAPI("firebase_core")],
