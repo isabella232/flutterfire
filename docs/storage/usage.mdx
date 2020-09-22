@@ -190,7 +190,12 @@ task.snapshotEvents.listen((TaskSnapshot snapshot) {
 });
 
 // Optional: Wait for task to complete
-TaskSnapshot completedSnapshot = await task;
-print('Upload complete');
-
+task
+  .then((TaskSnapshot snapshot) {
+    print('Upload complete!');
+  })
+  .catchError((Object e) {
+    // FirebaseException
+    print(e);
+  });
 ```
