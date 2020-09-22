@@ -41,11 +41,11 @@ passed data and uploads them to Firebase Storage.
 
 ```dart
 Future<void> uploadFile() {
-// Create bucket storage reference to not yet existing file
-Reference ref = FirebaseStorage.instance.ref('/file-upload-test.txt');
+  // Create bucket storage reference to not yet existing file
+  Reference ref = FirebaseStorage.instance.ref('/file-upload-test.txt');
 
-// Upload file
-UploadTask task = ref.putFile(file);
+  // Upload file
+  UploadTask task = ref.putFile(file);
 }
 ```
 
@@ -56,11 +56,14 @@ method
 
 ```dart
 Future<void> uploadString() {
-// Create bucket storage reference to not yet existing file
-Reference ref = FirebaseStorage.instance.ref('/file-upload-test.txt');
+  // Set string text
+  const String putStringText = "This string will be uploaded";
 
-// Upload file
-UploadTask task = ref.putFile(file);
+  // Create bucket storage reference to not yet existing file
+  Reference ref = FirebaseStorage.instance.ref('/string-test.txt');
+
+  // Upload string as file
+  UploadTask task = ref.putString(putStringText);
 }
 ```
 
@@ -74,8 +77,8 @@ To add metadata on when using `putFile`:
 ```dart highlight={3}
 UploadTask task = ref.putFile(
   file,
-  SettableMetadata(
-    customMetadata: <String, String>{'activity': 'test'}
+  metadata: SettableMetadata(
+    customMetadata: <String, String>{'activity': 'putFile'}
   )
 );
 ```
@@ -84,9 +87,9 @@ To add metadata when using `putString`:
 
 ```dart highlight={3}
 UploadTask task = ref.putString(
-  file,
+  putStringText,
   metadata: SettableMetadata(
-    customMetadata: <String, String>{'activity': 'test'}
+    customMetadata: <String, String>{'activity': 'putString'}
   )
 );
 ```
@@ -117,15 +120,13 @@ Reference ref = FirebaseStorage.instance
 Once you have the reference, you can download the files using the `writeToFile` method to store the file to a local device:
 
 ```dart
-import 'package:path_provider/path_provider.dart';
-
 Future<void> downloadFiles() async {
   // Create reference to the file
   Reference ref = FirebaseStorage.instance.ref('/coding.jpg');
 
   // Create a reference to the local file
-  final dir = await getExternalStorageDirectory();
-  File tempFile = File('${dir.path}/$name');
+  final Directory systemTempDir = Directory.systemTemp;
+  final File tempFile = File('${systemTempDir.path}/temp-${ref.name}');
 
   // Create download task to start download
   DownloadTask task = ref.writeToFile(tempFile);
@@ -180,7 +181,7 @@ Reference ref = FirebaseStorage.instance.ref('/mountains.png');
 // Start the upload task
 UploadTask task = ref.putFile(file);
 
-// Listen for task events
+// Optional: Listen for task events
 task.snapshotEvents.listen((TaskSnapshot snapshot) {
   // Get task state such as running, progress and pause
   print('Snapshot state: ${snapshot.state}');
@@ -188,8 +189,8 @@ task.snapshotEvents.listen((TaskSnapshot snapshot) {
   print('Progress: ${(snapshot.totalBytes/snapshot.bytesTransferred) * 100} %');
 });
 
-task.onComplete.then((TaskSnapshot snapshot){
-  // Handle successful uploads on complete
-  print('Upload Complete');
-});
+// Optional: Wait for task to complete
+TaskSnapshot completedSnapshot = await task;
+print('Upload complete');
+
 ```
