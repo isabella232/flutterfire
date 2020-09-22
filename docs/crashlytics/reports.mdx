@@ -8,7 +8,7 @@ sidebar_label: Viewing crash reports
 Once you have Crashlytics setup, you can navigate to Crashlytics in your Firebase Console underneath 'Quality'.
 If this page tells you to setup, build or run your app, then you have not correctly setup Crashlytics in your app (see [Usage](usage))
 
-> Crashlytics is disabled by default in debug mode. To enable it, please read [Enabling Debug Mode](usage#enabling-debug-mode)
+> Crashlytics is enabled by default, to disable it in debug mode (recommended) or for opt-in purposes see [toggle Crashlytics collection.](usage#toggle-crashlytics-collection)
 
 When using any of the examples under [usage](usage), you will be shown a dashboard similar to the following:
 
@@ -25,7 +25,7 @@ One of the issues above originates from `FirebaseCrashlyticsPlugin.java`, which 
 Crashlytics [`crash`](usage#forcing-a-crash) method by throwing an uncaught exception to crash the app.  Using the [`crash`](usage#forcing-a-crash) method on the same platform
 will always add reports to the same issue.
 
-## Filtering Crash Types
+## Filtering crash types
 
 The Crashlytics console allows you to filter your issues by event types such as `Crashes` and `Non-fatals`.
 In the below example, you can see our project filtered by `Non-fatal` crashes.
@@ -43,7 +43,7 @@ try {
 }
 ```
 
-## Managing Issues
+## Managing issues
 
 By clicking on an issue, you can view its statistics and associated reports in more detail.  The below screenshot shows the
 issue relating to `FirebaseCrashlyticsPlugin.java`

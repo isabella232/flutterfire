@@ -1,42 +1,45 @@
 ---
-title: Cloud Messaging
+title: Firebase Cloud Messaging
 sidebar_label: Overview
 ---
 
-## What does it do?
+##  What does it do?
 
-Firebase Cloud Messaging (FCM) is a cost free, cross platform messaging service, allowing for server-device and device-device communication.
+Firebase Cloud Messaging (FCM) is a cross-platform messaging solution that lets you reliably send messages at no cost.
 
+Using FCM, you can notify a client app that new email or other data is available to sync. You can send notification
+messages to drive user re-engagement and retention. For use cases such as instant messaging, a message can transfer
+a payload of up to 4KB to a client app.
 
-<YouTube id="sioEY4tWmLI" />
+<YouTube id="sioEY4tWmLI"/>
 
 ## Installation
 
-Before installing the Firebase Cloud Messaging plugin, ensure that you have followed the [Getting Started](../overview.mdx) documentation
-and have initialized FlutterFire.
-
 ### 1. Add dependency
-
-Add the [`firebase_messaging`](https://pub.dartlang.org/packages/firebase_messaging) dependency to your projects `pubspec.yaml` file:
 
 ```yaml {5} title="pubspec.yaml"
 dependencies:
   flutter:
     sdk: flutter
   firebase_core: "^{{ plugins.firebase_core }}"
-  cloud_functions: "^{{ plugins.firebase_messaging }}"
+  firebase_messaging: "^{{ plugins.firebase_messaging }}"
 ```
 
 ### 2. Download dependency
 
-Download the dependency by running the following command in your project:
-
-```bash
+```
 $ flutter pub get
 ```
 
+### 3. iOS Integration
 
-### 4. Rebuild your app
+iOS requires additional configuration before you can start receiving messages through Firebase. Read the integration documentation on how to [setup iOS with Firebase Cloud Messaging](messaging/ios-integration.mdx).
+
+### 4. (Web Only) Add the SDK
+
+> Web is currently not supported. See the [FlutterFire roadmap](https://github.com/FirebaseExtended/flutterfire/issues/2582).
+
+### 5. Rebuild your app
 
 Once complete, rebuild your Flutter application:
 

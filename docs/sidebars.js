@@ -12,7 +12,9 @@ module.exports = {
       "overview",
       "installation/android",
       "installation/ios",
+      "installation/macos",
       "installation/web",
+      "migration",
     ],
     // AdMob: ["admob/usage", toReferenceAPI("firebase_admob")],
     Analytics: ["analytics/overview", toReferenceAPI("firebase_analytics")],
@@ -36,6 +38,7 @@ module.exports = {
     "Cloud Messaging": [
       "messaging/overview",
       "messaging/usage",
+      "messaging/ios-integration",
       "messaging/ios-permissions",
       "messaging/notifications",
       "messaging/ios-notification-images",
@@ -61,9 +64,7 @@ module.exports = {
     // "In-App Messaging": ["in-app-messaging/usage", toReferenceAPI("firebase_in_app_messaging")],
     // "ML Kit Natural Language": ["ml-language/usage"],
     // "ML Kit Vision": ["ml-vision/usage", toReferenceAPI("firebase_ml_vision")],
-    // "Remote Config": ["remote-config/usage", toReferenceAPI("firebase_remote_config")],
-    "Performance Monitoring": [
-      "performance/overview",
-      toReferenceAPI("firebase_performance")],
+    "Remote Config": ["remote-config/overview", toReferenceAPI("firebase_remote_config")],
+    "Performance Monitoring": ["performance/overview", toReferenceAPI("firebase_performance")],
   },
 };

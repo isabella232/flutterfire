@@ -12,9 +12,9 @@ a popup or redirect.
 
 ## Google
 
-Most configuration is already setup when using Google Sign-In with Firebase, however you need to ensure your machines
-SHA1 key has been configured for use with Android. You can see view how to generate the key on the
-[Getting Started](overview) documentation.
+Most configuration is already setup when using Google Sign-In with Firebase, however you need to ensure your machine's
+SHA1 key has been configured for use with Android. You can see how to generate the key on the
+[Installation](../installation/android#generating-firebase-credentials) documentation.
 
 Ensure the "Google" sign-in provider is enabled on the [Firebase Console](https://console.firebase.google.com/project/_/authentication/providers).
 
@@ -46,7 +46,7 @@ Once installed, trigger the sign-in flow and create a new credential:
 import 'package:google_sign_in/google_sign_in.dart';
 
 Future<UserCredential> signInWithGoogle() async {
-  // Trigger the authenticaion flow
+  // Trigger the authentication flow
   final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
 
   // Obtain the auth details from the request
@@ -81,8 +81,8 @@ googleProvider.setCustomParameters({
 ```
 
 Provide the credential to the [`signInWithPopup`](!firebase_auth.FirebaseAuth.signInWithPopup) method. This will trigger a new
-window to appear prompting the user to sign-in to your project. Alternatively you can use `signInWithRedirect` to keep the authentication
-process in the same window.
+window to appear prompting the user to sign-in to your project. Alternatively you can use `signInWithRedirect` to keep the
+authentication process in the same window.
 
 ```dart
 Future<UserCredential> signInWithGoogle() async {
@@ -158,8 +158,8 @@ Facebook application details provided on the Firebase console. For example:
 Create a Facebook provider, providing any additional [permission scope](https://developers.facebook.com/docs/facebook-login/permissions/)
 you wish to obtain from the user.
 
-Ensure that the OAuth redirect URI from the Firebase console is added as a Valid OAuth Redirect URIs
-in your Facebook App
+Ensure that the OAuth redirect URI from the Firebase console is added as a valid OAuth Redirect URI
+in your Facebook App.
 
 ```dart
 FacebookAuthProvider facebookProvider = FacebookAuthProvider();
@@ -194,29 +194,20 @@ Future<UserCredential> signInWithFacebook() async {
 </TabItem>
 </Tabs>
 
-
-
 ## Apple
 
-Apple has [announced](https://developer.apple.com/news/?id=09122019b) that any applications using 3rd party login
-services (such as Facebook, Twitter, Google etc) must have an Apple Sign-In method.  Apple Sign-In is not required for Android devices.secret
+Apple [announced](https://developer.apple.com/news/?id=09122019b) that any applications using 3rd party login
+services (such as Facebook, Twitter, Google etc) must also have an Apple Sign-In method. Apple Sign-In is not required for Android devices.
 
 To integrate Apple Sign-In on your iOS application, you will need to install a 3rd party library to authenticate with Apple.
 Once authentication is successful, a Firebase credential can then be used to sign the user into Firebase with their Apple account
 
-> To Do
-
-```dart title="NEEDS UPDATING/VALIDATING"
-// Apple credentials
-final FirebaseUser user = (await FirebaseAuth.instance.signInWithCredential(credential)).user;
-```
+> This example is still TODO. PRs are welcome to provide an example (there's an 'Edit this page' link at the bottom of this page). 
 
 ## Twitter
 
-
-
 Ensure the "Twitter" sign-in provider is enabled on the [Firebase Console](https://console.firebase.google.com/project/_/authentication/providers)
-with API Key and API Secret set.
+with an API Key and API Secret set.
 
 <Tabs
   defaultValue="native"
@@ -229,24 +220,24 @@ with API Key and API Secret set.
 
 On native platforms, a 3rd party library is required to both install the Twitter SDK and trigger the authentication flow.
 
-Install the [`flutter_twitter`](https://pub.dev/packages/flutter_twitter) plugin:
+Install the [`flutter_twitter_login`](https://pub.dev/packages/flutter_twitter_login) plugin:
 
 ```yaml title="pubspec.yaml"
 dependencies:
-  flutter_twitter: ^1.1.3
+  flutter_twitter_login: ^1.1.0
 ```
 
 You will need to ensure that your application in the [Twitter Developer Portal](https://developer.twitter.com/) has
 a callback URL of `twittersdk://` for Android, and `twitterkit-CONSUMERKEY://` for iOS. Once complete, trigger the sign-in flow, create a Twitter credential and sign the user in:
 
 ```dart
-import 'package:flutter_twitter/flutter_twitter.dart';
+import 'package:flutter_twitter_login/flutter_twitter_login.dart';
 
 Future<UserCredential> signInWithTwitter() async {
   // Create a TwitterLogin instance
   final TwitterLogin twitterLogin = new TwitterLogin(
-    consumerKey: consumerKey,
-    consumerSecret: consumerSecret
+    consumerKey: '<your consumer key>',
+    consumerSecret:' <your consumer secret>',
   );
 
   // Trigger the sign-in flow
@@ -264,12 +255,14 @@ Future<UserCredential> signInWithTwitter() async {
 }
 ```
 
+Please note there is an [outstanding issue](https://github.com/roughike/flutter_twitter_login/issues/32) with this package, regarding iOS and the use of `UIWebView` which is deprecated.
+
 </TabItem>
 <TabItem value="web">
 
 On the web, the Twitter SDK provides support for automatically handling the authentication flow using the
 Twitter application details provided on the Firebase console.  Ensure that the callback URL in the Firebase console is added
-as a callback URL in your Twitter application on the developer console.
+as a callback URL in your Twitter application on their developer console.
 
 For example:
 
@@ -318,11 +311,11 @@ dependencies:
   github_sign_in: ^0.0.1
 ```
 
-You will need to create the GitHubSignIn instance with your GitHub ID and Secret, but also the Firebase callbackURL.
+You will need to populate the `GitHubSignIn` instance with your GitHub Client ID, GitHub Client Secret and also a Redirect URL (Firebase callback url).
 Once complete trigger the sign-in flow, create a GitHub credential and sign the user in:
 
 ```dart
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:github_sign_in/github_sign_in.dart';
 
 Future<UserCredential> signInWithGitHub() async {
   // Create a GitHubSignIn instance
