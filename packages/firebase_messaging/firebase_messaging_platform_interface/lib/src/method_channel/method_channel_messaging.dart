@@ -16,7 +16,6 @@ import 'utils/exception.dart';
 ///
 /// You can get an instance by calling [FirebaseMessaging.instance].
 class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
-
   /// Create an instance of [MethodChannelFirebaseMessaging] with optional [FirebaseApp]
   MethodChannelFirebaseMessaging({FirebaseApp app}) : super(appInstance: app) {
     if (_initialized) return;

@@ -34,7 +34,6 @@ void main() {
   };
 
   group('$MethodChannelFirebaseMessaging', () {
-
     setUpAll(() async {
       app = await Firebase.initializeApp();
 
@@ -72,13 +71,14 @@ void main() {
 
     group('$FirebaseMessagingPlatform()', () {
       test('$MethodChannelFirebaseMessaging is the default instance', () {
-        expect(
-            FirebaseMessagingPlatform.instance, isA<MethodChannelFirebaseMessaging>());
+        expect(FirebaseMessagingPlatform.instance,
+            isA<MethodChannelFirebaseMessaging>());
       });
 
       test('Cannot be implemented with `implements`', () {
         expect(() {
-          FirebaseMessagingPlatform.instance = ImplementsFirebaseMessagingPlatform();
+          FirebaseMessagingPlatform.instance =
+              ImplementsFirebaseMessagingPlatform();
         }, throwsAssertionError);
       });
 
@@ -102,7 +102,8 @@ void main() {
 
     group('setInitialValues()', () {
       test('when initialNotification arg is not null', () {
-        final testMessaging = TestMethodChannelFirebaseMessaging(Firebase.app());
+        final testMessaging =
+            TestMethodChannelFirebaseMessaging(Firebase.app());
         final result = testMessaging.setInitialValues(
             isAutoInitEnabled: false, initialNotification: kMockNotification);
         expect(result, isA<FirebaseMessagingPlatform>());
@@ -111,9 +112,9 @@ void main() {
       });
 
       test('when initialNotification arg is null', () {
-        final testMessaging = TestMethodChannelFirebaseMessaging(Firebase.app());
-        final result =
-            testMessaging.setInitialValues(isAutoInitEnabled: false);
+        final testMessaging =
+            TestMethodChannelFirebaseMessaging(Firebase.app());
+        final result = testMessaging.setInitialValues(isAutoInitEnabled: false);
         expect(result, isA<FirebaseMessagingPlatform>());
         expect(result.isAutoInitEnabled, isFalse);
         expect(result.initialNotification, isNull);
@@ -277,7 +278,8 @@ void main() {
     });
 
     test('onIosSettingsRegistered', () {
-      expect(messaging.onIosSettingsRegistered, isA<Stream<IosNotificationSettings>>());
+      expect(messaging.onIosSettingsRegistered,
+          isA<Stream<IosNotificationSettings>>());
     });
 
     test('onTokenRefresh', () {
@@ -329,7 +331,6 @@ void main() {
         ),
       ]);
     });
-
   });
 }
 
@@ -342,6 +343,7 @@ class MocksFirebaseMessagingPlatform extends Mock
 
 class ExtendsFirebaseMessagingPlatform extends FirebaseMessagingPlatform {}
 
-class TestMethodChannelFirebaseMessaging extends MethodChannelFirebaseMessaging {
+class TestMethodChannelFirebaseMessaging
+    extends MethodChannelFirebaseMessaging {
   TestMethodChannelFirebaseMessaging(FirebaseApp app) : super(app: app);
 }

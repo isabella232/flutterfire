@@ -44,7 +44,8 @@ void setupFirebaseMessagingMocks([Callback customHandlers]) {
 }
 
 void handleMethodCall(MethodCallCallback methodCallCallback) =>
-    MethodChannelFirebaseMessaging.channel.setMockMethodCallHandler((call) async {
+    MethodChannelFirebaseMessaging.channel
+        .setMockMethodCallHandler((call) async {
       return await methodCallCallback(call);
     });
 

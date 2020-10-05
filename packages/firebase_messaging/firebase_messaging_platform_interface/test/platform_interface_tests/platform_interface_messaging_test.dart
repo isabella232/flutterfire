@@ -52,7 +52,9 @@ void main() {
           app: app,
           pluginConstants: <dynamic, dynamic>{
             'AUTO_INIT_ENABLED': true,
-            'INITIAL_NOTIFICATION': <String, dynamic>{'title': 'test notification'}
+            'INITIAL_NOTIFICATION': <String, dynamic>{
+              'title': 'test notification'
+            }
           });
       expect(result, isA<FirebaseMessagingPlatform>());
       expect(result.isAutoInitEnabled, isA<bool>());
@@ -60,22 +62,25 @@ void main() {
     });
 
     test('get.instance', () {
-      expect(FirebaseMessagingPlatform.instance, isA<FirebaseMessagingPlatform>());
+      expect(
+          FirebaseMessagingPlatform.instance, isA<FirebaseMessagingPlatform>());
       expect(FirebaseMessagingPlatform.instance.app.name,
           equals(defaultFirebaseAppName));
     });
 
     group('set.instance', () {
       test('sets the current instance', () {
-        FirebaseMessagingPlatform.instance = TestFirebaseMessagingPlatform(secondaryApp);
+        FirebaseMessagingPlatform.instance =
+            TestFirebaseMessagingPlatform(secondaryApp);
 
-        expect(FirebaseMessagingPlatform.instance, isA<FirebaseMessagingPlatform>());
+        expect(FirebaseMessagingPlatform.instance,
+            isA<FirebaseMessagingPlatform>());
         expect(FirebaseMessagingPlatform.instance.app.name, equals('testApp2'));
       });
 
       test('throws an [AssertionError] if instance is null', () {
-        expect(
-            () => FirebaseMessagingPlatform.instance = null, throwsAssertionError);
+        expect(() => FirebaseMessagingPlatform.instance = null,
+            throwsAssertionError);
       });
     });
 
@@ -178,8 +183,7 @@ void main() {
       try {
         await firebaseMessagingPlatform.requestPermission();
       } on UnimplementedError catch (e) {
-        expect(e.message,
-            equals('requestPermission() is not implemented'));
+        expect(e.message, equals('requestPermission() is not implemented'));
         return;
       }
       fail('Should have thrown an [UnimplementedError]');
@@ -189,8 +193,7 @@ void main() {
       try {
         await firebaseMessagingPlatform.sendMessage();
       } on UnimplementedError catch (e) {
-        expect(e.message,
-            equals('sendMessage() is not implemented'));
+        expect(e.message, equals('sendMessage() is not implemented'));
         return;
       }
       fail('Should have thrown an [UnimplementedError]');
@@ -240,8 +243,7 @@ void main() {
       try {
         await firebaseMessagingPlatform.deleteInstanceID();
       } on UnimplementedError catch (e) {
-        expect(
-            e.message, equals('deleteInstanceID() is not implemented'));
+        expect(e.message, equals('deleteInstanceID() is not implemented'));
         return;
       }
       fail('Should have thrown an [UnimplementedError]');
