@@ -16,10 +16,11 @@ import 'utils/exception.dart';
 ///
 /// You can get an instance by calling [FirebaseMessaging.instance].
 class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
+
   /// Create an instance of [MethodChannelFirebaseMessaging] with optional [FirebaseApp]
   MethodChannelFirebaseMessaging({FirebaseApp app}) : super(appInstance: app) {
     if (_initialized) return;
-    _channel.setMethodCallHandler((MethodCall call) async {
+    channel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
         case "Messaging#onToken":
           _tokenStreamController.add(call.arguments);
@@ -37,8 +38,9 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
 
   static bool _initialized = false;
 
-  /// The [MethodChannel] used to communicate with the native plugin
-  static MethodChannel _channel = MethodChannel(
+  /// The [MethodChannel] to which calls will be delegated.
+  @visibleForTesting
+  static const MethodChannel channel = MethodChannel(
     'plugins.flutter.io/firebase_messaging',
   );
 
@@ -127,7 +129,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
 
   @override
   Future<void> deleteToken({String authorizedEntity, String scope}) {
-    return _channel.invokeMethod<String>('Messaging#deleteToken', {
+    return channel.invokeMethod<String>('Messaging#deleteToken', {
       'appName': app.name,
       'authorizedEntity': authorizedEntity,
       'scope': scope,
@@ -140,7 +142,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
       return null;
     }
 
-    return _channel.invokeMethod<String>('Messaging#getAPNSToken', {
+    return channel.invokeMethod<String>('Messaging#getAPNSToken', {
       'appName': app.name,
     });
   }
@@ -151,7 +153,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
     String scope,
     String vapidKey,
   }) {
-    return _channel.invokeMethod<String>('Messaging#getToken', {
+    return channel.invokeMethod<String>('Messaging#getToken', {
       'appName': app.name,
       'authorizedEntity': authorizedEntity,
       'scope': scope,
@@ -164,7 +166,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
       return AuthorizationStatus.authorized;
     }
 
-    int status = await _channel.invokeMethod<int>('Messaging#hasPermission', {
+    int status = await channel.invokeMethod<int>('Messaging#hasPermission', {
       'appName': app.name,
     });
 
@@ -185,7 +187,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
     }
 
     int status =
-        await _channel.invokeMethod<int>('Messaging#requestPermission', {
+        await channel.invokeMethod<int>('Messaging#requestPermission', {
       'appName': app.name,
       'permissions': <String, bool>{
         'alert': alert,
@@ -210,7 +212,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
     String messageType,
     int ttl,
   }) {
-    return _channel.invokeMethod<void>('Messaging#sendMessage', {
+    return channel.invokeMethod<void>('Messaging#sendMessage', {
       'appName': app.name,
       'message': {
         'senderId': senderId,
@@ -225,7 +227,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
 
   @override
   Future<void> setAutoInitEnabled(bool enabled) async {
-    Map<String, dynamic> data = await _channel
+    Map<String, dynamic> data = await channel
         .invokeMapMethod<String, dynamic>('Messaging#setAutoInitEnabled', {
       'appName': app.name,
       'enabled': enabled,
@@ -244,7 +246,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
 
   @override
   Future<void> subscribeToTopic(String topic) {
-    return _channel.invokeMethod<String>('Messaging#subscribeToTopic', {
+    return channel.invokeMethod<String>('Messaging#subscribeToTopic', {
       'appName': app.name,
       'topic': topic,
     });
@@ -252,7 +254,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
 
   @override
   Future<void> unsubscribeFromTopic(String topic) {
-    return _channel.invokeMethod<String>('Messaging#unsubscribeFromTopic', {
+    return channel.invokeMethod<String>('Messaging#unsubscribeFromTopic', {
       'appName': app.name,
       'topic': topic,
     });
@@ -260,7 +262,7 @@ class MethodChannelFirebaseMessaging extends FirebaseMessagingPlatform {
 
   @override
   Future<bool> deleteInstanceID() {
-    return _channel.invokeMethod<bool>('Messaging#deleteInstanceID', {
+    return channel.invokeMethod<bool>('Messaging#deleteInstanceID', {
       'appName': app.name,
     });
   }
