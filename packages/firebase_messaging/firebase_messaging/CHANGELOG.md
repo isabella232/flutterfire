@@ -1,3 +1,9 @@
+## 8.0.0-dev.3
+
+ - **FIX**: assert.
+ - **FEAT**: notification persistence.
+ - **FEAT**: add senderId (use iid on Android to support it).
+
 ## 8.0.0-dev.2
 
  - **FEAT**: bump firebase sdk version to 6.33.0.
