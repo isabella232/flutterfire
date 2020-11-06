@@ -15,20 +15,12 @@ external bool isSupported();
 
 @JS('Messaging')
 abstract class MessagingJsImpl {
-  external void usePublicVapidKey(String key);
-  external PromiseJsImpl<void> requestPermission();
-  external PromiseJsImpl<String> getToken();
+  external void deleteToken();
+  external PromiseJsImpl<String> getToken(getTokenOptions);
   external void Function() onMessage(
     optionsOrObserverOrOnNext,
     observerOrOnNextOrOnError,
   );
-  external void Function() onTokenRefresh(
-    optionsOrObserverOrOnNext,
-    observerOrOnNextOrOnError,
-  );
-  external void setBackgroundMessageHandler(Func1 f);
-  external void useServiceWorker(registration);
-  external void deleteToken(String token);
 }
 
 @JS()

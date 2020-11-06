@@ -10,8 +10,16 @@ import 'package:js/js.dart';
 
 import 'package:firebase_core_web/firebase_core_web_interop.dart';
 import 'messaging_interop.dart' as messaging_interop;
+import 'firebase_interop.dart' as firebase_interop;
 
 export 'messaging_interop.dart';
+
+/// Given an AppJSImp, return the Messaging instance.
+Messaging getMessagingInstance([App app]) {
+  return Messaging.getInstance(app != null
+      ? firebase_interop.messaging(app.jsObject)
+      : firebase_interop.messaging());
+}
 
 class Messaging extends JsObjectWrapper<messaging_interop.MessagingJsImpl> {
   static final _expando = Expando<Messaging>();
@@ -28,33 +36,20 @@ class Messaging extends JsObjectWrapper<messaging_interop.MessagingJsImpl> {
   Messaging._fromJsObject(messaging_interop.MessagingJsImpl jsObject)
       : super.fromJsObject(jsObject);
 
-  /// To set your own server application key,
-  /// you can specify here the public key you set up from the Firebase Console under the Settings options.
-  void usePublicVapidKey(String key) {
-    jsObject.usePublicVapidKey(key);
-  }
-
-  /// To use your own service worker for receiving push messages,
-  /// you can pass in your service worker registration in this method.
-  void useServiceWorker(registration) {
-    jsObject.useServiceWorker(registration);
-  }
-
   /// To forcibly stop a registration token from being used, delete it by calling this method.
   /// Calling this method will stop the periodic data transmission to the FCM backend.
-  void deleteToken(String token) {
-    jsObject.deleteToken(token);
-  }
-
-  /// Notification permissions are required to send a user push messages.
-  /// Calling this method displays the permission dialog to the user and resolves if the permission is granted.
-  Future requestPermission() async {
-    await handleThenable(jsObject.requestPermission()).then(dartify);
+  void deleteToken() {
+    jsObject.deleteToken();
   }
 
   /// After calling [requestPermission] you can call this method to get an FCM registration token
   /// that can be used to send push messages to this user.
-  Future<String> getToken() => handleThenable(jsObject.getToken());
+  Future<String> getToken({String vapidKey}) =>
+      handleThenable(jsObject.getToken(vapidKey == null
+          ? null
+          : {
+              'vapidKey': vapidKey,
+            }));
 
   StreamController<Payload> _onMessageController;
   StreamController<Null> _onTokenRefresh;
@@ -66,12 +61,8 @@ class Messaging extends JsObjectWrapper<messaging_interop.MessagingJsImpl> {
 
   /// FCM directs push messages to your web page's [onMessage] callback if the user currently has it open.
   /// Otherwise, it calls your callback passed into [onBackgroundMessage].
-  Stream<Payload> get onBackgroundMessage =>
-      _createBackgroundMessagedStream(_onBackgroundMessage);
-
-  /// You should listen for token refreshes so your web app knows when FCM
-  /// has invalidated your existing token and you need to call [getToken] to get a new token.
-  Stream<Null> get onTokenRefresh => _createNullStream(_onTokenRefresh);
+  // Stream<Payload> get onBackgroundMessage =>
+  //     _createBackgroundMessagedStream(_onBackgroundMessage);
 
   Stream<Payload> _createOnMessageStream(StreamController<Payload> controller) {
     if (controller == null) {
@@ -87,41 +78,41 @@ class Messaging extends JsObjectWrapper<messaging_interop.MessagingJsImpl> {
     return controller.stream;
   }
 
-  Stream<Payload> _createBackgroundMessagedStream(
-      StreamController<Payload> controller) {
-    if (controller == null) {
-      controller = StreamController.broadcast(sync: true);
-      final nextWrapper = allowInterop((payload) {
-        controller.add(Payload._fromJsObject(payload));
-      });
-      jsObject.setBackgroundMessageHandler(nextWrapper);
-    }
-    return controller.stream;
-  }
+  // Stream<Payload> _createBackgroundMessagedStream(
+  //     StreamController<Payload> controller) {
+  //   if (controller == null) {
+  //     controller = StreamController.broadcast(sync: true);
+  //     final nextWrapper = allowInterop((payload) {
+  //       controller.add(Payload._fromJsObject(payload));
+  //     });
+  //     jsObject.setBackgroundMessageHandler(nextWrapper);
+  //   }
+  //   return controller.stream;
+  // }
 
-  Stream<Null> _createNullStream(StreamController controller) {
-    if (controller == null) {
-      final nextWrapper = allowInterop((_) => null);
-      final errorWrapper = allowInterop((e) {
-        controller.addError(e);
-      });
-      ZoneCallback onSnapshotUnsubscribe;
+  // Stream<Null> _createNullStream(StreamController controller) {
+  //   if (controller == null) {
+  //     final nextWrapper = allowInterop((_) => null);
+  //     final errorWrapper = allowInterop((e) {
+  //       controller.addError(e);
+  //     });
+  //     ZoneCallback onSnapshotUnsubscribe;
 
-      void startListen() {
-        onSnapshotUnsubscribe =
-            jsObject.onTokenRefresh(nextWrapper, errorWrapper);
-      }
+  //     void startListen() {
+  //       onSnapshotUnsubscribe =
+  //           jsObject.onTokenRefresh(nextWrapper, errorWrapper);
+  //     }
 
-      void stopListen() {
-        onSnapshotUnsubscribe();
-        onSnapshotUnsubscribe = null;
-      }
+  //     void stopListen() {
+  //       onSnapshotUnsubscribe();
+  //       onSnapshotUnsubscribe = null;
+  //     }
 
-      controller = StreamController<Null>.broadcast(
-          onListen: startListen, onCancel: stopListen, sync: true);
-    }
-    return controller.stream;
-  }
+  //     controller = StreamController<Null>.broadcast(
+  //         onListen: startListen, onCancel: stopListen, sync: true);
+  //   }
+  //   return controller.stream;
+  // }
 }
 
 class Notification
