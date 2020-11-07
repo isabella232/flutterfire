@@ -8,8 +8,6 @@ import 'package:firebase_core_web/firebase_core_web_interop.dart'
 import 'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart';
 
 import 'interop/messaging.dart';
-import 'interop/messaging.dart';
-import 'interop/messaging.dart';
 
 /// Returns a [FirebaseException] from a thrown web error.
 FirebaseException getFirebaseException(Object object) {
@@ -64,6 +62,16 @@ NotificationSettings getNotificationSettings(String status) {
 
 /// Converts a messaging [MessagePayload] into a Map.
 Map<String, dynamic> messagePayloadToMap(MessagePayload messagePayload) {
+  
+  // TODO(ehesp): Data from FCM comes through like so:
+  // gcm.n.e: "1"
+  // google.c.a.c_id: "7839537754298966003"
+  // google.c.a.e: "1"
+  // google.c.a.ts: "1604755155"
+  // google.c.a.udt: "0"
+  // Since senderId & messageId are null, can we reliably assume these are
+  // the values? Should we remove them from the data payload?
+
   return <String, dynamic>{
     'senderId': null,
     'category': null,
@@ -84,7 +92,7 @@ Map<String, dynamic> messagePayloadToMap(MessagePayload messagePayload) {
 }
 
 /// Converts a messaging [NotificationPayload] into a Map.
-/// 
+///
 /// Since [FcmOptions] are web specific, we pass these down to the upper layer
 /// as web properties.
 Map<String, dynamic> notificationPayloadToMap(

@@ -75,6 +75,7 @@ class Messaging extends JsObjectWrapper<messaging_interop.MessagingJsImpl> {
       final errorWrapper = allowInterop((e) {
         controller.addError(e);
       });
+
       jsObject.onMessage(nextWrapper, errorWrapper);
     }
     return controller.stream;
@@ -134,7 +135,9 @@ class MessagePayload
       : super.fromJsObject(jsObject);
 
   String get collapseKey => jsObject.collapseKey;
-  FcmOptions get fcmOptions => FcmOptions._fromJsObject(jsObject.fcmOptions);
+  FcmOptions get fcmOptions => jsObject.fcmOptions == null
+      ? null
+      : FcmOptions._fromJsObject(jsObject.fcmOptions);
   NotificationPayload get notification =>
       NotificationPayload._fromJsObject(jsObject.notification);
   Map<String, dynamic> get data => dartify(jsObject.data);
