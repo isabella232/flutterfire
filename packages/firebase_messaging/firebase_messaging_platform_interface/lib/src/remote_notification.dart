@@ -14,6 +14,7 @@ class RemoteNotification {
   const RemoteNotification(
       {this.android,
       this.apple,
+      this.web,
       this.title,
       this.titleLocArgs,
       this.titleLocKey,
@@ -25,6 +26,7 @@ class RemoteNotification {
   factory RemoteNotification.fromMap(Map<String, dynamic> map) {
     AndroidNotification _android;
     AppleNotification _apple;
+    WebNotification _web;
 
     if (map['android'] != null) {
       _android = AndroidNotification(
@@ -58,6 +60,13 @@ class RemoteNotification {
                   volume: map['apple']['criticalSound']['volume']));
     }
 
+    if (map['web'] != null) {
+      _web = WebNotification(
+          analyticsLabel: map['web']['analyticsLabel'],
+          image: map['web']['image'],
+          link: map['web']['link']);
+    }
+
     return RemoteNotification(
       title: map['title'],
       titleLocArgs: map['titleLocArgs'] ?? [],
@@ -67,6 +76,7 @@ class RemoteNotification {
       bodyLocKey: map['bodyLocKey'],
       android: _android,
       apple: _apple,
+      web: _web,
     );
   }
 
@@ -75,6 +85,9 @@ class RemoteNotification {
 
   /// Apple specific notification properties.
   final AppleNotification apple;
+
+  /// Web specific notification properties.
+  final WebNotification web;
 
   /// The notification title.
   final String title;
@@ -197,4 +210,28 @@ class AppleNotificationSound {
   ///
   /// This value is a number between 0.0 & 1.0.
   final num volume;
+}
+
+/// Web specific properties of a [RemoteNotification].
+///
+/// This will only be populated if the current platform is web.
+class WebNotification {
+  // ignore: public_member_api_docs
+  WebNotification({this.image, this.analyticsLabel, this.link});
+
+  /// The URL of the image that is shown with the notification.
+  final String image;
+
+  /// Label associated with the message's analytics data.
+  ///
+  /// See [Adding analytics labels](https://firebase.google.com/docs/cloud-messaging/understand-delivery#adding-analytics-labels-to-messages)
+  /// for more information.
+  final String analyticsLabel;
+
+  /// The link to open when the user clicks on the notification.
+  ///
+  /// For all URL values, HTTPS is required. For example, by setting this value
+  /// to your app's URL, a notification click event will put your app in focus
+  /// for the user.
+  final String link;
 }

@@ -25,20 +25,25 @@ abstract class MessagingJsImpl {
 
 @JS()
 @anonymous
-abstract class NotificationJsImpl {
+abstract class NotificationPayloadJsImpl {
   external String get title;
   external String get body;
-  // ignore: non_constant_identifier_names
-  external String get click_action;
-  external String get icon;
+  external String get image;
 }
 
 @JS()
 @anonymous
-abstract class PayloadJsImpl {
-  // ignore: non_constant_identifier_names
-  external String get collapse_key;
-  external String get from;
-  external NotificationJsImpl get notification;
+abstract class MessagePayloadJsImpl {
+  external String get collapseKey;
+  external FcmOptionsJsImpl get fcmOptions;
+  external NotificationPayloadJsImpl get notification;
   external dynamic /*Map<String, String>*/ get data;
+  external String get from;
+}
+
+@JS()
+@anonymous
+abstract class FcmOptionsJsImpl {
+  external String get analyticsLabel;
+  external String get link;
 }

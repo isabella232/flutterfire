@@ -7,11 +7,17 @@ import 'package:firebase_core_web/firebase_core_web_interop.dart'
     as core_interop;
 import 'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart';
 
+import 'interop/messaging.dart';
+import 'interop/messaging.dart';
+import 'interop/messaging.dart';
+
 /// Returns a [FirebaseException] from a thrown web error.
 FirebaseException getFirebaseException(Object object) {
   if (object is! core_interop.FirebaseError) {
     return FirebaseException(
-        plugin: 'firebase_messaging', code: 'unknown', message: object.toString());
+        plugin: 'firebase_messaging',
+        code: 'unknown',
+        message: object.toString());
   }
 
   core_interop.FirebaseError firebaseError =
@@ -54,4 +60,42 @@ NotificationSettings getNotificationSettings(String status) {
     showPreviews: AppleShowPreviewSetting.notSupported,
     sound: AppleNotificationSetting.notSupported,
   );
+}
+
+/// Converts a messaging [MessagePayload] into a Map.
+Map<String, dynamic> messagePayloadToMap(MessagePayload messagePayload) {
+  return <String, dynamic>{
+    'senderId': null,
+    'category': null,
+    'collapseKey': messagePayload.collapseKey,
+    'contentAvailable': null,
+    'data': messagePayload.data,
+    'from': messagePayload.from,
+    'messageId': null,
+    'mutableContent': null,
+    'notification': messagePayload.notification == null
+        ? null
+        : notificationPayloadToMap(
+            messagePayload.notification, messagePayload.fcmOptions),
+    'sentTime': null,
+    'threadId': null,
+    'ttl': null,
+  };
+}
+
+/// Converts a messaging [NotificationPayload] into a Map.
+/// 
+/// Since [FcmOptions] are web specific, we pass these down to the upper layer
+/// as web properties.
+Map<String, dynamic> notificationPayloadToMap(
+    NotificationPayload notificationPayload, FcmOptions fcmOptions) {
+  return <String, dynamic>{
+    'title': notificationPayload.title,
+    'body': notificationPayload.body,
+    'web': <String, dynamic>{
+      'image': notificationPayload.image,
+      'analyticsLabel': fcmOptions?.analyticsLabel,
+      'link': fcmOptions?.link,
+    },
+  };
 }

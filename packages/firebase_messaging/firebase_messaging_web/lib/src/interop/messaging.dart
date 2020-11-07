@@ -51,24 +51,26 @@ class Messaging extends JsObjectWrapper<messaging_interop.MessagingJsImpl> {
               'vapidKey': vapidKey,
             }));
 
-  StreamController<Payload> _onMessageController;
+  StreamController<MessagePayload> _onMessageController;
   StreamController<Null> _onTokenRefresh;
-  StreamController<Payload> _onBackgroundMessage;
+  StreamController<MessagePayload> _onBackgroundMessage;
 
   /// When a push message is received and the user is currently on a page for your origin,
   /// the message is passed to the page and an [onMessage] event is dispatched with the payload of the push message.
-  Stream<Payload> get onMessage => _createOnMessageStream(_onMessageController);
+  Stream<MessagePayload> get onMessage =>
+      _createOnMessageStream(_onMessageController);
 
   /// FCM directs push messages to your web page's [onMessage] callback if the user currently has it open.
   /// Otherwise, it calls your callback passed into [onBackgroundMessage].
   // Stream<Payload> get onBackgroundMessage =>
   //     _createBackgroundMessagedStream(_onBackgroundMessage);
 
-  Stream<Payload> _createOnMessageStream(StreamController<Payload> controller) {
+  Stream<MessagePayload> _createOnMessageStream(
+      StreamController<MessagePayload> controller) {
     if (controller == null) {
       controller = StreamController.broadcast(sync: true);
       final nextWrapper = allowInterop((payload) {
-        controller.add(Payload._fromJsObject(payload));
+        controller.add(MessagePayload._fromJsObject(payload));
       });
       final errorWrapper = allowInterop((e) {
         controller.addError(e);
@@ -115,24 +117,34 @@ class Messaging extends JsObjectWrapper<messaging_interop.MessagingJsImpl> {
   // }
 }
 
-class Notification
-    extends JsObjectWrapper<messaging_interop.NotificationJsImpl> {
-  Notification._fromJsObject(messaging_interop.NotificationJsImpl jsObject)
+class NotificationPayload
+    extends JsObjectWrapper<messaging_interop.NotificationPayloadJsImpl> {
+  NotificationPayload._fromJsObject(
+      messaging_interop.NotificationPayloadJsImpl jsObject)
       : super.fromJsObject(jsObject);
 
   String get title => jsObject.title;
   String get body => jsObject.body;
-  String get clickAction => jsObject.click_action;
-  String get icon => jsObject.icon;
+  String get image => jsObject.image;
 }
 
-class Payload extends JsObjectWrapper<messaging_interop.PayloadJsImpl> {
-  Payload._fromJsObject(messaging_interop.PayloadJsImpl jsObject)
+class MessagePayload
+    extends JsObjectWrapper<messaging_interop.MessagePayloadJsImpl> {
+  MessagePayload._fromJsObject(messaging_interop.MessagePayloadJsImpl jsObject)
       : super.fromJsObject(jsObject);
 
-  Notification get notification =>
-      Notification._fromJsObject(jsObject.notification);
-  String get collapseKey => jsObject.collapse_key;
-  String get from => jsObject.from;
+  String get collapseKey => jsObject.collapseKey;
+  FcmOptions get fcmOptions => FcmOptions._fromJsObject(jsObject.fcmOptions);
+  NotificationPayload get notification =>
+      NotificationPayload._fromJsObject(jsObject.notification);
   Map<String, dynamic> get data => dartify(jsObject.data);
+  String get from => jsObject.from;
+}
+
+class FcmOptions extends JsObjectWrapper<messaging_interop.FcmOptionsJsImpl> {
+  FcmOptions._fromJsObject(messaging_interop.FcmOptionsJsImpl jsObject)
+      : super.fromJsObject(jsObject);
+
+  String get analyticsLabel => jsObject.analyticsLabel;
+  String get link => jsObject.link;
 }

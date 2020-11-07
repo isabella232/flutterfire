@@ -11,7 +11,7 @@ import 'package:firebase_core_web/firebase_core_web_interop.dart'
     as core_interop;
 
 import 'src/interop/messaging.dart' as messaging_interop;
-import 'src/interop/notification.dart' as notification_interop;
+import 'src/interop/notification.dart';
 import 'src/utils.dart' as utils;
 
 /// Web implementation for [FirebaseMessagingPlatform]
@@ -20,9 +20,6 @@ class FirebaseMessagingWeb extends FirebaseMessagingPlatform {
   /// Instance of Messaging from the web plugin
   final messaging_interop.Messaging _webMessaging;
 
-  // Instance of window.Notification
-  final notification_interop.Notification _webNotification;
-
   /// Called by PluginRegistry to register this plugin for Flutter Web
   static void registerWith(Registrar registrar) {
     FirebaseMessagingPlatform.instance = FirebaseMessagingWeb();
@@ -30,13 +27,23 @@ class FirebaseMessagingWeb extends FirebaseMessagingPlatform {
 
   Stream<String> _noopOnTokenRefreshStream;
 
+  static bool _initialized = false;
+
   /// Builds an instance of [FirebaseFirestoreWeb] with an optional [FirebaseApp] instance
   /// If [app] is null then the created instance will use the default [FirebaseApp]
   FirebaseMessagingWeb({FirebaseApp app})
       : _webMessaging =
             messaging_interop.getMessagingInstance(core_interop.app(app?.name)),
-        _webNotification = notification_interop.getWindowNotification(),
-        super(appInstance: app);
+        super(appInstance: app) {
+    if (app != null && _initialized) return;
+
+    _webMessaging.onMessage
+        .listen((messaging_interop.MessagePayload webMessagePayload) {
+      RemoteMessage remoteMessage =
+          RemoteMessage.fromMap(utils.messagePayloadToMap(webMessagePayload));
+      FirebaseMessagingPlatform.onMessage.add(remoteMessage);
+    });
+  }
 
   @override
   void registerBackgroundMessageHandler(handler) {
@@ -100,7 +107,7 @@ class FirebaseMessagingWeb extends FirebaseMessagingPlatform {
 
   @override
   Future<NotificationSettings> getNotificationSettings() async {
-    return utils.getNotificationSettings(_webNotification.permission);
+    return utils.getNotificationSettings(WindowNotification.permission);
   }
 
   @override
@@ -113,7 +120,7 @@ class FirebaseMessagingWeb extends FirebaseMessagingPlatform {
       bool provisional = false,
       bool sound = true}) async {
     try {
-      String status = await _webNotification.requestPermission();
+      String status = await WindowNotification.requestPermission();
       return utils.getNotificationSettings(status);
     } catch (e) {
       throw utils.getFirebaseException(e);
@@ -129,7 +136,7 @@ class FirebaseMessagingWeb extends FirebaseMessagingPlatform {
   @override
   Future<void> setForegroundNotificationPresentationOptions(
       {bool alert, bool badge, bool sound}) async {
-    return null;
+    return;
   }
 
   @override

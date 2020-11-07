@@ -6,37 +6,15 @@
 
 import 'package:firebase_core_web/firebase_core_web_interop.dart';
 
-import 'window_interop.dart' as window_interop;
 import 'notification_interop.dart' as notification_interop;
 
-Notification getWindowNotification() {
-  return Notification.getInstance(window_interop.notification);
-}
-
-class Notification
-    extends JsObjectWrapper<notification_interop.NotificationJsImpl> {
-  static final _expando = Expando<Notification>();
-
-  static Notification getInstance(
-      notification_interop.NotificationJsImpl jsObject) {
-    if (jsObject == null) {
-      return null;
-    }
-    return _expando[jsObject] ??= Notification._fromJsObject(jsObject);
+class WindowNotification {
+  static Future<String> requestPermission() {
+    return handleThenable(
+        notification_interop.NotificationJsImpl.requestPermission());
   }
 
-  Notification._fromJsObject(notification_interop.NotificationJsImpl jsObject)
-      : super.fromJsObject(jsObject);
-
-  String get permission {
-    return jsObject.permission;
-  }
-
-  Future<String> requestPermission() {
-    return handleThenable(jsObject.requestPermission());
-  }
-
-  Future<void> close() {
-    return handleThenable(jsObject.close());
+  static String get permission {
+    return notification_interop.NotificationJsImpl.permission;
   }
 }

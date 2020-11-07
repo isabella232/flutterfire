@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 /// Also monitors token refreshes and updates state.
 class TokenMonitor extends StatefulWidget {
   // ignore: public_member_api_docs
-  TokenMonitor(this._builder);
+  TokenMonitor(this._vapidKey, this._builder);
+
+  final String _vapidKey;
 
   final Widget Function(String token) _builder;
 

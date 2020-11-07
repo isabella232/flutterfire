@@ -4,15 +4,14 @@
 
 // ignore_for_file: public_member_api_docs
 
-@JS('window')
-library firebase_interop.messaging;
+@JS()
+library firebase.notification_interop;
 
 import 'package:firebase_core_web/firebase_core_web_interop.dart';
 import 'package:js/js.dart';
 
 @JS('Notification')
 abstract class NotificationJsImpl {
-  external String get permission;
-  external PromiseJsImpl<String> requestPermission();
-  external PromiseJsImpl<Null> close();
+  external static PromiseJsImpl<String> requestPermission();
+  external static String get permission;
 }
