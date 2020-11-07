@@ -62,22 +62,36 @@ NotificationSettings getNotificationSettings(String status) {
 
 /// Converts a messaging [MessagePayload] into a Map.
 Map<String, dynamic> messagePayloadToMap(MessagePayload messagePayload) {
-  
-  // TODO(ehesp): Data from FCM comes through like so:
-  // gcm.n.e: "1"
-  // google.c.a.c_id: "7839537754298966003"
-  // google.c.a.e: "1"
-  // google.c.a.ts: "1604755155"
-  // google.c.a.udt: "0"
-  // Since senderId & messageId are null, can we reliably assume these are
-  // the values? Should we remove them from the data payload?
+  String senderId;
+  int sentTime;
+  Map<String, dynamic> data = {};
+
+  if (messagePayload.data != null) {
+    messagePayload.data.forEach((key, value) {
+      if (key == 'google.c.a.c_id') {
+        senderId = value as String;
+      }
+
+      if (key == 'google.c.a.ts') {
+        int seconds = int.tryParse(value as String);
+        sentTime = seconds * 1000; // sentTime is ms
+      }
+
+      // Skip any internal keys
+      if (!key.startsWith('aps') &&
+          !key.startsWith('gcm.') &&
+          !key.startsWith('google.')) {
+        data[key] = value;
+      }
+    });
+  }
 
   return <String, dynamic>{
-    'senderId': null,
+    'senderId': senderId,
     'category': null,
     'collapseKey': messagePayload.collapseKey,
     'contentAvailable': null,
-    'data': messagePayload.data,
+    'data': data,
     'from': messagePayload.from,
     'messageId': null,
     'mutableContent': null,
@@ -85,7 +99,7 @@ Map<String, dynamic> messagePayloadToMap(MessagePayload messagePayload) {
         ? null
         : notificationPayloadToMap(
             messagePayload.notification, messagePayload.fcmOptions),
-    'sentTime': null,
+    'sentTime': sentTime,
     'threadId': null,
     'ttl': null,
   };
